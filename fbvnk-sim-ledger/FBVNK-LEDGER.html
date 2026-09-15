@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <title>F-BVNK Sim Ledger</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@500;600;700&display=swap">
 <style>
 :root{
   --paper:#EAEDE6; --sheet:#FCFCFA; --sheet-2:#F3F5EF;
@@ -11,6 +11,7 @@
   --due:#8A6110; --due-soft:#F5E9CE;
   --bad:#9C2F27; --bad-soft:#F6DFDC;
   --shadow:0 1px 0 rgba(25,29,23,.05), 0 2px 10px rgba(25,29,23,.05);
+  --carnet-paper:#EDE3C8; --carnet-ink:#2B3A67; --carnet-line:#D8C9A0; --carnet-stamp:#8A3324;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -22,6 +23,7 @@
     --due:#D9A748; --due-soft:#33280F;
     --bad:#E0837A; --bad-soft:#331C19;
     --shadow:0 1px 0 rgba(0,0,0,.3), 0 2px 10px rgba(0,0,0,.25);
+    --carnet-paper:#22190F; --carnet-ink:#E4D3A0; --carnet-line:#4A3C22; --carnet-stamp:#C9705F;
   }
 }
 :root[data-theme="dark"]{
@@ -33,6 +35,7 @@
   --due:#D9A748; --due-soft:#33280F;
   --bad:#E0837A; --bad-soft:#331C19;
   --shadow:0 1px 0 rgba(0,0,0,.3), 0 2px 10px rgba(0,0,0,.25);
+  --carnet-paper:#22190F; --carnet-ink:#E4D3A0; --carnet-line:#4A3C22; --carnet-stamp:#C9705F;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -188,6 +191,30 @@ hr.rule{border:0; border-top:1px solid var(--rule); margin:16px 0}
 ul,ol{padding-left:20px; max-width:66ch} li{margin:4px 0}
 code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; background:var(--sheet-2); padding:1px 5px; border:1px solid var(--rule)}
 pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--sheet-2); border:1px solid var(--rule); padding:11px 13px; overflow-x:auto; margin:8px 0}
+
+/* ---- carnet de route: nostalgic handwritten styling, scoped to the Logbook tab ---- */
+.carnet{
+  background:repeating-linear-gradient(var(--carnet-paper) 0px, var(--carnet-paper) 27px, var(--carnet-line) 28px);
+  border:1px solid var(--carnet-line); box-shadow:var(--shadow); padding:18px 20px 20px;
+}
+.carnet .eyebrow, .carnet h2{color:var(--carnet-ink)}
+.carnet th{background:transparent; color:var(--carnet-ink); opacity:.75; border-bottom:1px solid var(--carnet-line); font-family:"IBM Plex Sans",sans-serif}
+.carnet td{font-family:"Caveat",cursive; font-size:17px; color:var(--carnet-ink); border-bottom:1px solid var(--carnet-line); background:transparent}
+.carnet tfoot td{background:transparent; border-top:1px solid var(--carnet-line)}
+.carnetphoto{border:1px solid var(--carnet-line); background:var(--sheet-2); padding:14px 16px; color:var(--ink-2); font-size:13px}
+.carnetphoto img{display:block; margin:10px auto 0; max-height:340px; border:1px solid var(--carnet-line)}
+.carnetphoto img[hidden]{display:none}
+.signcard{background:var(--carnet-paper); border:1px solid var(--carnet-line); box-shadow:var(--shadow); padding:16px 18px; transform:rotate(-0.4deg)}
+.signcard .hwline{font-family:"Caveat",cursive; color:var(--carnet-ink); font-size:19px; line-height:1.45}
+.signcard dl{display:grid; grid-template-columns:auto 1fr; gap:3px 12px; margin:8px 0}
+.signcard dt{font-family:"IBM Plex Sans",sans-serif; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-2); align-self:center}
+.signcard dd{margin:0; font-family:"Caveat",cursive; color:var(--carnet-ink); font-size:19px}
+.signline{font-family:"Caveat",cursive; font-size:22px; color:var(--carnet-ink); background:transparent; border:0; border-bottom:1px dashed var(--carnet-line); padding:4px 2px; width:100%}
+.signline:focus{outline:none; border-bottom-color:var(--carnet-ink)}
+.stamp{display:inline-block; font-family:"Caveat",cursive; font-weight:700; font-size:15px; color:var(--carnet-stamp); border:2px solid var(--carnet-stamp); border-radius:4px; padding:2px 9px; transform:rotate(-6deg); letter-spacing:.02em}
+.chit{background:var(--carnet-paper); border:1px dashed var(--carnet-line); box-shadow:var(--shadow); padding:14px 18px; transform:rotate(0.6deg); max-width:440px}
+.chit .script{font-family:"Caveat",cursive; font-size:21px; line-height:1.35; color:var(--carnet-ink)}
+.chit .total{font-family:"Caveat",cursive; font-size:30px; color:var(--carnet-ink); font-weight:700}
 </style>
 
 <div class="wrap">
@@ -235,7 +262,9 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
           <div class="field"><label for="f-date">Date</label><input type="date" id="f-date"></div>
           <div class="field"><label for="f-from">From</label><select id="f-from"></select></div>
           <div class="field"><label for="f-to">To</label><select id="f-to"></select></div>
+          <div class="field"><label for="f-dep-time">Off blocks</label><input type="time" id="f-dep-time"></div>
           <div class="field"><label for="f-block">Block time (h)</label><input type="text" id="f-block" inputmode="decimal" placeholder="1.2 or 1:12"></div>
+          <div class="field"><label for="f-arr-time">On blocks</label><input type="time" id="f-arr-time"></div>
           <div class="field"><label for="f-fuel">Uplift (L)</label><input type="number" id="f-fuel" min="0" step="1" placeholder="0"></div>
           <div class="field"><label for="f-price">&euro; per litre</label><input type="number" id="f-price" min="0" step="0.01"></div>
           <div class="field"><label for="f-rate">Touchdown (fpm)</label><input type="number" id="f-rate" min="0" step="10" placeholder="180"></div>
@@ -270,7 +299,7 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
         <div class="sheet debit">
           <div class="eyebrow">Last posting</div>
           <h2 style="margin-bottom:10px">What that leg cost</h2>
-          <div id="lastPosting"><p class="small muted">File a leg and the invoices print here.</p></div>
+          <div id="lastPosting"><p class="small muted">File a leg, review the log, then sign to see what it cost.</p></div>
         </div>
         <div class="sheet" style="margin-top:14px">
           <div class="eyebrow">Running position</div>
@@ -361,15 +390,19 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
       <div class="eyebrow">Carnet de route &mdash; sim</div>
       <h2>Logbook</h2>
       <p class="small muted">Every leg you file on the Ramp tab writes its own row here, auto-filled &mdash; no separate typing, the way a real carnet gets filled in after each flight.</p>
+      <div class="carnetphoto" id="carnetPhoto">
+        <p style="margin:0"><strong>52 years old, and no photo of the original yet.</strong> This session cannot pull it from Dropbox itself &mdash; the download host is blocked by this session's network policy (not a permissions question; confirmed again 15 Sep 2026), and the scanned pages have no text layer to read another way. Paste or attach the real page directly in chat and it goes right here.</p>
+        <img id="carnetPhotoImg" alt="F-BVNK Carnet de Route, original page" hidden>
+      </div>
       <div class="note warn" style="margin-top:10px">
-        <p><strong>Draft columns.</strong> This follows the standard French journey-log layout (date, d&eacute;part, arriv&eacute;e, dur&eacute;e, nature, totaux, pilote, observations) &mdash; it is <em>not yet checked against your real NK carnet</em>. Session couldn't view the actual scanned pages: the download host is blocked by this session's network policy, and a photographed page has no text to extract. Send a page (or the blank form) and this gets aligned to it exactly.</p>
+        <p><strong>Draft columns.</strong> This follows the standard French journey-log layout (date, d&eacute;part, arriv&eacute;e, dur&eacute;e, nature, totaux, pilote, observations) &mdash; it is <em>not yet checked against your real NK carnet</em>. Send a page (or the blank form) and this gets aligned to it exactly.</p>
       </div>
       <div class="btnrow" style="margin-top:10px">
         <button class="btn ghost small" id="btn-log-csv">Copy as CSV</button>
       </div>
       <hr class="rule">
-      <div class="tw" style="max-height:620px; overflow-y:auto"><table id="logTbl"></table></div>
-      <p class="tiny muted" style="margin-top:8px">Totaux is sim hours only &mdash; it never joins or overwrites NK's real total time. Heure d&eacute;part/arriv&eacute;e aren't shown: the Ramp tab logs block <em>duration</em>, not clock times; say if you want departure/arrival times added there to fill those columns too.</p>
+      <div class="tw carnet" style="max-height:620px; overflow-y:auto"><table id="logTbl"></table></div>
+      <p class="tiny muted" style="margin-top:8px">Totaux is sim hours only &mdash; it never joins or overwrites NK's real total time. Off-blocks/on-blocks times come from the Ramp tab when you fill them in; leave them blank and only place, date and duration show.</p>
     </div>
   </section>
 
@@ -904,25 +937,17 @@ function invoiceCard(r){
 }
 
 function renderLastPosting(res){
+  var lastLeg = S.legs[S.legs.length-1];
+  if(!lastLeg) return;
   if(!res){
     /* no live result — reconstruct the last day's postings so the panel is never empty */
     var d = S.lastDate;
-    var posted = S.spend.filter(function(r){ return r.date===d; });
-    if(!posted.length) return;
-    var lastLeg = S.legs[S.legs.length-1];
-    res = {posted:posted, raised:[]};
-    if(lastLeg){
-      $('lastPosting').innerHTML = '<p class="small muted" style="margin-bottom:8px">'+
-        esc(lastLeg.from)+' &rarr; '+esc(lastLeg.to)+' &middot; '+num(lastLeg.hours,1)+' h &middot; '+esc(lastLeg.date)+
-        (lastLeg.note?' &middot; '+esc(lastLeg.note):'')+'</p>';
-      var pre = $('lastPosting').innerHTML;
-      renderLastPostingBody(res, pre);
-      return;
-    }
+    res = {posted: S.spend.filter(function(r){ return r.date===d; }), raised:[]};
   }
-  renderLastPostingBody(res, '');
+  if(lastLeg.signedBy) renderChit(lastLeg, res);
+  else renderSignCard(lastLeg, res);
 }
-function renderLastPostingBody(res, pre){
+function buildPostingHtml(res){
   var html = '';
   if(res.posted.length){
     var sum = res.posted.reduce(function(a,r){ return a+r.gross; },0);
@@ -936,7 +961,65 @@ function renderLastPostingBody(res, pre){
     }).join('');
   }
   if(!html) html = '<p class="small muted">Leg filed. Nothing chargeable.</p>';
-  $('lastPosting').innerHTML = (pre||'') + html;
+  return html;
+}
+
+/* Short pilot-script cost reveal, shown only once the leg is signed. Picked
+   deterministically from the leg's own date/from/to (never rnd()/Math.random —
+   that sequence is reserved for wear/squawk generation and must stay untouched). */
+var CHIT_LINES = [
+  'Chocks in, {h} on the Hobbs. {g} in the book.',
+  'Down safe, battery off. {g} on the tab for {h}.',
+  'Logged and settled &mdash; {h} block, {g} gross.',
+  'Another one for the carnet: {h} flown, {g} spent, not a cent adrift.',
+  'Signed off. {h} in the air, {g} out the door.'
+];
+function chitLine(leg, gross){
+  var s = String(leg.date)+String(leg.from)+String(leg.to);
+  var idx = 0; for(var i=0;i<s.length;i++) idx += s.charCodeAt(i);
+  return CHIT_LINES[idx % CHIT_LINES.length].replace('{h}', hhmm(leg.hours)+' h').replace('{g}', eur(gross));
+}
+
+function renderChit(leg, res){
+  var sum = res.posted.reduce(function(a,r){ return a+r.gross; },0);
+  $('lastPosting').innerHTML =
+    '<div class="chit">'+
+      '<div class="script">'+esc(chitLine(leg, sum))+'</div>'+
+      '<div class="total" style="margin-top:6px">'+eur(sum)+'</div>'+
+      '<p class="tiny muted" style="margin-top:8px">Signed '+esc(leg.signedBy)+' &middot; '+esc(leg.date)+
+      '<span class="stamp" style="margin-left:8px">SIGNED</span></p>'+
+    '</div>'+
+    buildPostingHtml(res);
+}
+
+function renderSignCard(leg, res){
+  var from = (FIELDS[leg.from] ? leg.from+' '+FIELDS[leg.from].name : leg.from) + (leg.depTime?' &middot; off '+leg.depTime:'');
+  var to   = (FIELDS[leg.to]   ? leg.to+' '+FIELDS[leg.to].name   : leg.to)   + (leg.arrTime?' &middot; on '+leg.arrTime:'');
+  var nature = leg.from===leg.to ? 'Local' : 'Navigation';
+  var entered = res.posted.map(function(r){ return r.desc; });
+  if(res.raised.length) entered = entered.concat(res.raised.map(function(sq){ return 'Tech log — '+sq.text; }));
+  $('lastPosting').innerHTML =
+    '<div class="signcard">'+
+      '<div class="eyebrow">Carnet de route &middot; review before you sign</div>'+
+      '<div class="hwline" style="font-size:23px; margin-top:2px">'+from+' &rarr; '+to+'</div>'+
+      '<dl>'+
+        '<dt>Date</dt><dd>'+esc(leg.date)+'</dd>'+
+        '<dt>Dur&eacute;e</dt><dd>'+hhmm(leg.hours)+'</dd>'+
+        '<dt>Nature</dt><dd>'+nature+'</dd>'+
+        (leg.note?'<dt>Observations</dt><dd style="font-size:16px">'+esc(leg.note)+'</dd>':'')+
+      '</dl>'+
+      (entered.length ? '<p class="small muted" style="margin-top:6px"><strong>Entered this leg:</strong> '+entered.map(esc).join(', ')+'</p>' : '<p class="small muted" style="margin-top:6px">Nothing chargeable this leg.</p>')+
+      '<hr class="rule">'+
+      '<div class="field"><label for="sign-name">Pilote &mdash; sign to confirm</label><input type="text" id="sign-name" class="signline" value="'+esc(leg.signedBy||'Claus Thanner')+'"></div>'+
+      '<div class="btnrow"><button class="btn" id="btn-sign">Sign &amp; reveal cost</button></div>'+
+    '</div>';
+  $('btn-sign').addEventListener('click', function(){
+    leg.signedBy = $('sign-name').value.trim() || 'Claus Thanner';
+    leg.signedAt = new Date().toISOString();
+    save();
+    renderChit(leg, res);
+    renderLogbook();
+  });
 }
 
 function renderHealth(){
@@ -1027,17 +1110,17 @@ function renderLogbook(){
   var run = 0;
   var rows = legs.map(function(l, i){
     var prev = run; run += l.hours;
-    var from = FIELDS[l.from] ? l.from+' '+FIELDS[l.from].name : l.from;
-    var to   = FIELDS[l.to]   ? l.to+' '+FIELDS[l.to].name   : l.to;
+    var from = (FIELDS[l.from] ? l.from+' '+FIELDS[l.from].name : l.from) + (l.depTime ? ' &middot; '+l.depTime : '');
+    var to   = (FIELDS[l.to]   ? l.to+' '+FIELDS[l.to].name   : l.to)   + (l.arrTime ? ' &middot; '+l.arrTime : '');
     var nature = l.from===l.to ? 'Local' : 'Navigation';
-    return {n:i+1, date:l.date, from:from, to:to, dur:l.hours, nature:nature, prev:prev, run:run, note:l.note||''};
+    return {n:i+1, date:l.date, from:from, to:to, dur:l.hours, nature:nature, prev:prev, run:run, note:l.note||'', signed:l.signedBy||''};
   });
   $('logTbl').innerHTML =
     '<thead><tr><th class="num">#</th><th>Date</th><th>D&eacute;part</th><th>Arriv&eacute;e</th><th class="num">Dur&eacute;e</th><th>Nature</th><th>Pilote</th>'+
     '<th class="num">Report</th><th class="num">Ce vol</th><th class="num">Total</th><th>Observations</th></tr></thead><tbody>'+
     (rows.length ? rows.map(function(r){
-      return '<tr><td class="num">'+r.n+'</td><td class="mono">'+esc(r.date)+'</td><td>'+esc(r.from)+'</td><td>'+esc(r.to)+'</td>'+
-        '<td class="num mono">'+hhmm(r.dur)+'</td><td class="small">'+r.nature+'</td><td class="small">Claus Thanner</td>'+
+      return '<tr><td class="num">'+r.n+'</td><td class="mono">'+esc(r.date)+'</td><td>'+r.from+'</td><td>'+r.to+'</td>'+
+        '<td class="num mono">'+hhmm(r.dur)+'</td><td class="small">'+r.nature+'</td><td class="small">'+(r.signed?esc(r.signed):'<span class="muted">unsigned</span>')+'</td>'+
         '<td class="num mono">'+hhmm(r.prev)+'</td><td class="num mono">'+hhmm(r.dur)+'</td><td class="num mono">'+hhmm(r.run)+'</td>'+
         '<td class="small">'+esc(r.note)+'</td></tr>';
     }).join('') : '<tr><td colspan="11" class="muted">No legs filed yet.</td></tr>')+
@@ -1191,6 +1274,15 @@ function syncFuelPrice(){
   if(f && f.fuel) $('f-price').value = f.fuel.toFixed(2);
 }
 
+function suggestArrival(){
+  var dep = $('f-dep-time').value;
+  var h = parseHours($('f-block').value);
+  if(!dep || h<=0) return;
+  var p = dep.split(':');
+  var total = Math.round((+p[0])*60 + (+p[1]) + h*60) % 1440;
+  $('f-arr-time').value = String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0');
+}
+
 function switchPane(name){
   ['ramp','tech','air','ledger','log','paint','year','book'].forEach(function(p){
     $('pane-'+p).hidden = (p!==name);
@@ -1221,6 +1313,7 @@ function boot(){
       date: $('f-date').value || today(),
       from: $('f-from').value, to: $('f-to').value,
       hours: h,
+      depTime: $('f-dep-time').value || '', arrTime: $('f-arr-time').value || '',
       litres: Math.max(0, +$('f-fuel').value || 0),
       price:  Math.max(0, +$('f-price').value || 0),
       rate:   Math.max(0, +$('f-rate').value || 150),
@@ -1231,13 +1324,15 @@ function boot(){
     };
     if(leg.date < S.lastDate) leg.date = S.lastDate;
     var res = fileLeg(leg);
-    save(); render(); renderLastPosting(res);
-    $('f-block').value=''; $('f-fuel').value=''; $('f-note').value='';
+    save(); render(); renderSignCard(leg, res);
+    $('f-block').value=''; $('f-fuel').value=''; $('f-note').value=''; $('f-dep-time').value=''; $('f-arr-time').value='';
     $('f-date').value = leg.date;
     $('f-hint').textContent = grounded() ? 'Now grounded — see the tech log.' : '';
-    var sum = res.posted.reduce(function(a,r){ return a+r.gross; },0);
-    toast('Leg filed. ' + eur(sum) + ' posted.' + (res.raised.length ? ' ' + res.raised.length + ' new squawk' + (res.raised.length===1?'':'s') + '.' : ''));
+    toast('Leg filed. Review the log below and sign it.' + (res.raised.length ? ' ' + res.raised.length + ' new squawk' + (res.raised.length===1?'':'s') + '.' : ''));
   });
+
+  $('f-dep-time').addEventListener('change', suggestArrival);
+  $('f-block').addEventListener('change', suggestArrival);
 
   $('btn-paste').addEventListener('click', function(){
     var txt = prompt('Paste the sim end-of-flight summary. Block time and fuel are picked out of it.');
@@ -1287,13 +1382,13 @@ function boot(){
   $('btn-log-csv').addEventListener('click', function(){
     var legs = S.legs.slice().sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
     var run = 0;
-    var head = 'No.,Date,Depart,Arrivee,Duree,Nature,Pilote,Report,Ce vol,Total,Observations\n';
+    var head = 'No.,Date,Depart,Heure depart,Arrivee,Heure arrivee,Duree,Nature,Pilote,Report,Ce vol,Total,Observations\n';
     var body = legs.map(function(l, i){
       var prev = run; run += l.hours;
       var from = FIELDS[l.from] ? l.from+' '+FIELDS[l.from].name : l.from;
       var to   = FIELDS[l.to]   ? l.to+' '+FIELDS[l.to].name   : l.to;
       var nature = l.from===l.to ? 'Local' : 'Navigation';
-      return [i+1, l.date, from, to, hhmm(l.hours), nature, 'Claus Thanner', hhmm(prev), hhmm(l.hours), hhmm(run), l.note||'']
+      return [i+1, l.date, from, l.depTime||'', to, l.arrTime||'', hhmm(l.hours), nature, l.signedBy||'unsigned', hhmm(prev), hhmm(l.hours), hhmm(run), l.note||'']
         .map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
     }).join('\n');
     copy(head+body, legs.length+' rows copied as CSV.');
