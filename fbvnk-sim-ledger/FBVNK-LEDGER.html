@@ -1,0 +1,1269 @@
+<meta charset="utf-8">
+<title>F-BVNK Sim Ledger</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#EAEDE6; --sheet:#FCFCFA; --sheet-2:#F3F5EF;
+  --ink:#191D17; --ink-2:#4B554A;
+  --rule:#C9D0C4; --rule-hard:#A7B2A3;
+  --accent:#27407A; --accent-soft:#DCE3F2;
+  --ok:#2E6F52; --ok-soft:#DCEBE1;
+  --due:#8A6110; --due-soft:#F5E9CE;
+  --bad:#9C2F27; --bad-soft:#F6DFDC;
+  --shadow:0 1px 0 rgba(25,29,23,.05), 0 2px 10px rgba(25,29,23,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#151811; --sheet:#1D211A; --sheet-2:#232821;
+    --ink:#E7EBE1; --ink-2:#98A394;
+    --rule:#333A31; --rule-hard:#4A5346;
+    --accent:#8FAAE3; --accent-soft:#222B40;
+    --ok:#63B98C; --ok-soft:#1B2E23;
+    --due:#D9A748; --due-soft:#33280F;
+    --bad:#E0837A; --bad-soft:#331C19;
+    --shadow:0 1px 0 rgba(0,0,0,.3), 0 2px 10px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#151811; --sheet:#1D211A; --sheet-2:#232821;
+  --ink:#E7EBE1; --ink-2:#98A394;
+  --rule:#333A31; --rule-hard:#4A5346;
+  --accent:#8FAAE3; --accent-soft:#222B40;
+  --ok:#63B98C; --ok-soft:#1B2E23;
+  --due:#D9A748; --due-soft:#33280F;
+  --bad:#E0837A; --bad-soft:#331C19;
+  --shadow:0 1px 0 rgba(0,0,0,.3), 0 2px 10px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,"Segoe UI",sans-serif;
+  font-size:15px; line-height:1.5;
+}
+.wrap{max-width:1140px; margin:0 auto; padding-block:26px 72px; padding-left:18px; padding-right:18px}
+h1,h2,h3{font-family:"Zilla Slab",Georgia,serif; font-weight:600; margin:0; text-wrap:balance; letter-spacing:-.005em}
+h1{font-size:34px; line-height:1.06; font-weight:700}
+h2{font-size:22px; margin:0 0 2px}
+h3{font-size:15px; margin:0 0 8px; letter-spacing:.01em}
+p{margin:6px 0; max-width:66ch}
+a{color:var(--accent)}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace; font-variant-numeric:tabular-nums}
+.num{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace; font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap}
+.muted{color:var(--ink-2)}
+.eyebrow{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); font-weight:600}
+.small{font-size:13px}
+.tiny{font-size:11.5px}
+
+/* ---- data plate header ---- */
+.plate{
+  display:grid; grid-template-columns:1fr auto; gap:20px; align-items:end;
+  background:var(--sheet); border:1px solid var(--rule-hard);
+  border-top:3px solid var(--accent);
+  padding:18px 20px; box-shadow:var(--shadow);
+}
+.plate .regline{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+.reg{font-family:"IBM Plex Mono",monospace; font-size:32px; font-weight:500; letter-spacing:.06em}
+.plate dl{display:grid; grid-template-columns:auto auto; gap:2px 16px; margin:0; font-size:12.5px}
+.plate dt{color:var(--ink-2)}
+.plate dd{margin:0; font-family:"IBM Plex Mono",monospace}
+@media(max-width:720px){ .plate{grid-template-columns:1fr} .reg{font-size:26px} h1{font-size:27px} }
+
+.status{display:flex; gap:7px; flex-wrap:wrap; margin-top:10px}
+.pill{
+  display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600;
+  padding:3px 9px; border-radius:2px; border:1px solid transparent; white-space:nowrap;
+}
+.pill.ok{background:var(--ok-soft); color:var(--ok); border-color:var(--ok)}
+.pill.due{background:var(--due-soft); color:var(--due); border-color:var(--due)}
+.pill.bad{background:var(--bad-soft); color:var(--bad); border-color:var(--bad)}
+.pill.neutral{background:var(--accent-soft); color:var(--accent); border-color:var(--accent)}
+.dot{width:7px; height:7px; border-radius:50%; background:currentColor; flex:none}
+
+/* ---- meters ---- */
+.meters{display:grid; grid-template-columns:repeat(auto-fit,minmax(168px,1fr)); gap:1px; background:var(--rule-hard); border:1px solid var(--rule-hard); margin-top:1px}
+.meter{background:var(--sheet); padding:12px 14px 13px}
+.meter .k{font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-2); font-weight:600}
+.meter .v{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; font-size:21px; line-height:1.25; margin-top:3px}
+.meter .s{font-size:11.5px; color:var(--ink-2); margin-top:1px}
+.meter .v.warn{color:var(--due)} .meter .v.crit{color:var(--bad)} .meter .v.good{color:var(--ok)}
+
+/* ---- tabs ---- */
+.tabs{display:flex; gap:0; flex-wrap:wrap; margin-top:22px; border-bottom:2px solid var(--rule-hard)}
+.tab{
+  appearance:none; background:none; border:0; border-bottom:2px solid transparent; margin-bottom:-2px;
+  font-family:"Zilla Slab",Georgia,serif; font-size:15.5px; font-weight:600; color:var(--ink-2);
+  padding:9px 14px; cursor:pointer;
+}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--accent); border-bottom-color:var(--accent)}
+.tab:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
+.tab .badge{display:inline-block; margin-left:6px; font-family:"IBM Plex Mono",monospace; font-size:11px; background:var(--bad); color:#fff; border-radius:9px; padding:0 6px; vertical-align:1px}
+
+/* ---- sheets ---- */
+.sheet{background:var(--sheet); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow)}
+.sheet + .sheet{margin-top:14px}
+.sheet.debit{border-top:2px solid var(--bad)}
+.pane{padding-top:18px}
+.cols{display:grid; gap:14px}
+.cols.c2{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+.cols.c3{grid-template-columns:repeat(auto-fit,minmax(215px,1fr))}
+@media(max-width:800px){ .cols.c2{grid-template-columns:1fr} }
+
+/* ---- forms ---- */
+.field{display:flex; flex-direction:column; gap:3px}
+label{font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-2); font-weight:600}
+input,select,textarea{
+  font-family:"IBM Plex Mono",monospace; font-size:14px; color:var(--ink);
+  background:var(--paper); border:1px solid var(--rule-hard); border-radius:2px; padding:7px 9px; width:100%;
+}
+textarea{font-family:"IBM Plex Sans",sans-serif; resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent); outline-offset:-1px; border-color:var(--accent)}
+.grid-form{display:grid; grid-template-columns:repeat(auto-fit,minmax(132px,1fr)); gap:11px}
+.btn{
+  appearance:none; font-family:"IBM Plex Sans",sans-serif; font-size:14px; font-weight:600; cursor:pointer;
+  background:var(--accent); color:#fff; border:1px solid var(--accent); border-radius:2px; padding:9px 16px;
+}
+.btn:hover{filter:brightness(1.1)}
+.btn:focus-visible{outline:2px solid var(--ink); outline-offset:2px}
+.btn.ghost{background:transparent; color:var(--accent)}
+.btn.ghost:hover{background:var(--accent-soft)}
+.btn.danger{background:var(--bad); border-color:var(--bad); color:#fff}
+.btn.small{font-size:12.5px; padding:5px 10px}
+.btn:disabled{opacity:.45; cursor:not-allowed; filter:none}
+.btnrow{display:flex; gap:9px; flex-wrap:wrap; align-items:center; margin-top:14px}
+
+/* ---- tables ---- */
+.tw{overflow-x:auto; border:1px solid var(--rule); background:var(--sheet)}
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th{
+  text-align:left; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-2);
+  font-weight:600; padding:8px 10px; border-bottom:1px solid var(--rule-hard); white-space:nowrap; background:var(--sheet-2);
+  position:sticky; top:0;
+}
+td{padding:6px 10px; border-bottom:1px solid var(--rule); vertical-align:top}
+tbody tr:nth-child(even) td{background:var(--sheet-2)}
+tbody tr:last-child td{border-bottom:0}
+th.num,td.num{text-align:right}
+tfoot td{font-weight:600; border-top:2px solid var(--rule-hard); background:var(--sheet-2)}
+
+/* ---- health bars ---- */
+.hlist{display:grid; gap:9px}
+.hrow{display:grid; grid-template-columns:118px 1fr 52px; gap:11px; align-items:center}
+.hbar{height:9px; background:var(--rule); border-radius:0; overflow:hidden}
+.hbar i{display:block; height:100%; background:var(--ok); transition:width .35s ease}
+.hbar i.due{background:var(--due)} .hbar i.bad{background:var(--bad)}
+.hrow .hname{font-size:13px}
+@media(max-width:520px){ .hrow{grid-template-columns:96px 1fr 46px} }
+
+/* ---- invoice card ---- */
+.inv{border:1px solid var(--rule-hard); background:var(--sheet); padding:14px 16px}
+.inv + .inv{margin-top:10px}
+.inv .ihead{display:flex; justify-content:space-between; gap:12px; align-items:baseline; flex-wrap:wrap; border-bottom:1px solid var(--rule); padding-bottom:7px; margin-bottom:8px}
+.inv .sup{font-family:"Zilla Slab",serif; font-weight:600; font-size:14.5px}
+.inv .ino{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ink-2)}
+.inv .lines{display:grid; gap:3px; font-size:13px}
+.inv .lines div{display:flex; justify-content:space-between; gap:14px}
+.inv .tot{border-top:1px solid var(--rule); margin-top:7px; padding-top:6px; font-weight:600}
+
+/* ---- squawks ---- */
+.sq{border:1px solid var(--rule-hard); border-left:4px solid var(--ink-2); background:var(--sheet); padding:11px 13px; display:grid; gap:7px}
+.sq + .sq{margin-top:9px}
+.sq.broken{border-left-color:var(--bad)}
+.sq.worn{border-left-color:var(--due)}
+.sq.cosmetic{border-left-color:var(--ink-2)}
+.sq .st{display:flex; justify-content:space-between; gap:12px; align-items:baseline; flex-wrap:wrap}
+.sq .sd{font-size:13px; color:var(--ink-2)}
+.sq .sa{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+
+.note{background:var(--accent-soft); border-left:3px solid var(--accent); padding:10px 14px; font-size:13.5px}
+.note.warn{background:var(--due-soft); border-left-color:var(--due)}
+.note p{max-width:none; margin:4px 0}
+.srcflag{display:inline-block; font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; padding:1px 5px; border-radius:2px}
+.srcflag.real{background:var(--ok-soft); color:var(--ok)}
+.srcflag.assume{background:var(--due-soft); color:var(--due)}
+hr.rule{border:0; border-top:1px solid var(--rule); margin:16px 0}
+.toast{position:fixed; left:50%; bottom:22px; transform:translateX(-50%); background:var(--ink); color:var(--paper); padding:10px 18px; font-size:13.5px; font-weight:600; box-shadow:0 4px 18px rgba(0,0,0,.25); z-index:50; max-width:calc(100vw - 36px)}
+@media (prefers-reduced-motion:reduce){ *{transition:none!important; animation:none!important} }
+ul,ol{padding-left:20px; max-width:66ch} li{margin:4px 0}
+code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; background:var(--sheet-2); padding:1px 5px; border:1px solid var(--rule)}
+pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--sheet-2); border:1px solid var(--rule); padding:11px 13px; overflow-x:auto; margin:8px 0}
+</style>
+
+<div class="wrap">
+
+  <header class="plate">
+    <div>
+      <div class="eyebrow">Sim operating account &middot; MSFS 2024 &middot; AH Socata Rallye 893 F-BVNK</div>
+      <div class="regline">
+        <span class="reg">F-BVNK</span>
+        <h1 style="font-size:20px">Sim Ledger</h1>
+      </div>
+      <div class="status" id="statusBar"></div>
+    </div>
+    <dl>
+      <dt>Model</dt><dd>MS.893 E</dd>
+      <dt>S/N</dt><dd>12495</dd>
+      <dt>YOM</dt><dd>06/1974</dd>
+      <dt>Base</dt><dd>LPCS Cascais</dd>
+      <dt>Held by</dt><dd>THANNERHOME LDA</dd>
+    </dl>
+  </header>
+
+  <div class="meters" id="meters"></div>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" id="tab-ramp"   aria-selected="true"  data-pane="ramp">Ramp</button>
+    <button class="tab" role="tab" id="tab-tech"   aria-selected="false" data-pane="tech">Tech Log <span class="badge" id="sqBadge" hidden>0</span></button>
+    <button class="tab" role="tab" id="tab-air"    aria-selected="false" data-pane="air">Airframe</button>
+    <button class="tab" role="tab" id="tab-ledger" aria-selected="false" data-pane="ledger">Ledger</button>
+    <button class="tab" role="tab" id="tab-paint"  aria-selected="false" data-pane="paint">Paint Shop</button>
+    <button class="tab" role="tab" id="tab-year"   aria-selected="false" data-pane="year">Year Book</button>
+    <button class="tab" role="tab" id="tab-book"   aria-selected="false" data-pane="book">Rule Book</button>
+  </nav>
+
+  <!-- ================= RAMP ================= -->
+  <section class="pane" id="pane-ramp" role="tabpanel" aria-labelledby="tab-ramp">
+    <div class="cols c2">
+      <div class="sheet">
+        <div class="eyebrow">After every landing</div>
+        <h2>Close out the leg</h2>
+        <p class="small muted">Six numbers off the sim's end-of-flight screen. Everything else &mdash; fuel bill, landing and parking fees, wear, inspections, hangar rent &mdash; is posted for you.</p>
+        <hr class="rule">
+        <div class="grid-form">
+          <div class="field"><label for="f-date">Date</label><input type="date" id="f-date"></div>
+          <div class="field"><label for="f-from">From</label><select id="f-from"></select></div>
+          <div class="field"><label for="f-to">To</label><select id="f-to"></select></div>
+          <div class="field"><label for="f-block">Block time (h)</label><input type="text" id="f-block" inputmode="decimal" placeholder="1.2 or 1:12"></div>
+          <div class="field"><label for="f-fuel">Uplift (L)</label><input type="number" id="f-fuel" min="0" step="1" placeholder="0"></div>
+          <div class="field"><label for="f-price">&euro; per litre</label><input type="number" id="f-price" min="0" step="0.01"></div>
+          <div class="field"><label for="f-rate">Touchdown (fpm)</label><input type="number" id="f-rate" min="0" step="10" placeholder="180"></div>
+          <div class="field"><label for="f-nights">Nights parked</label><input type="number" id="f-nights" min="0" step="1" value="0"></div>
+          <div class="field"><label for="f-style">How you flew it</label>
+            <select id="f-style">
+              <option value="gentle">Gentle &mdash; low power, smooth</option>
+              <option value="normal" selected>Normal &mdash; by the book</option>
+              <option value="pressed">Pressed on &mdash; high power, hard braking</option>
+            </select>
+          </div>
+          <div class="field"><label for="f-surface">Surface</label>
+            <select id="f-surface">
+              <option value="asphalt" selected>Asphalt</option>
+              <option value="grass">Grass</option>
+              <option value="gravel">Gravel / rough</option>
+            </select>
+          </div>
+          <div class="field"><label for="f-handling">Handling agent</label>
+            <select id="f-handling"><option value="0" selected>No</option><option value="95">Yes (&euro;95.00)</option></select>
+          </div>
+          <div class="field"><label for="f-note">Note (optional)</label><input type="text" id="f-note" placeholder="Local, 3 circuits"></div>
+        </div>
+        <div class="btnrow">
+          <button class="btn" id="btn-file">File the leg</button>
+          <button class="btn ghost small" id="btn-paste">Paste sim summary</button>
+          <span class="small muted" id="f-hint"></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="sheet debit">
+          <div class="eyebrow">Last posting</div>
+          <h2 style="margin-bottom:10px">What that leg cost</h2>
+          <div id="lastPosting"><p class="small muted">File a leg and the invoices print here.</p></div>
+        </div>
+        <div class="sheet" style="margin-top:14px">
+          <div class="eyebrow">Running position</div>
+          <h2 style="margin-bottom:10px">Season to date</h2>
+          <div id="seasonMini"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TECH LOG ================= -->
+  <section class="pane" id="pane-tech" role="tabpanel" aria-labelledby="tab-tech" hidden>
+    <div class="sheet">
+      <div class="eyebrow">Compte rendu matériel</div>
+      <h2>Tech log &mdash; open items</h2>
+      <p class="small muted">A <strong>broken</strong> item grounds the aeroplane until it is paid for. A <strong>worn</strong> item may be deferred, but it keeps degrading and the bill grows every leg you fly on it. <strong>Cosmetic</strong> items cost nothing to carry &mdash; they just make her look tired.</p>
+      <hr class="rule">
+      <div id="squawkList"></div>
+    </div>
+    <div class="sheet">
+      <div class="eyebrow">Closed</div>
+      <h3>Rectified this season</h3>
+      <div id="squawkDone"></div>
+    </div>
+  </section>
+
+  <!-- ================= AIRFRAME ================= -->
+  <section class="pane" id="pane-air" role="tabpanel" aria-labelledby="tab-air" hidden>
+    <div class="cols c2">
+      <div class="sheet">
+        <div class="eyebrow">Condition</div>
+        <h2>Component health</h2>
+        <p class="small muted">Health falls with hours, with how hard you land, and with how the aeroplane is flown. Below 30 the item starts throwing squawks.</p>
+        <hr class="rule">
+        <div class="hlist" id="healthList"></div>
+      </div>
+      <div>
+        <div class="sheet">
+          <div class="eyebrow">Counters</div>
+          <h2 style="margin-bottom:10px">Hours &amp; life remaining</h2>
+          <div class="tw"><table id="countersTbl"></table></div>
+        </div>
+        <div class="sheet" style="margin-top:14px">
+          <div class="eyebrow">Sinking funds</div>
+          <h2 style="margin-bottom:6px">Reserves</h2>
+          <p class="small muted" style="margin-bottom:10px">Every flown hour quietly sets aside &euro;20.79 for the engine and &euro;1.36 for the propeller &mdash; the real 2025 reserve rates. Reach TBO with a full pot and the overhaul is already paid for.</p>
+          <div class="tw"><table id="reserveTbl"></table></div>
+        </div>
+        <div class="sheet" style="margin-top:14px">
+          <div class="eyebrow">Scheduled maintenance</div>
+          <h2 style="margin-bottom:10px">Next due</h2>
+          <div class="tw"><table id="dueTbl"></table></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LEDGER ================= -->
+  <section class="pane" id="pane-ledger" role="tabpanel" aria-labelledby="tab-ledger" hidden>
+    <div class="sheet">
+      <div class="eyebrow">Livro de contas</div>
+      <h2>The book</h2>
+      <p class="small muted">Every posting, in the same shape as the real 2025 accounts: supplier, invoice number, category, net, VAT, gross.</p>
+      <div class="btnrow" style="margin-top:12px">
+        <select id="l-filter" style="width:auto"><option value="">All categories</option></select>
+        <button class="btn ghost small" id="btn-csv">Copy as CSV</button>
+        <button class="btn ghost small" id="btn-manual">Add a line by hand</button>
+      </div>
+      <div id="manualForm" hidden style="margin-top:12px">
+        <div class="grid-form">
+          <div class="field"><label for="m-date">Date</label><input type="date" id="m-date"></div>
+          <div class="field"><label for="m-sup">Supplier</label><input type="text" id="m-sup" placeholder="Sevenair Group, SA"></div>
+          <div class="field"><label for="m-desc">Description</label><input type="text" id="m-desc" placeholder="Apoio de manutenção"></div>
+          <div class="field"><label for="m-cat">Category</label><select id="m-cat"></select></div>
+          <div class="field"><label for="m-gross">Gross (&euro;)</label><input type="number" id="m-gross" step="0.01" min="0"></div>
+          <div class="field"><label for="m-vat">VAT rate (%)</label><select id="m-vat"><option value="23">23 — Portugal</option><option value="21">21 — Spain</option><option value="0">0 — none</option></select></div>
+        </div>
+        <div class="btnrow"><button class="btn small" id="btn-manual-add">Post it</button></div>
+      </div>
+      <hr class="rule">
+      <div class="tw" style="max-height:620px; overflow-y:auto"><table id="ledgerTbl"></table></div>
+    </div>
+  </section>
+
+  <!-- ================= PAINT SHOP ================= -->
+  <section class="pane" id="pane-paint" role="tabpanel" aria-labelledby="tab-paint" hidden>
+    <div class="cols c2">
+      <div class="sheet">
+        <div class="eyebrow">Where the money meets the aeroplane</div>
+        <h2>Paint &amp; condition</h2>
+        <p class="small muted">Cosmetic condition falls about a point an hour, faster off grass and faster on the salt air at Cascais. When it crosses a band the ledger tells you which texture set your package should be wearing &mdash; so the aeroplane you look at matches the book you keep.</p>
+        <hr class="rule">
+        <div id="paintState"></div>
+        <hr class="rule">
+        <h3>Buy your way back</h3>
+        <div id="paintBuy"></div>
+      </div>
+      <div class="sheet">
+        <div class="eyebrow">Package register</div>
+        <h2>Your F-BVNK paints</h2>
+        <p class="small muted">The ledger follows the airframe, not the paint. Every package below is the same tail &mdash; swap freely, the hours and the bills carry across.</p>
+        <hr class="rule">
+        <div id="paintPkgs"></div>
+        <hr class="rule">
+        <h3>Swap script</h3>
+        <p class="small muted">Same shape as your existing <code>APPLY_COWL_REPAINT.bat</code>. Put the wear sets in <code>_wear_sets\</code> beside the package folder, then run this from the package root.</p>
+        <pre id="batOut"></pre>
+        <div class="btnrow"><button class="btn ghost small" id="btn-bat">Copy .bat</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= YEAR BOOK ================= -->
+  <section class="pane" id="pane-year" role="tabpanel" aria-labelledby="tab-year" hidden>
+    <div class="sheet">
+      <div class="eyebrow">Sim season against the real aeroplane</div>
+      <h2>Year book</h2>
+      <p class="small muted">Left column is your sim season. Right column is F-BVNK's actual 2025, quoted from <span class="mono">F-BVNK_2025_Accounts_1.xlsx</span> and <span class="mono">2025-JAN-DEC-2025-Aircraft-Hourly-Operating-Cost-Calculator-F-BVNK.xlsx</span>. That file carries two totals and so does this table: <strong>42 invoices in the file</strong> at <span class="mono">&euro;25,716.30</span>, of which <strong>39 fall inside calendar year 2025</strong> at <span class="mono">&euro;23,473.96</span>. The category rows sum to the 42-invoice basis.</p>
+      <hr class="rule">
+      <div class="tw"><table id="yearTbl"></table></div>
+      <div class="note" style="margin-top:14px">
+        <p><strong>The number to beat.</strong> The real aeroplane cost <span class="mono">&euro;23,473.96</span> gross across <span class="mono">39</span> invoices in calendar year 2025, over <span class="mono">73.00</span> flown hours &mdash; <span class="mono">&euro;321.56</span> per hour, everything in. Her own cost calculator put the wet hourly at <span class="mono">&euro;378.48</span> once engine and propeller reserves are added.</p>
+      </div>
+    </div>
+    <div class="sheet">
+      <div class="eyebrow">Housekeeping</div>
+      <h3>Save, move, reset</h3>
+      <p class="small muted">The book lives in your browser's storage for this file. Copy it out before you move machines, reinstall the sim, or clear browsing data.</p>
+      <div class="btnrow">
+        <button class="btn ghost small" id="btn-export">Copy book as JSON</button>
+        <button class="btn ghost small" id="btn-import">Load book from JSON</button>
+        <button class="btn ghost small" id="btn-seed">Clear examples, start my season</button>
+        <button class="btn danger small" id="btn-reset">Wipe everything</button>
+      </div>
+      <textarea id="io" rows="6" hidden style="margin-top:12px" spellcheck="false"></textarea>
+    </div>
+  </section>
+
+  <!-- ================= RULE BOOK ================= -->
+  <section class="pane" id="pane-book" role="tabpanel" aria-labelledby="tab-book" hidden>
+    <div class="cols c2">
+      <div class="sheet">
+        <div class="eyebrow">Price list</div>
+        <h2>What things cost</h2>
+        <p class="small muted">Lines marked <span class="srcflag real">invoiced</span> are lifted from F-BVNK's own 2025 supplier invoices. Lines marked <span class="srcflag assume">assumption</span> have no 2025 invoice behind them and were set for the sim &mdash; change them if you want a harder or softer aeroplane.</p>
+        <hr class="rule">
+        <div class="tw"><table id="priceTbl"></table></div>
+      </div>
+      <div>
+        <div class="sheet">
+          <div class="eyebrow">How wear works</div>
+          <h2>The rules</h2>
+          <div id="rulesText"></div>
+        </div>
+        <div class="sheet" style="margin-top:14px">
+          <div class="eyebrow">Aerodrome fees</div>
+          <h3>Fields on the card</h3>
+          <div class="tw"><table id="fieldTbl"></table></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <p class="tiny muted" style="margin-top:26px; text-align:center">
+    F-BVNK Sim Ledger &middot; keeps its book in this browser's local storage &middot; drop this file in the package folder and open it from there
+  </p>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   F-BVNK SIM LEDGER
+   Costs flagged src:'real' are quoted from F-BVNK's own 2025
+   supplier invoices. Costs flagged src:'assume' have no 2025
+   invoice behind them and were modelled for the sim.
+   ============================================================ */
+
+var VAT_PT = 23, VAT_ES = 21;
+
+var PRICES = {
+  hangar:   {net:1000.00, vat:VAT_PT, sup:'Sevenair Group, SA', desc:'Apoio de manutenção', cat:'Hangar & maintenance support', src:'real',   note:'Monthly, 13 invoices in 2025'},
+  cao:      {net: 720.00, vat:VAT_PT, sup:'IAC - Ind. Aeronáuticas Coimbra, Lda.', desc:'GESTAO AERONAVEGABILIDADE', cat:'Maintenance, parts & airworthiness', src:'real', note:'FAC 25/135'},
+  insurance:{net: 883.00, vat:0,      sup:'Hull & liability underwriter', desc:'Annual premium', cat:'Insurance', src:'real', note:'Insurance €883.00, 2025 calculator'},
+  insp25:   {net: 168.00, vat:VAT_PT, sup:'IAC - Ind. Aeronáuticas Coimbra, Lda.', desc:'Manutenção — 25 h check', cat:'Maintenance, parts & airworthiness', src:'real', note:'FAC 25/64'},
+  insp50:   {net: 786.88, vat:VAT_PT, sup:'IAC - Ind. Aeronáuticas Coimbra, Lda.', desc:'Manutenção — 50 h check', cat:'Maintenance, parts & airworthiness', src:'real', note:'FAC 26/6'},
+  insp100:  {net:2434.99, vat:VAT_PT, sup:'IAC - Ind. Aeronáuticas Coimbra, Lda.', desc:'Manutenção — 100 h / annual', cat:'Maintenance, parts & airworthiness', src:'real', note:'FAC 25/100'},
+  brakes:   {net:1089.43, vat:VAT_ES, sup:'Nicolau, Valladolid', desc:'Brake overhaul — pads, calipers, bleed', cat:'Maintenance, parts & airworthiness', src:'real', note:'€1,340.00 gross, 2025 actuals'},
+  engoh:    {net:35000.00,vat:0,      sup:'Overhaul shop', desc:'Engine overhaul at TBO', cat:'Maintenance, parts & airworthiness', src:'real', note:'€35,000.00, 2025 calculator'},
+  propoh:   {net:2000.00, vat:0,      sup:'Propeller shop', desc:'Propeller overhaul at TBO', cat:'Maintenance, parts & airworthiness', src:'real', note:'€2,000.00, 2025 calculator'},
+
+  tyres:    {net: 310.00, vat:VAT_PT, sup:'IAC - Ind. Aeronáuticas Coimbra, Lda.', desc:'Main tyres and tubes, fitted', cat:'Maintenance, parts & airworthiness', src:'assume'},
+  oleo:     {net: 980.00, vat:VAT_PT, sup:'IAC - Ind. Aeronáuticas Coimbra, Lda.', desc:'Shock strut — seals, service, recharge', cat:'Maintenance, parts & airworthiness', src:'assume'},
+  hardland: {net: 640.00, vat:VAT_PT, sup:'IAC - Ind. Aeronáuticas Coimbra, Lda.', desc:'Hard landing inspection', cat:'Maintenance, parts & airworthiness', src:'assume'},
+  mag:      {net: 720.00, vat:VAT_PT, sup:'IAC - Ind. Aeronáuticas Coimbra, Lda.', desc:'Magneto overhaul and timing', cat:'Maintenance, parts & airworthiness', src:'assume'},
+  plugs:    {net: 265.00, vat:VAT_PT, sup:'IAC - Ind. Aeronáuticas Coimbra, Lda.', desc:'Spark plug set, clean and gap', cat:'Maintenance, parts & airworthiness', src:'assume'},
+  alt:      {net: 890.00, vat:VAT_PT, sup:'IAC - Ind. Aeronáuticas Coimbra, Lda.', desc:'Alternator replacement', cat:'Maintenance, parts & airworthiness', src:'assume'},
+  batt:     {net: 310.00, vat:VAT_PT, sup:'IAC - Ind. Aeronáuticas Coimbra, Lda.', desc:'Battery replacement', cat:'Maintenance, parts & airworthiness', src:'assume'},
+  vac:      {net: 560.00, vat:VAT_PT, sup:'IAC - Ind. Aeronáuticas Coimbra, Lda.', desc:'Vacuum pump replacement', cat:'Maintenance, parts & airworthiness', src:'assume'},
+  propdress:{net: 420.00, vat:VAT_PT, sup:'IAC - Ind. Aeronáuticas Coimbra, Lda.', desc:'Propeller dressing and balance', cat:'Maintenance, parts & airworthiness', src:'assume'},
+  exh:      {net: 380.00, vat:VAT_PT, sup:'IAC - Ind. Aeronáuticas Coimbra, Lda.', desc:'Exhaust stack repair', cat:'Maintenance, parts & airworthiness', src:'assume'},
+  cyl:      {net:2250.00, vat:VAT_PT, sup:'IAC - Ind. Aeronáuticas Coimbra, Lda.', desc:'Cylinder top overhaul', cat:'Maintenance, parts & airworthiness', src:'assume'},
+  radio:    {net: 540.00, vat:VAT_PT, sup:'Avionics shop, Cascais', desc:'Avionics bench repair', cat:'Maintenance, parts & airworthiness', src:'assume'},
+  trim:     {net: 290.00, vat:VAT_PT, sup:'Trim shop', desc:'Interior trim repair', cat:'Maintenance, parts & airworthiness', src:'assume'},
+  screen:   {net: 210.00, vat:VAT_PT, sup:'IAC - Ind. Aeronáuticas Coimbra, Lda.', desc:'Windscreen polish', cat:'Maintenance, parts & airworthiness', src:'assume'},
+  wash:     {net: 180.00, vat:VAT_PT, sup:'Hangar 7 Air, Cascais', desc:'Wash, degrease and polish', cat:'Paint & valet', src:'assume'},
+  repaint:  {net:9800.00, vat:VAT_PT, sup:'Paint shop', desc:'Strip and full repaint', cat:'Paint & valet', src:'assume'}
+};
+
+var FIELDS = {
+  LPCS:{name:'Cascais',       land:22.24, park:16.68, fuel:2.29, vat:VAT_PT, coastal:true,  sup:'Cascais Dinâmica E.M., S.A.', fsup:'BP Portugal Combustíveis, S.A.', src:'real'},
+  LPCO:{name:'Coimbra',       land:20.00, park:12.00, fuel:2.35, vat:VAT_PT, coastal:false, sup:'Aeródromo de Coimbra',        fsup:'BP Portugal Combustíveis, S.A.', src:'assume'},
+  LPVL:{name:'Vilar da Luz',  land:23.00, park: 0.00, fuel:0,    vat:VAT_PT, coastal:false, sup:'Vilar da Luz',                fsup:'', src:'real'},
+  LEVD:{name:'Valladolid',    land:122.00,park: 0.00, fuel:3.42, vat:VAT_ES, coastal:false, sup:'Aeropuerto de Valladolid',    fsup:'BP Energía España, S.A.U.', src:'real'},
+  LEAP:{name:'Teruel',        land:12.00, park: 0.00, fuel:2.36, vat:VAT_ES, coastal:false, sup:'Aeropuerto de Teruel',        fsup:'BP Energía España, S.A.U.', src:'real'},
+  LEST:{name:'Santiago',      land:32.00, park: 0.00, fuel:0,    vat:VAT_ES, coastal:true,  sup:'Aeropuerto de Santiago',      fsup:'', src:'real'},
+  LEBG:{name:'Burgos',        land:45.00, park: 0.00, fuel:3.19, vat:VAT_ES, coastal:false, sup:'Aeropuerto de Burgos',        fsup:'BP Energía España, S.A.U.', src:'assume'},
+  LEMP:{name:'Empuriabrava',  land:108.00,park: 0.00, fuel:3.52, vat:VAT_ES, coastal:true,  sup:'Aeroclub Empuriabrava',       fsup:'BP Energía España, S.A.U.', src:'real'},
+  ZZZZ:{name:'Other field',   land:25.00, park:12.00, fuel:2.60, vat:VAT_PT, coastal:false, sup:'Aerodrome operator',          fsup:'Fuel supplier', src:'assume'}
+};
+
+var COMPONENTS = [
+  {k:'engine',   n:'Engine',        rate:1.15},
+  {k:'prop',     n:'Propeller',     rate:0.55},
+  {k:'brakes',   n:'Brakes',        rate:0},
+  {k:'tyres',    n:'Tyres',         rate:0},
+  {k:'gear',     n:'Landing gear',  rate:0},
+  {k:'airframe', n:'Airframe',      rate:0.32},
+  {k:'avionics', n:'Avionics',      rate:0.22},
+  {k:'interior', n:'Interior',      rate:0.26},
+  {k:'paint',    n:'Paint & finish',rate:0.95}
+];
+
+var SQUAWKS = {
+  engine:[
+    {t:'Mag drop 250 rpm on the left magneto at run-up', kind:'broken',   c:'mag'},
+    {t:'Plugs fouling, running rough at idle',            kind:'worn',     c:'plugs'},
+    {t:'Cylinder 3 compression down to 58/80',            kind:'broken',   c:'cyl'},
+    {t:'Exhaust stack cracked at the flange',             kind:'worn',     c:'exh'},
+    {t:'Oil weep at the rocker cover',                    kind:'cosmetic', c:null}
+  ],
+  prop:[
+    {t:'Nick in the leading edge of blade 2',             kind:'worn',     c:'propdress'},
+    {t:'Spinner bulkhead screws backing out',             kind:'cosmetic', c:null}
+  ],
+  brakes:[
+    {t:'Left brake dragging, pad down to the rivets',     kind:'broken',   c:'brakes'},
+    {t:'Uneven braking, right caliper glazed',            kind:'worn',     c:'brakes'}
+  ],
+  tyres:[
+    {t:'Main tyre flat-spotted',                          kind:'worn',     c:'tyres'},
+    {t:'Nose tyre worn through to the canvas',            kind:'broken',   c:'tyres'}
+  ],
+  gear:[
+    {t:'Left oleo bottomed, no extension on the strut',   kind:'broken',   c:'oleo'},
+    {t:'Gear leg fairing cracked',                        kind:'cosmetic', c:null}
+  ],
+  airframe:[
+    {t:'Aileron hinge play beyond limits',                kind:'broken',   c:'hardland'},
+    {t:'Windscreen crazed, poor forward visibility',      kind:'worn',     c:'screen'},
+    {t:'Cowl fastener missing',                           kind:'cosmetic', c:null}
+  ],
+  avionics:[
+    {t:'COM 1 transmits with a hum',                      kind:'worn',     c:'radio'},
+    {t:'Transponder will not select ALT',                 kind:'broken',   c:'radio'},
+    {t:'Alternator not charging, ammeter negative',       kind:'broken',   c:'alt'},
+    {t:'Battery will not hold overnight',                 kind:'worn',     c:'batt'},
+    {t:'Vacuum pump output low, AH slow to erect',        kind:'broken',   c:'vac'}
+  ],
+  interior:[
+    {t:'Pilot seat rail catch worn',                      kind:'worn',     c:'trim'},
+    {t:'Headliner sagging over the rear seat',            kind:'cosmetic', c:null}
+  ],
+  paint:[
+    {t:'Bugs and exhaust staining down the belly',        kind:'cosmetic', c:null},
+    {t:'Paint chalked on the upper cowl',                 kind:'cosmetic', c:null}
+  ]
+};
+
+var PAINT_BANDS = [
+  {min:80, key:'fresh',   n:'Fresh',    d:'Straight out of the shop. Clean albedo set.',            pkg:'ah-aircraft-socms893-F-BVNK — new cowling'},
+  {min:55, key:'flown',   n:'Flown',    d:'Bugs on the leading edges, exhaust trail down the belly.', pkg:'ah-aircraft-socms893-F-BVNK — bugs and wear'},
+  {min:30, key:'tired',   n:'Tired',    d:'Chalked upper surfaces, oil staining, grubby gear legs.',  pkg:'ah-aircraft-socms893-F-BVNK — weathered'},
+  {min:0,  key:'scruffy', n:'Scruffy',  d:'Fifty-one years old and looking every one of them.',       pkg:'ah-aircraft-socms893-F-BVNK — heavy wear'}
+];
+
+var PACKAGES = [
+  {folder:'ah-aircraft-socms893-F-BVNK - new cowling - before bugs and wear', title:'AH Socata Rallye 893 F-BVNK', tex:'texture.F-BVNK', note:'Current package, new cowl repaint applied'},
+  {folder:'ah-aircraft-socms893-F-BVNK - before repaint',                     title:'AH Socata Rallye 893 F-BVNK', tex:'texture.F-BVNK', note:'Pre-repaint reference set'}
+];
+
+/* ---------------- helpers ---------------- */
+function eur(n){ return '€' + (Math.round(n*100)/100).toLocaleString('en-GB',{minimumFractionDigits:2, maximumFractionDigits:2}); }
+function num(n,d){ if(d===undefined) d=1; return (Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('en-GB',{minimumFractionDigits:d, maximumFractionDigits:d}); }
+function today(){ var d=new Date(); return d.toISOString().slice(0,10); }
+function monthKey(iso){ return iso.slice(0,7); }
+function monthsBetween(a,b){ var out=[], ya=+a.slice(0,4), ma=+a.slice(5,7), yb=+b.slice(0,4), mb=+b.slice(5,7);
+  while(ya<yb || (ya===yb && ma<=mb)){ out.push(ya+'-'+String(ma).padStart(2,'0')); ma++; if(ma>12){ma=1;ya++;} if(out.length>240) break; } return out; }
+function monthName(k){ var m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Out','Nov','Dez']; return m[+k.slice(5,7)-1]+' '+k.slice(0,4); }
+var RNG = null;           /* set only while seeding, so the demo book is identical every load */
+function rnd(){
+  if(RNG===null) return Math.random();
+  RNG = (RNG * 1103515245 + 12345) % 2147483648;
+  return RNG / 2147483648;
+}
+var UIDN = 0;
+function uid(){ return 'x' + (RNG!==null ? 's'+(++UIDN) : Math.random().toString(36).slice(2,9)); }
+function clamp(v,lo,hi){ return v<lo?lo:(v>hi?hi:v); }
+function parseHours(s){
+  s = String(s||'').trim();
+  if(!s) return 0;
+  if(s.indexOf(':')>-1){ var p=s.split(':'); return (+p[0]||0) + (+p[1]||0)/60; }
+  return Math.max(0, parseFloat(s.replace(',','.'))||0);
+}
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+/* ---------------- invoice numbering ---------------- */
+function invNo(state, sup, iso){
+  var y = iso.slice(2,4), Y = iso.slice(0,4);
+  state.seq = state.seq || {};
+  function bump(k, start){ state.seq[k] = (state.seq[k]||start) + 1; return state.seq[k]; }
+  if(/Sevenair/.test(sup))              return 'FT '+Y+'A12/'+bump('sev',1);
+  if(/IAC/.test(sup))                   return 'FAC '+y+'/'+bump('iac',5);
+  if(/Cascais Dinâmica/.test(sup))      return 'FT AMC-V301.0'+(+y-21)+'/'+Y+String(bump('cas',60)).padStart(5,'0');
+  if(/BP Portugal/.test(sup))           return 'F2 BPC9/29613'+String(bump('bpp',30000)).padStart(5,'0');
+  if(/BP Energía/.test(sup))            return '20028'+String(bump('bpe',52800)).padStart(5,'0');
+  if(/underwriter/.test(sup))           return 'AP/'+Y+'/'+bump('ins',1);
+  return 'REC '+y+'/'+bump('misc',1);
+}
+
+/* ---------------- state ---------------- */
+var KEY = 'fbvnk.ledger.v1';
+var S = null;
+
+function blankState(seeded){
+  return {
+    v:1, seeded: !!seeded, seq:{},
+    seasonStart:'2026-01-01',
+    lastDate:'2026-01-01',
+    counters:{ ttaf:1265.0, engSMOH:317.0, propSMOH:528.0, hrs:0 },
+    due:{ next25:25, next50:50, next100:100, caoYear:null, insYear:null },
+    billedMonths:[],
+    reserves:{ engine:0, prop:0 },
+    health:{ engine:88, prop:92, brakes:74, tyres:80, gear:86, airframe:84, avionics:79, interior:82, paint:91 },
+    squawks:[], done:[], spend:[], legs:[]
+  };
+}
+
+function load(){
+  try{
+    var raw = localStorage.getItem(KEY);
+    if(raw){ var o = JSON.parse(raw); if(o && o.v===1) return o; }
+  }catch(e){}
+  return seedExamples(blankState(true));
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+}
+
+/* ---------------- posting ---------------- */
+function post(iso, key, opts){
+  opts = opts||{};
+  var p = PRICES[key] || {};
+  var net  = opts.net!==undefined ? opts.net : p.net;
+  var vat  = opts.vat!==undefined ? opts.vat : (p.vat||0);
+  var sup  = opts.sup  || p.sup  || 'Supplier';
+  var desc = opts.desc || p.desc || key;
+  var cat  = opts.cat  || p.cat  || 'Maintenance, parts & airworthiness';
+  var vatAmt = Math.round(net*vat)/100;
+  var row = { id:uid(), date:iso, no:invNo(S,sup,iso), sup:sup, desc:desc, cat:cat,
+              net:Math.round(net*100)/100, vat:vatAmt, gross:Math.round((net+vatAmt)*100)/100, key:key };
+  S.spend.push(row);
+  return row;
+}
+
+/* accrue the standing costs that run whether you fly or not */
+function accrueTo(iso){
+  var posted = [];
+  var months = monthsBetween(monthKey(S.seasonStart), monthKey(iso));
+  months.forEach(function(mk){
+    if(S.billedMonths.indexOf(mk)>-1) return;
+    S.billedMonths.push(mk);
+    var day = mk+'-08';
+    posted.push(post(day, 'hangar', {desc:'Apoio de manutenção referente a '+monthName(mk)}));
+    var yr = mk.slice(0,4);
+    if(mk.slice(5,7)==='08' && S.due.caoYear!==yr){ S.due.caoYear=yr; posted.push(post(mk+'-28','cao')); }
+    if(mk.slice(5,7)==='04' && S.due.insYear!==yr){ S.due.insYear=yr; posted.push(post(mk+'-15','insurance',{desc:'Annual premium '+yr+'/'+(+yr+1)})); }
+  });
+  return posted;
+}
+
+/* ---------------- wear ---------------- */
+function tyreWear(r){ return r<=150?0.45 : r<=300?0.9 : r<=450?2.0 : r<=600?4.5 : 9.5; }
+function gearWear(r){ return r<=200?0.20 : r<=400?0.50 : r<=500?1.4 : r<=600?3.5 : 8.0; }
+
+function fileLeg(leg){
+  var posted = [], raised = [];
+  var iso = leg.date, h = leg.hours;
+  var styleM = leg.style==='gentle'?0.75 : leg.style==='pressed'?1.45 : 1.0;
+  var surfT  = leg.surface==='gravel'?1.8 : leg.surface==='grass'?1.25 : 1.0;
+  var coastal = (FIELDS[leg.from]&&FIELDS[leg.from].coastal) || (FIELDS[leg.to]&&FIELDS[leg.to].coastal);
+
+  posted = posted.concat(accrueTo(iso));
+
+  /* --- fuel --- */
+  if(leg.litres > 0 && leg.price > 0){
+    var f = FIELDS[leg.to] || FIELDS.ZZZZ;
+    var gross = leg.litres * leg.price;
+    var vat = f.vat;
+    var net = gross / (1 + vat/100);
+    posted.push(post(iso, 'fuel', {net:net, vat:vat, sup:f.fsup || 'Fuel supplier', desc:'AVGAS — '+num(leg.litres,0)+' L @ '+eur(leg.price)+'/L, '+leg.to, cat:'Fuel (AVGAS)'}));
+  }
+
+  /* --- aerodrome --- */
+  var fd = FIELDS[leg.to] || FIELDS.ZZZZ;
+  var fee = fd.land + (leg.nights||0) * fd.park + (leg.handling||0);
+  if(fee > 0){
+    var parts = ['Aterragem/Descolagem'];
+    if((leg.nights||0) > 0) parts.push('Estacionamento ' + leg.nights + (leg.nights>1?' noites':' noite'));
+    if(leg.handling) parts.push('Handling');
+    posted.push(post(iso, 'aero', {net:fee, vat:0, sup:fd.sup, desc:parts.join(' + ') + ' — ' + leg.to, cat:'Aerodrome landing/parking'}));
+  }
+
+  /* --- counters and reserves --- */
+  S.counters.hrs     += h;
+  S.counters.ttaf    += h;
+  S.counters.engSMOH += h;
+  S.counters.propSMOH+= h;
+  S.reserves.engine  += h * 20.79;
+  S.reserves.prop    += h * 1.36;
+
+  /* --- wear --- */
+  var H = S.health;
+  H.engine   -= h * 1.15 * styleM;
+  H.prop     -= h * 0.55 * styleM * (leg.surface==='gravel'?1.9:1);
+  H.brakes   -= (0.75 * styleM) + (leg.rate>400 ? 0.5 : 0);
+  H.tyres    -= tyreWear(leg.rate) * surfT;
+  H.gear     -= gearWear(leg.rate);
+  H.airframe -= h * 0.32;
+  H.avionics -= h * 0.22;
+  H.interior -= h * 0.26;
+  H.paint    -= h * 0.95 * (leg.surface==='asphalt'?1:1.3) + (coastal?0.6:0);
+
+  /* carrying deferred worn items costs you */
+  S.squawks.forEach(function(sq){
+    if(sq.kind==='worn' && sq.cost>0){
+      sq.cost = Math.round(sq.cost * 1.06 * 100)/100;
+      sq.legs = (sq.legs||0) + 1;
+      if(H[sq.comp]!==undefined) H[sq.comp] -= 1.5;
+    }
+  });
+
+  Object.keys(H).forEach(function(k){ H[k] = clamp(H[k], 0, 100); });
+
+  /* --- mandatory events --- */
+  if(leg.rate > 500) raised.push(raise('airframe', {t:'Hard landing at '+leg.rate+' fpm — inspection required', kind:'broken', c:'hardland'}));
+  if(leg.rate > 650) raised.push(raise('tyres',    {t:'Tyres and tubes shot after a '+leg.rate+' fpm arrival', kind:'broken', c:'tyres'}));
+
+  /* --- scheduled inspections --- */
+  var t = S.counters.hrs;
+  while(t >= S.due.next100){ posted.push(post(iso,'insp100')); S.due.next100 += 100; S.due.next50 = Math.max(S.due.next50, S.due.next100-50); S.due.next25 = Math.max(S.due.next25, S.due.next100-75);
+    H.engine = clamp(H.engine+7,0,100); H.airframe = clamp(H.airframe+6,0,100); }
+  while(t >= S.due.next50){ posted.push(post(iso,'insp50'));  S.due.next50 += 50;  H.engine = clamp(H.engine+4,0,100); }
+  while(t >= S.due.next25){ posted.push(post(iso,'insp25'));  S.due.next25 += 25;  H.engine = clamp(H.engine+2,0,100); }
+
+  /* --- TBO --- */
+  if(S.counters.engSMOH >= 2000){
+    posted.push(post(iso,'engoh'));
+    S.counters.engSMOH = 0; S.reserves.engine = Math.max(0, S.reserves.engine - 35000); H.engine = 100;
+  }
+  if(S.counters.propSMOH >= 2000){
+    posted.push(post(iso,'propoh'));
+    S.counters.propSMOH = 0; S.reserves.prop = Math.max(0, S.reserves.prop - 2000); H.prop = 100;
+  }
+
+  /* --- random squawks, likelier as things wear out --- */
+  COMPONENTS.forEach(function(c){
+    var hv = H[c.k];
+    var p = hv < 60 ? ((60-hv)/60)*0.30 : 0.015;
+    if(rnd() < p){
+      var tbl = SQUAWKS[c.k]; if(!tbl || !tbl.length) return;
+      var pick = tbl[Math.floor(rnd()*tbl.length)];
+      if(S.squawks.some(function(s){ return s.text===pick.t; })) return;
+      raised.push(raise(c.k, pick));
+    }
+  });
+
+  S.legs.push(leg);
+  S.lastDate = iso;
+  return {posted:posted, raised:raised.filter(Boolean)};
+}
+
+function raise(comp, def){
+  if(S.squawks.some(function(s){ return s.text===def.t; })) return null;
+  var price = def.c ? PRICES[def.c] : null;
+  var sq = { id:uid(), comp:comp, text:def.t, kind:def.kind,
+             key:def.c, cost: price ? Math.round((price.net*(1+(price.vat||0)/100))*100)/100 : 0,
+             raised:S.lastDate, legs:0 };
+  S.squawks.push(sq);
+  return sq;
+}
+
+function paySquawk(id){
+  var i = S.squawks.findIndex(function(s){ return s.id===id; });
+  if(i<0) return;
+  var sq = S.squawks[i];
+  if(sq.key){
+    var p = PRICES[sq.key];
+    var vat = p.vat||0;
+    var net = sq.cost / (1 + vat/100);
+    post(S.lastDate, sq.key, {net:net, vat:vat, desc:p.desc+' — '+sq.text});
+  }
+  var H = S.health;
+  var lift = sq.kind==='broken' ? 34 : sq.kind==='worn' ? 22 : 10;
+  if(H[sq.comp]!==undefined) H[sq.comp] = clamp(H[sq.comp]+lift, 0, 100);
+  sq.closed = S.lastDate;
+  S.done.unshift(sq);
+  S.squawks.splice(i,1);
+  save(); render();
+}
+
+function buyPaint(key){
+  var p = PRICES[key];
+  post(S.lastDate, key, {});
+  S.health.paint = key==='repaint' ? 100 : clamp(S.health.paint + 25, 0, 92);
+  if(key==='repaint'){ S.health.airframe = clamp(S.health.airframe+5,0,100); }
+  S.squawks = S.squawks.filter(function(s){ return !(s.comp==='paint' && s.kind==='cosmetic'); });
+  save(); render();
+  toast(key==='repaint' ? 'Repainted. She looks brand new.' : 'Washed and polished.');
+}
+
+function bandFor(v){ for(var i=0;i<PAINT_BANDS.length;i++){ if(v>=PAINT_BANDS[i].min) return PAINT_BANDS[i]; } return PAINT_BANDS[PAINT_BANDS.length-1]; }
+function grounded(){ return S.squawks.some(function(s){ return s.kind==='broken'; }); }
+function totals(){
+  var t = {gross:0, net:0, vat:0, byCat:{}};
+  S.spend.forEach(function(r){
+    t.gross += r.gross; t.net += r.net; t.vat += r.vat;
+    t.byCat[r.cat] = (t.byCat[r.cat]||0) + r.gross;
+  });
+  return t;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+var $ = function(id){ return document.getElementById(id); };
+var toastT = null;
+var LAST_RES = null;
+function toast(msg){
+  var el = document.querySelector('.toast'); if(el) el.remove();
+  el = document.createElement('div'); el.className='toast'; el.textContent=msg;
+  document.body.appendChild(el);
+  clearTimeout(toastT); toastT = setTimeout(function(){ el.remove(); }, 2600);
+}
+
+function renderStatus(){
+  var g = grounded();
+  var band = bandFor(S.health.paint);
+  var t = totals();
+  var open = S.squawks.length;
+  var html = '';
+  html += '<span class="pill '+(g?'bad':'ok')+'"><span class="dot"></span>'+(g?'Grounded — broken item open':'Serviceable')+'</span>';
+  html += '<span class="pill neutral">'+band.n+' — paint '+Math.round(S.health.paint)+'</span>';
+  html += '<span class="pill '+(open?'due':'ok')+'">'+open+' open squawk'+(open===1?'':'s')+'</span>';
+  html += '<span class="pill neutral">Season spend '+eur(t.gross)+'</span>';
+  $('statusBar').innerHTML = html;
+  var b = $('sqBadge');
+  if(open){ b.hidden=false; b.textContent=open; } else { b.hidden=true; }
+}
+
+function renderMeters(){
+  var t = totals(), h = S.counters.hrs;
+  var perH = h>0 ? t.gross/h : 0;
+  var wetReal = 378.48, grossReal = 321.56;
+  var nextIns = Math.min(S.due.next25, S.due.next50, S.due.next100) - h;
+  var m = [
+    {k:'Season spend', v:eur(t.gross), s:S.spend.length+' invoices posted'},
+    {k:'Cost per hour', v:h>0?eur(perH):'—', s:'real 2025: '+eur(grossReal)+'/h', cls: h>0 ? (perH<=grossReal?'good':(perH<=wetReal?'warn':'crit')) : ''},
+    {k:'Hours flown', v:num(h,1), s:S.legs.length+' legs this season'},
+    {k:'Next check', v:h>0||S.legs.length? num(Math.max(0,nextIns),1)+' h':num(nextIns,1)+' h', s:'25 / 50 / 100 h cycle', cls: nextIns<5?'warn':''},
+    {k:'Reserves held', v:eur(S.reserves.engine+S.reserves.prop), s:'engine + propeller sinking fund'},
+    {k:'Engine to TBO', v:num(2000-S.counters.engSMOH,0)+' h', s:'SMOH '+num(S.counters.engSMOH,1)+' of 2000', cls:(2000-S.counters.engSMOH)<200?'warn':''}
+  ];
+  $('meters').innerHTML = m.map(function(x){
+    return '<div class="meter"><div class="k">'+esc(x.k)+'</div><div class="v '+(x.cls||'')+'">'+x.v+'</div><div class="s">'+esc(x.s)+'</div></div>';
+  }).join('');
+}
+
+function renderSeasonMini(){
+  var t = totals(), h = S.counters.hrs;
+  var rows = Object.keys(t.byCat).sort(function(a,b){ return t.byCat[b]-t.byCat[a]; });
+  var html = '<div class="tw"><table><thead><tr><th>Category</th><th class="num">Gross</th><th class="num">€/h</th></tr></thead><tbody>';
+  if(!rows.length) html += '<tr><td colspan="3" class="muted">Nothing posted yet.</td></tr>';
+  rows.forEach(function(c){
+    html += '<tr><td>'+esc(c)+'</td><td class="num">'+eur(t.byCat[c])+'</td><td class="num">'+(h>0?eur(t.byCat[c]/h):'—')+'</td></tr>';
+  });
+  html += '</tbody><tfoot><tr><td>Total</td><td class="num">'+eur(t.gross)+'</td><td class="num">'+(h>0?eur(t.gross/h):'—')+'</td></tr></tfoot></table></div>';
+  html += '<p class="tiny muted" style="margin-top:8px">Of which VAT '+eur(t.vat)+'. Reserves of '+eur(S.reserves.engine+S.reserves.prop)+' are held back, not spent.</p>';
+  $('seasonMini').innerHTML = html;
+}
+
+function invoiceCard(r){
+  return '<div class="inv"><div class="ihead"><span class="sup">'+esc(r.sup)+'</span><span class="ino">'+esc(r.no)+' · '+esc(r.date)+'</span></div>'+
+    '<div class="lines"><div><span>'+esc(r.desc)+'</span><span class="mono">'+eur(r.net)+'</span></div>'+
+    (r.vat>0?'<div class="muted"><span>IVA</span><span class="mono">'+eur(r.vat)+'</span></div>':'')+
+    '<div class="tot"><span>Total</span><span class="mono">'+eur(r.gross)+'</span></div></div></div>';
+}
+
+function renderLastPosting(res){
+  if(!res){
+    /* no live result — reconstruct the last day's postings so the panel is never empty */
+    var d = S.lastDate;
+    var posted = S.spend.filter(function(r){ return r.date===d; });
+    if(!posted.length) return;
+    var lastLeg = S.legs[S.legs.length-1];
+    res = {posted:posted, raised:[]};
+    if(lastLeg){
+      $('lastPosting').innerHTML = '<p class="small muted" style="margin-bottom:8px">'+
+        esc(lastLeg.from)+' &rarr; '+esc(lastLeg.to)+' &middot; '+num(lastLeg.hours,1)+' h &middot; '+esc(lastLeg.date)+
+        (lastLeg.note?' &middot; '+esc(lastLeg.note):'')+'</p>';
+      var pre = $('lastPosting').innerHTML;
+      renderLastPostingBody(res, pre);
+      return;
+    }
+  }
+  renderLastPostingBody(res, '');
+}
+function renderLastPostingBody(res, pre){
+  var html = '';
+  if(res.posted.length){
+    var sum = res.posted.reduce(function(a,r){ return a+r.gross; },0);
+    html += '<p class="small"><strong>'+res.posted.length+' invoice'+(res.posted.length===1?'':'s')+' posted, '+eur(sum)+' gross.</strong></p>';
+    html += res.posted.map(invoiceCard).join('');
+  }
+  if(res.raised.length){
+    html += '<hr class="rule"><p class="small"><strong>New in the tech log</strong></p>';
+    html += res.raised.map(function(sq){
+      return '<div class="sq '+sq.kind+'"><div class="st"><span>'+esc(sq.text)+'</span><span class="mono small">'+(sq.cost?eur(sq.cost):'no charge')+'</span></div></div>';
+    }).join('');
+  }
+  if(!html) html = '<p class="small muted">Leg filed. Nothing chargeable.</p>';
+  $('lastPosting').innerHTML = (pre||'') + html;
+}
+
+function renderHealth(){
+  $('healthList').innerHTML = COMPONENTS.map(function(c){
+    var v = S.health[c.k];
+    var cls = v>=60?'':(v>=30?'due':'bad');
+    return '<div class="hrow"><span class="hname">'+esc(c.n)+'</span>'+
+      '<span class="hbar"><i class="'+cls+'" style="width:'+clamp(v,0,100).toFixed(1)+'%"></i></span>'+
+      '<span class="num small">'+Math.round(v)+'</span></div>';
+  }).join('');
+}
+
+function renderCounters(){
+  var c = S.counters;
+  $('countersTbl').innerHTML =
+    '<thead><tr><th>Counter</th><th class="num">Now</th><th class="num">Limit</th><th class="num">Remaining</th></tr></thead><tbody>'+
+    '<tr><td>Airframe total (TTAF)</td><td class="num">'+num(c.ttaf,1)+'</td><td class="num">—</td><td class="num">—</td></tr>'+
+    '<tr><td>Engine since overhaul</td><td class="num">'+num(c.engSMOH,1)+'</td><td class="num">2000.0</td><td class="num">'+num(2000-c.engSMOH,1)+'</td></tr>'+
+    '<tr><td>Propeller since overhaul</td><td class="num">'+num(c.propSMOH,1)+'</td><td class="num">2000.0</td><td class="num">'+num(2000-c.propSMOH,1)+'</td></tr>'+
+    '<tr><td>Flown this season</td><td class="num">'+num(c.hrs,1)+'</td><td class="num">—</td><td class="num">—</td></tr>'+
+    '</tbody>';
+  $('reserveTbl').innerHTML =
+    '<thead><tr><th>Fund</th><th class="num">Rate €/h</th><th class="num">Held</th><th class="num">Target</th></tr></thead><tbody>'+
+    '<tr><td>Engine overhaul</td><td class="num">20.79</td><td class="num">'+eur(S.reserves.engine)+'</td><td class="num">'+eur(35000)+'</td></tr>'+
+    '<tr><td>Propeller overhaul</td><td class="num">1.36</td><td class="num">'+eur(S.reserves.prop)+'</td><td class="num">'+eur(2000)+'</td></tr>'+
+    '</tbody>';
+  var h = S.counters.hrs;
+  $('dueTbl').innerHTML =
+    '<thead><tr><th>Check</th><th class="num">Due at</th><th class="num">In</th><th class="num">Cost</th></tr></thead><tbody>'+
+    [['25 h','next25','insp25'],['50 h','next50','insp50'],['100 h / annual','next100','insp100']].map(function(r){
+      var due = S.due[r[1]], p = PRICES[r[2]], g = p.net*(1+p.vat/100);
+      var rem = due - h;
+      return '<tr><td>'+r[0]+'</td><td class="num">'+num(due,0)+' h</td><td class="num'+(rem<5?' ':'')+'">'+num(Math.max(0,rem),1)+' h</td><td class="num">'+eur(g)+'</td></tr>';
+    }).join('')+'</tbody>';
+}
+
+function renderSquawks(){
+  var el = $('squawkList');
+  if(!S.squawks.length){ el.innerHTML = '<p class="small muted">Nothing outstanding. She is clean.</p>'; }
+  else{
+    el.innerHTML = S.squawks.map(function(sq){
+      var comp = COMPONENTS.filter(function(c){ return c.k===sq.comp; })[0];
+      var label = sq.kind==='broken'?'Broken — grounding':sq.kind==='worn'?'Worn — deferrable':'Cosmetic';
+      return '<div class="sq '+sq.kind+'">'+
+        '<div class="st"><strong>'+esc(sq.text)+'</strong><span class="mono small">'+(sq.cost?eur(sq.cost):'no charge')+'</span></div>'+
+        '<div class="sd">'+esc(comp?comp.n:sq.comp)+' · '+label+' · raised '+esc(sq.raised)+
+          (sq.legs?' · carried '+sq.legs+' leg'+(sq.legs===1?'':'s')+', bill up 6% each':'')+'</div>'+
+        '<div class="sa">'+
+          (sq.cost ? '<button class="btn small" data-pay="'+sq.id+'">Pay '+eur(sq.cost)+' and fix</button>' : '<button class="btn small" data-pay="'+sq.id+'">Sort it out</button>')+
+          (sq.kind!=='broken' ? '<span class="tiny muted">or fly on and let it ride</span>' : '<span class="tiny" style="color:var(--bad)">No flying until this is cleared</span>')+
+        '</div></div>';
+    }).join('');
+  }
+  var d = $('squawkDone');
+  d.innerHTML = S.done.length
+    ? '<div class="tw"><table><thead><tr><th>Closed</th><th>Item</th><th class="num">Paid</th></tr></thead><tbody>'+
+      S.done.slice(0,40).map(function(s){ return '<tr><td class="mono">'+esc(s.closed||'')+'</td><td>'+esc(s.text)+'</td><td class="num">'+(s.cost?eur(s.cost):'—')+'</td></tr>'; }).join('')+
+      '</tbody></table></div>'
+    : '<p class="small muted">Nothing rectified yet this season.</p>';
+}
+
+function renderLedger(){
+  var f = $('l-filter').value;
+  var rows = S.spend.slice().sort(function(a,b){ return a.date<b.date?1:a.date>b.date?-1:0; });
+  if(f) rows = rows.filter(function(r){ return r.cat===f; });
+  var tn=0,tv=0,tg=0;
+  rows.forEach(function(r){ tn+=r.net; tv+=r.vat; tg+=r.gross; });
+  $('ledgerTbl').innerHTML =
+    '<thead><tr><th>Date</th><th>Invoice no.</th><th>Supplier</th><th>Description</th><th>Category</th><th class="num">Net</th><th class="num">VAT</th><th class="num">Gross</th></tr></thead><tbody>'+
+    (rows.length ? rows.map(function(r){
+      return '<tr><td class="mono">'+esc(r.date)+'</td><td class="mono tiny">'+esc(r.no)+'</td><td>'+esc(r.sup)+'</td><td>'+esc(r.desc)+'</td><td class="small">'+esc(r.cat)+'</td>'+
+        '<td class="num">'+eur(r.net)+'</td><td class="num">'+(r.vat?eur(r.vat):'—')+'</td><td class="num">'+eur(r.gross)+'</td></tr>';
+    }).join('') : '<tr><td colspan="8" class="muted">No postings.</td></tr>')+
+    '</tbody><tfoot><tr><td colspan="5">Total — '+rows.length+' invoices</td><td class="num">'+eur(tn)+'</td><td class="num">'+eur(tv)+'</td><td class="num">'+eur(tg)+'</td></tr></tfoot>';
+}
+
+function renderPaint(){
+  var v = S.health.paint, band = bandFor(v);
+  var next = PAINT_BANDS[PAINT_BANDS.indexOf(band)+1];
+  $('paintState').innerHTML =
+    '<div style="display:flex; gap:14px; align-items:baseline; flex-wrap:wrap"><h3 style="margin:0; font-size:22px">'+esc(band.n)+'</h3>'+
+    '<span class="mono muted">condition '+Math.round(v)+' / 100</span></div>'+
+    '<p class="small">'+esc(band.d)+'</p>'+
+    '<div class="hbar" style="height:12px; margin:10px 0"><i class="'+(v>=60?'':(v>=30?'due':'bad'))+'" style="width:'+clamp(v,0,100).toFixed(1)+'%"></i></div>'+
+    '<p class="small muted">Texture set the book expects: <span class="mono">'+esc(band.pkg)+'</span>'+
+    (next ? ' · drops to <strong>'+esc(next.n)+'</strong> at '+next.min+', about '+num(Math.max(0,(v-next.min)/0.95),0)+' more flying hours.' : '.')+'</p>';
+
+  $('paintBuy').innerHTML = ['wash','repaint'].map(function(k){
+    var p = PRICES[k], g = p.net*(1+p.vat/100);
+    return '<div class="sq cosmetic"><div class="st"><strong>'+esc(p.desc)+'</strong><span class="mono small">'+eur(g)+'</span></div>'+
+      '<div class="sd">'+(k==='wash'?'Puts 25 points back, cannot take her past 92.':'Back to 100 and a fresh start on the airframe.')+' <span class="srcflag assume">assumption</span></div>'+
+      '<div class="sa"><button class="btn small" data-paint="'+k+'">Book it</button></div></div>';
+  }).join('');
+
+  $('paintPkgs').innerHTML = '<div class="tw"><table><thead><tr><th>Package folder</th><th>Texture</th><th>Note</th></tr></thead><tbody>'+
+    PACKAGES.map(function(p){ return '<tr><td class="mono tiny">'+esc(p.folder)+'</td><td class="mono tiny">'+esc(p.tex)+'</td><td class="small">'+esc(p.note)+'</td></tr>'; }).join('')+
+    '</tbody></table></div>';
+
+  var setName = band.key;
+  $('batOut').textContent =
+    '@echo off\r\n'+
+    'cd /d "%~dp0"\r\n'+
+    'set T=SimObjects\\Airplanes\\ah-aircraft-socms893-F-BVNK\\texture.F-BVNK\r\n'+
+    'set W=_wear_sets\\'+setName+'\r\n'+
+    'echo Applying F-BVNK wear set: '+setName+' (condition '+Math.round(v)+')\r\n'+
+    'copy /y "%W%\\SOCATA_MAIN_1001_ALBD.PNG.KTX2" "%T%\\" >nul\r\n'+
+    'copy /y "%W%\\SOCATA_MAIN_1002_ALBD.PNG.KTX2" "%T%\\" >nul\r\n'+
+    'copy /y "%W%\\SOCATA_MAIN_1003_ALBD.PNG.KTX2" "%T%\\" >nul\r\n'+
+    'echo Done. Restart MSFS 2024 to reload textures.\r\n'+
+    'pause';
+}
+
+function renderYear(){
+  var t = totals(), h = S.counters.hrs;
+  var real = [
+    ['Fuel (AVGAS)',                            3816.12, 11],
+    ['Hangar & maintenance support (Sevenair)', 15990.00, 13],
+    ['Maintenance, parts & airworthiness (IAC)', 5055.14,  4],
+    ['Aerodrome landing/parking (Cascais)',       855.04, 14]
+  ];
+  var map = {
+    'Fuel (AVGAS)':'Fuel (AVGAS)',
+    'Hangar & maintenance support':'Hangar & maintenance support (Sevenair)',
+    'Maintenance, parts & airworthiness':'Maintenance, parts & airworthiness (IAC)',
+    'Aerodrome landing/parking':'Aerodrome landing/parking (Cascais)'
+  };
+  var simByReal = {};
+  Object.keys(t.byCat).forEach(function(k){ var r = map[k]||k; simByReal[r] = (simByReal[r]||0) + t.byCat[k]; });
+  var simTot = 0; Object.keys(simByReal).forEach(function(k){ simTot += simByReal[k]; });
+  var realTot = 25716.30;
+  var html = '<thead><tr><th>Category</th><th class="num">Your sim season</th><th class="num">€/h sim</th><th class="num">F-BVNK 2025 actual</th><th class="num">€/h 2025</th></tr></thead><tbody>';
+  real.forEach(function(r){
+    var s = simByReal[r[0]]||0;
+    html += '<tr><td>'+esc(r[0])+'</td><td class="num">'+eur(s)+'</td><td class="num">'+(h>0?eur(s/h):'—')+'</td>'+
+            '<td class="num">'+eur(r[1])+'</td><td class="num">'+eur(r[1]/73)+'</td></tr>';
+  });
+  Object.keys(simByReal).forEach(function(k){
+    if(real.some(function(r){ return r[0]===k; })) return;
+    html += '<tr><td>'+esc(k)+'</td><td class="num">'+eur(simByReal[k])+'</td><td class="num">'+(h>0?eur(simByReal[k]/h):'—')+'</td><td class="num muted">not a 2025 category</td><td class="num">—</td></tr>';
+  });
+  html += '</tbody><tfoot>'+
+          '<tr><td>Total gross — all invoices in file</td><td class="num">'+eur(simTot)+'</td><td class="num">'+(h>0?eur(simTot/h):'—')+'</td>'+
+          '<td class="num">'+eur(realTot)+'</td><td class="num">'+eur(realTot/73)+'</td></tr>'+
+          '<tr><td>Total gross — calendar year only</td><td class="num">'+eur(simTot)+'</td><td class="num">'+(h>0?eur(simTot/h):'—')+'</td>'+
+          '<td class="num">'+eur(23473.96)+'</td><td class="num">'+eur(23473.96/73)+'</td></tr>'+
+          '<tr><td>Invoices · hours flown</td><td class="num">'+S.spend.length+' · '+num(h,1)+'</td><td class="num">—</td><td class="num">42 / 39 · 73.0</td><td class="num">—</td></tr></tfoot>';
+  $('yearTbl').innerHTML = html;
+}
+
+function renderBook(){
+  var order = ['hangar','cao','insurance','insp25','insp50','insp100','brakes','engoh','propoh','tyres','oleo','hardland','mag','plugs','cyl','exh','alt','batt','vac','propdress','radio','trim','screen','wash','repaint'];
+  $('priceTbl').innerHTML = '<thead><tr><th>Item</th><th>Supplier</th><th class="num">Net</th><th class="num">VAT</th><th class="num">Gross</th><th>Source</th></tr></thead><tbody>'+
+    order.map(function(k){
+      var p = PRICES[k]; if(!p) return '';
+      var vat = p.net*(p.vat||0)/100;
+      return '<tr><td>'+esc(p.desc)+'</td><td class="small">'+esc(p.sup)+'</td><td class="num">'+eur(p.net)+'</td>'+
+        '<td class="num">'+(vat?eur(vat):'—')+'</td><td class="num">'+eur(p.net+vat)+'</td>'+
+        '<td><span class="srcflag '+(p.src==='real'?'real">invoiced':'assume">assumption')+'</span>'+(p.note?' <span class="tiny muted">'+esc(p.note)+'</span>':'')+'</td></tr>';
+    }).join('')+'</tbody>';
+
+  $('fieldTbl').innerHTML = '<thead><tr><th>Field</th><th class="num">Landing</th><th class="num">Parking/night</th><th class="num">AVGAS €/L</th><th class="num">VAT</th></tr></thead><tbody>'+
+    Object.keys(FIELDS).map(function(k){
+      var f = FIELDS[k];
+      return '<tr><td>'+k+' <span class="muted small">'+esc(f.name)+'</span> '+(f.src==='real'?'<span class="srcflag real">inv</span>':'<span class="srcflag assume">ass</span>')+'</td>'+
+        '<td class="num">'+eur(f.land)+'</td><td class="num">'+(f.park?eur(f.park):'—')+'</td>'+
+        '<td class="num">'+(f.fuel?eur(f.fuel):'—')+'</td><td class="num">'+f.vat+'%</td></tr>';
+    }).join('')+'</tbody>';
+
+  $('rulesText').innerHTML =
+    '<h3>Hours</h3><p class="small">Engine loses 1.15 condition an hour, propeller 0.55, paint 0.95, airframe 0.32, avionics 0.22, interior 0.26. Fly it gently and those rates drop by a quarter; press on with high power and hard braking and they rise by 45%.</p>'+
+    '<h3>Landings</h3><p class="small">Touchdown rate drives tyres and gear. Under 150 fpm costs almost nothing. Over 500 fpm raises a mandatory hard landing inspection and grounds the aeroplane. Over 650 fpm takes the tyres with it.</p>'+
+    '<h3>Standing costs</h3><p class="small">Hangar and maintenance support is posted every month whether you fly or not — '+eur(1230)+' gross, the real Sevenair rate. Airworthiness management falls in August, insurance in April. Leaving her in the hangar all winter is not free.</p>'+
+    '<h3>Deferring</h3><p class="small">A worn item can be carried. Each leg you fly on it, the bill rises 6% and the component loses another 1.5 points. A broken item stops you flying until it is paid.</p>'+
+    '<h3>Salt and grass</h3><p class="small">Cascais is on the sea, so any leg touching LPCS costs an extra 0.6 points of finish. Grass adds 30% to paint wear, gravel 80% to tyres and almost double to the propeller.</p>'+
+    '<h3>Reserves</h3><p class="small">Every hour sets aside '+eur(20.79)+' for the engine and '+eur(1.36)+' for the propeller. Those are the real 2025 rates: 1,683.50 hours to TBO against a '+eur(35000)+' overhaul.</p>'+
+    '<h3>Where the sim comes in</h3><p class="small">The wear model in the aeroplane itself lives on the iPad maintenance page (HANGAR.js, LocalVars prefixed NK_). This ledger is the money layer above it: it prices what that model already tracks. <span class="srcflag assume">assumption</span> the exact NK_ variable names and units still need confirming before any automatic feed is wired.</p>';
+}
+
+function render(){
+  renderStatus(); renderMeters(); renderSeasonMini(); renderHealth();
+  renderCounters(); renderSquawks(); renderLedger(); renderPaint(); renderYear(); renderBook();
+}
+
+/* ============================================================
+   SEED
+   ============================================================ */
+function seedExamples(st){
+  S = st; RNG = 101; UIDN = 0;
+  var legs = [
+    {date:'2026-01-18', from:'LPCS', to:'LPCS', hours:1.2, litres:64,  price:2.19, rate:170, nights:0, handling:0, style:'normal',  surface:'asphalt', note:'Local, three circuits'},
+    {date:'2026-01-31', from:'LPCS', to:'LPVL', hours:1.6, litres:0,   price:0,    rate:190, nights:0, handling:0, style:'normal',  surface:'grass',   note:'Up to Vilar da Luz for lunch'},
+    {date:'2026-02-08', from:'LPVL', to:'LPCS', hours:1.7, litres:132, price:2.13, rate:210, nights:0, handling:0, style:'normal',  surface:'asphalt', note:'Home'},
+    {date:'2026-02-21', from:'LPCS', to:'LPCO', hours:1.1, litres:0,   price:0,    rate:420, nights:1, handling:0, style:'pressed', surface:'asphalt', note:'Coimbra, dropped at IAC'},
+    {date:'2026-03-01', from:'LPCO', to:'LPCS', hours:1.3, litres:0,   price:0,    rate:150, nights:0, handling:0, style:'gentle',  surface:'asphalt', note:'Collected, greaser'},
+    {date:'2026-03-08', from:'LPCS', to:'LPCS', hours:2.4, litres:140, price:2.60, rate:165, nights:0, handling:0, style:'gentle',  surface:'asphalt', note:'Down the coast and back'},
+    {date:'2026-03-16', from:'LPCS', to:'LEVD', hours:4.3, litres:120, price:3.42, rate:230, nights:1, handling:0, style:'normal',  surface:'asphalt', note:'Valladolid, overnight'},
+    {date:'2026-03-18', from:'LEVD', to:'LPCS', hours:4.8, litres:130, price:2.29, rate:180, nights:0, handling:0, style:'normal',  surface:'asphalt', note:'Long leg home'}
+  ];
+  var res = null;
+  legs.forEach(function(l){ res = fileLeg(l); });
+  S.seeded = true;
+  RNG = null;
+  LAST_RES = res;
+  return S;
+}
+
+/* ============================================================
+   UI WIRING
+   ============================================================ */
+function fillSelects(){
+  var opts = Object.keys(FIELDS).map(function(k){ return '<option value="'+k+'">'+k+' — '+FIELDS[k].name+'</option>'; }).join('');
+  $('f-from').innerHTML = opts; $('f-to').innerHTML = opts;
+  $('f-from').value='LPCS'; $('f-to').value='LPCS';
+  var cats = ['Fuel (AVGAS)','Hangar & maintenance support','Maintenance, parts & airworthiness','Aerodrome landing/parking','Insurance','Paint & valet'];
+  $('l-filter').innerHTML = '<option value="">All categories</option>' + cats.map(function(c){ return '<option>'+c+'</option>'; }).join('');
+  $('m-cat').innerHTML = cats.map(function(c){ return '<option>'+c+'</option>'; }).join('');
+}
+
+function syncFuelPrice(){
+  var f = FIELDS[$('f-to').value];
+  if(f && f.fuel) $('f-price').value = f.fuel.toFixed(2);
+}
+
+function switchPane(name){
+  ['ramp','tech','air','ledger','paint','year','book'].forEach(function(p){
+    $('pane-'+p).hidden = (p!==name);
+    $('tab-'+p).setAttribute('aria-selected', String(p===name));
+  });
+}
+
+function boot(){
+  fillSelects();
+  S = load();
+  $('f-date').value = S.lastDate > today() ? S.lastDate : today();
+  $('m-date').value = $('f-date').value;
+  syncFuelPrice();
+  render();
+  renderLastPosting(LAST_RES);
+  $('f-hint').textContent = grounded() ? 'Clear the broken item in the tech log first.' : '';
+
+  $('tabs').addEventListener('click', function(e){
+    var b = e.target.closest('.tab'); if(!b) return; switchPane(b.dataset.pane);
+  });
+  $('f-to').addEventListener('change', syncFuelPrice);
+
+  $('btn-file').addEventListener('click', function(){
+    if(grounded()){ toast('She is grounded. Clear the broken item first.'); switchPane('tech'); return; }
+    var h = parseHours($('f-block').value);
+    if(h <= 0){ toast('Put a block time in.'); $('f-block').focus(); return; }
+    var leg = {
+      date: $('f-date').value || today(),
+      from: $('f-from').value, to: $('f-to').value,
+      hours: h,
+      litres: Math.max(0, +$('f-fuel').value || 0),
+      price:  Math.max(0, +$('f-price').value || 0),
+      rate:   Math.max(0, +$('f-rate').value || 150),
+      nights: Math.max(0, +$('f-nights').value || 0),
+      handling: +$('f-handling').value || 0,
+      style: $('f-style').value, surface: $('f-surface').value,
+      note: $('f-note').value
+    };
+    if(leg.date < S.lastDate) leg.date = S.lastDate;
+    var res = fileLeg(leg);
+    save(); render(); renderLastPosting(res);
+    $('f-block').value=''; $('f-fuel').value=''; $('f-note').value='';
+    $('f-date').value = leg.date;
+    $('f-hint').textContent = grounded() ? 'Now grounded — see the tech log.' : '';
+    var sum = res.posted.reduce(function(a,r){ return a+r.gross; },0);
+    toast('Leg filed. ' + eur(sum) + ' posted.' + (res.raised.length ? ' ' + res.raised.length + ' new squawk' + (res.raised.length===1?'':'s') + '.' : ''));
+  });
+
+  $('btn-paste').addEventListener('click', function(){
+    var txt = prompt('Paste the sim end-of-flight summary. Block time and fuel are picked out of it.');
+    if(!txt) return;
+    var t = txt.replace(/,/g,'.');
+    var mT = t.match(/(\d{1,2}):([0-5]\d)/);
+    if(mT) $('f-block').value = mT[1]+':'+mT[2];
+    var mF = t.match(/([\d.]+)\s*(?:L\b|lit)/i);
+    if(mF) $('f-fuel').value = Math.round(parseFloat(mF[1]));
+    var mR = t.match(/(-?\d{2,4})\s*(?:fpm|ft\/min)/i);
+    if(mR) $('f-rate').value = Math.abs(parseInt(mR[1],10));
+    toast(mT||mF||mR ? 'Picked out what I could — check it before filing.' : 'Nothing recognisable in that.');
+  });
+
+  document.addEventListener('click', function(e){
+    var pay = e.target.closest('[data-pay]');
+    if(pay){ var sq = S.squawks.filter(function(s){ return s.id===pay.dataset.pay; })[0];
+      paySquawk(pay.dataset.pay);
+      toast(sq && sq.cost ? 'Paid '+eur(sq.cost)+'. Back on line.' : 'Sorted.');
+      $('f-hint').textContent = grounded() ? 'Still grounded — more to clear.' : ''; return; }
+    var pnt = e.target.closest('[data-paint]');
+    if(pnt){ buyPaint(pnt.dataset.paint); return; }
+  });
+
+  $('l-filter').addEventListener('change', renderLedger);
+  $('btn-manual').addEventListener('click', function(){ var f=$('manualForm'); f.hidden=!f.hidden; });
+  $('btn-manual-add').addEventListener('click', function(){
+    var gross = +$('m-gross').value || 0;
+    if(gross<=0){ toast('Put an amount in.'); return; }
+    var vat = +$('m-vat').value || 0;
+    post($('m-date').value||today(), 'manual', {
+      net: gross/(1+vat/100), vat: vat,
+      sup: $('m-sup').value || 'Supplier', desc: $('m-desc').value || 'Manual entry', cat: $('m-cat').value
+    });
+    $('m-gross').value=''; $('m-desc').value='';
+    save(); render(); toast('Posted.');
+  });
+
+  $('btn-csv').addEventListener('click', function(){
+    var head = 'Date,Invoice No.,Supplier,Description,Category,Net,VAT,Gross\n';
+    var body = S.spend.map(function(r){
+      return [r.date, r.no, r.sup, r.desc, r.cat, r.net.toFixed(2), r.vat.toFixed(2), r.gross.toFixed(2)]
+        .map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
+    }).join('\n');
+    copy(head+body, S.spend.length+' rows copied as CSV.');
+  });
+  $('btn-bat').addEventListener('click', function(){ copy($('batOut').textContent, 'Batch script copied.'); });
+  $('btn-export').addEventListener('click', function(){
+    var io = $('io'); io.hidden=false; io.value = JSON.stringify(S); io.select(); copy(io.value, 'Book copied. Paste it somewhere safe.');
+  });
+  $('btn-import').addEventListener('click', function(){
+    var io = $('io');
+    if(io.hidden){ io.hidden=false; io.value=''; io.placeholder='Paste a saved book here, then press Load book from JSON again.'; io.focus(); return; }
+    try{
+      var o = JSON.parse(io.value);
+      if(!o || o.v!==1) throw new Error('bad');
+      S = o; save(); render(); io.hidden=true; toast('Book loaded.');
+    }catch(err){ toast('That is not a F-BVNK book.'); }
+  });
+  $('btn-seed').addEventListener('click', function(){
+    if(!confirm('Clear the three example legs and every posting, and start your own season from zero hours?')) return;
+    S = blankState(false); S.seasonStart = today().slice(0,8)+'01'; S.lastDate = today();
+    save(); render(); $('lastPosting').innerHTML='<p class="small muted">Fresh book. File your first leg.</p>';
+    toast('New season open.');
+  });
+  $('btn-reset').addEventListener('click', function(){
+    if(!confirm('Wipe the book completely and go back to the seeded examples?')) return;
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    S = seedExamples(blankState(true)); save(); render(); toast('Back to the examples.');
+  });
+}
+
+function copy(text, msg){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){ toast(msg); }, function(){ fallbackCopy(text, msg); });
+  } else fallbackCopy(text, msg);
+}
+function fallbackCopy(text, msg){
+  var io = $('io'); io.hidden=false; io.value=text; io.select();
+  try{ document.execCommand('copy'); toast(msg); }catch(e){ toast('Select the box and copy it.'); }
+}
+
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
+</script>
