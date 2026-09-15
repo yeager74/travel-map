@@ -815,9 +815,12 @@ function fileLeg(leg){
     }
   });
 
+  var raisedClean = raised.filter(Boolean);
+  leg.postedIds = posted.map(function(r){ return r.id; });
+  leg.raisedIds = raisedClean.map(function(s){ return s.id; });
   S.legs.push(leg);
   S.lastDate = iso;
-  return {posted:posted, raised:raised.filter(Boolean)};
+  return {posted:posted, raised:raisedClean};
 }
 
 function raise(comp, def){
@@ -987,6 +990,7 @@ function renderChit(leg, res){
       '<div class="script">'+esc(chitLine(leg, sum))+'</div>'+
       '<div class="total" style="margin-top:6px">'+eur(sum)+'</div>'+
       '<p class="tiny muted" style="margin-top:8px">Signed '+esc(leg.signedBy)+' &middot; '+esc(leg.date)+
+      (leg.signedAt?' &middot; '+localHM(leg.signedAt)+' local':'')+
       '<span class="stamp" style="margin-left:8px">SIGNED</span></p>'+
     '</div>'+
     buildPostingHtml(res);
@@ -1105,6 +1109,25 @@ function hhmm(h){
   var hh = Math.floor(totalMin/60), mm = totalMin%60;
   return hh+':'+String(mm).padStart(2,'0');
 }
+function localHM(iso){
+  var d = new Date(iso);
+  if(isNaN(d)) return '';
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+/* What actually posted/raised for a leg, read back off its own postedIds/raisedIds —
+   never re-derived by date, so a same-day second leg can't borrow another leg's invoices. */
+function legSummary(l){
+  var items = [];
+  if(l.postedIds && l.postedIds.length){
+    var byId = {}; S.spend.forEach(function(r){ byId[r.id] = r; });
+    l.postedIds.forEach(function(id){ if(byId[id]) items.push(byId[id].desc); });
+  }
+  if(l.raisedIds && l.raisedIds.length){
+    var byId2 = {}; S.squawks.concat(S.done).forEach(function(s){ byId2[s.id] = s; });
+    l.raisedIds.forEach(function(id){ if(byId2[id]) items.push('tech log — ' + byId2[id].text); });
+  }
+  return items;
+}
 function renderLogbook(){
   var legs = S.legs.slice().sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
   var run = 0;
@@ -1113,16 +1136,21 @@ function renderLogbook(){
     var from = (FIELDS[l.from] ? l.from+' '+FIELDS[l.from].name : l.from) + (l.depTime ? ' &middot; '+l.depTime : '');
     var to   = (FIELDS[l.to]   ? l.to+' '+FIELDS[l.to].name   : l.to)   + (l.arrTime ? ' &middot; '+l.arrTime : '');
     var nature = l.from===l.to ? 'Local' : 'Navigation';
-    return {n:i+1, date:l.date, from:from, to:to, dur:l.hours, nature:nature, prev:prev, run:run, note:l.note||'', signed:l.signedBy||''};
+    return {n:i+1, date:l.date, from:from, to:to, dur:l.hours, nature:nature, prev:prev, run:run,
+            note:l.note||'', signed:l.signedBy||'', signedAt:l.signedAt||'', auto:legSummary(l)};
   });
   $('logTbl').innerHTML =
     '<thead><tr><th class="num">#</th><th>Date</th><th>D&eacute;part</th><th>Arriv&eacute;e</th><th class="num">Dur&eacute;e</th><th>Nature</th><th>Pilote</th>'+
     '<th class="num">Report</th><th class="num">Ce vol</th><th class="num">Total</th><th>Observations</th></tr></thead><tbody>'+
     (rows.length ? rows.map(function(r){
+      var pilote = r.signed
+        ? esc(r.signed)+' <span style="color:var(--ok)">&check;</span>'+(r.signedAt?' <span class="tiny muted">'+localHM(r.signedAt)+'</span>':'')
+        : '<span class="muted">unsigned</span>';
+      var obs = esc(r.note) + (r.auto.length ? (r.note?'<br>':'')+'<span class="tiny muted">'+r.auto.map(esc).join('; ')+'</span>' : '');
       return '<tr><td class="num">'+r.n+'</td><td class="mono">'+esc(r.date)+'</td><td>'+r.from+'</td><td>'+r.to+'</td>'+
-        '<td class="num mono">'+hhmm(r.dur)+'</td><td class="small">'+r.nature+'</td><td class="small">'+(r.signed?esc(r.signed):'<span class="muted">unsigned</span>')+'</td>'+
+        '<td class="num mono">'+hhmm(r.dur)+'</td><td class="small">'+r.nature+'</td><td class="small">'+pilote+'</td>'+
         '<td class="num mono">'+hhmm(r.prev)+'</td><td class="num mono">'+hhmm(r.dur)+'</td><td class="num mono">'+hhmm(r.run)+'</td>'+
-        '<td class="small">'+esc(r.note)+'</td></tr>';
+        '<td class="small">'+obs+'</td></tr>';
     }).join('') : '<tr><td colspan="11" class="muted">No legs filed yet.</td></tr>')+
     (rows.length ? '</tbody><tfoot><tr><td colspan="9">Total sim hours</td><td class="num mono">'+hhmm(run)+'</td><td></td></tr></tfoot>' : '</tbody>');
 }
