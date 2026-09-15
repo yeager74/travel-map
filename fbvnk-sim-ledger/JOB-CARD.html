@@ -1,0 +1,323 @@
+<meta charset="utf-8">
+<title>F-BVNK Ledger Job Card</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#E6E9EA; --surface:#FBFCFC; --surface-2:#EFF2F2;
+  --ink:#161B1D; --muted:#556366; --line:#C6CFD0; --line-hard:#A3AFB1;
+  --accent:#155E63; --accent-soft:#D6E7E8;
+  --done:#2C7350; --done-soft:#D9EADF;
+  --wait:#8A6410; --wait-soft:#F4E9CD;
+  --stop:#A3332B; --stop-soft:#F6DEDB;
+  --display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E1213; --surface:#171D1F; --surface-2:#1F2628;
+    --ink:#E2E8E9; --muted:#8FA0A3; --line:#2B3437; --line-hard:#44504F;
+    --accent:#5FB3BA; --accent-soft:#16333A;
+    --done:#58B387; --done-soft:#122C21;
+    --wait:#D3A244; --wait-soft:#33280F;
+    --stop:#E08279; --stop-soft:#331B18;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E1213; --surface:#171D1F; --surface-2:#1F2628;
+  --ink:#E2E8E9; --muted:#8FA0A3; --line:#2B3437; --line-hard:#44504F;
+  --accent:#5FB3BA; --accent-soft:#16333A;
+  --done:#58B387; --done-soft:#122C21;
+  --wait:#D3A244; --wait-soft:#33280F;
+  --stop:#E08279; --stop-soft:#331B18;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font:400 15px/1.55 var(--body)}
+.wrap{max-width:1000px;margin:0 auto;padding-block:24px 64px;padding-left:16px;padding-right:16px;display:grid;gap:26px}
+h1,h2,h3{margin:0;font-family:var(--display);font-weight:600;text-wrap:balance}
+h1{font-size:36px;line-height:1;text-transform:uppercase;letter-spacing:.03em;font-weight:700}
+h2{font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;align-items:baseline;gap:10px}
+h2 .hint{font:400 13px var(--body);letter-spacing:0;text-transform:none}
+h3{font-size:17px}
+p{margin:0;max-width:66ch}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.tiny{font-size:12px}
+section{display:grid;gap:12px}
+
+/* header plate */
+.plate{background:var(--surface);border:1px solid var(--line-hard);border-top:3px solid var(--accent);
+  padding:18px 20px;display:grid;grid-template-columns:1fr auto;gap:18px 28px;align-items:start}
+.jobno{font:500 12.5px var(--mono);letter-spacing:.09em;color:var(--muted)}
+.stamp{justify-self:end;align-self:start;border:2px solid var(--stop);color:var(--stop);
+  font:700 15px var(--display);letter-spacing:.16em;text-transform:uppercase;padding:6px 12px;
+  transform:rotate(-3deg);white-space:nowrap}
+.plate dl{margin:0;display:grid;grid-template-columns:auto auto;gap:3px 16px;font-size:12.5px}
+.plate dt{color:var(--muted)} .plate dd{margin:0;font-family:var(--mono)}
+@media(max-width:640px){.plate{grid-template-columns:1fr}.stamp{justify-self:start}h1{font-size:28px}}
+
+/* lanes */
+.lanes{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--line-hard);border:1px solid var(--line-hard)}
+.lane{background:var(--surface);padding:11px 14px}
+.lane .who{font:600 13px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.lane .what{font-size:13.5px;color:var(--muted);margin-top:2px}
+.lane.me{background:var(--accent-soft)}
+.lane.me .what{color:var(--ink)}
+
+/* step spine */
+.steps{display:grid;gap:0;border:1px solid var(--line);background:var(--surface)}
+.step{display:grid;grid-template-columns:34px 1fr auto;gap:4px 14px;align-items:start;padding:13px 16px;border-top:1px solid var(--line)}
+.step:first-child{border-top:0}
+.step .n{font:600 15px var(--mono);color:var(--muted);text-align:center;
+  border:1px solid var(--line-hard);border-radius:50%;width:26px;height:26px;line-height:24px;font-size:13px}
+.step.ok .n{background:var(--done);border-color:var(--done);color:var(--surface)}
+.step.now .n{background:var(--wait);border-color:var(--wait);color:var(--surface)}
+.step .t{font-weight:600}
+.step .d{font-size:13.5px;color:var(--muted);grid-column:2}
+.step .s{font:600 12px var(--display);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.step.ok .s{color:var(--done)} .step.now .s{color:var(--wait)} .step.todo .s{color:var(--muted)}
+@media(max-width:560px){.step{grid-template-columns:26px 1fr}.step .s{grid-column:2}}
+
+/* tick rows */
+.ticks{border:1px solid var(--line);background:var(--surface)}
+.tick{display:grid;grid-template-columns:22px 1fr auto;gap:4px 13px;padding:12px 16px;border-top:1px solid var(--line);align-items:start}
+.tick:first-child{border-top:0}
+.box{width:16px;height:16px;border:1.5px solid var(--line-hard);margin-top:3px;display:grid;place-items:center;
+  font:700 11px var(--body);color:var(--surface)}
+.tick.done .box{background:var(--done);border-color:var(--done)}
+.tick.open .box{border-color:var(--stop);border-width:2px}
+.tick .q{font-weight:600}
+.tick .a{font-size:13.5px;grid-column:2;color:var(--muted)}
+.tick .a b{color:var(--ink);font-weight:600}
+.tick time{font:400 12px var(--mono);color:var(--muted);white-space:nowrap}
+@media(max-width:560px){.tick{grid-template-columns:22px 1fr}.tick time{grid-column:2}}
+
+.pill{display:inline-flex;align-items:center;gap:6px;font:600 12px var(--body);padding:2px 8px;border:1px solid}
+.pill.done{background:var(--done-soft);color:var(--done);border-color:var(--done)}
+.pill.wait{background:var(--wait-soft);color:var(--wait);border-color:var(--wait)}
+.pill.stop{background:var(--stop-soft);color:var(--stop);border-color:var(--stop)}
+
+/* coverage bar */
+.cov{border:1px solid var(--line);background:var(--surface);padding:16px 18px;display:grid;gap:12px}
+.bar{display:flex;height:34px;border:1px solid var(--line-hard);overflow:hidden}
+.bar span{display:block;height:100%}
+.seg-nk{background:var(--accent)}
+.seg-a{background:var(--line-hard)}
+.seg-b{background:var(--line)}
+.seg-c{background:var(--surface-2)}
+.covkey{display:grid;gap:3px;font-size:13.5px}
+.covkey div{display:grid;grid-template-columns:14px 1fr auto auto;gap:10px;align-items:center}
+.covkey i{width:12px;height:12px;display:block;border:1px solid var(--line-hard)}
+.covkey .g{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+
+/* tables */
+.tw{overflow-x:auto;border:1px solid var(--line);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th{text-align:left;font:600 10.5px var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+  padding:8px 11px;border-bottom:1px solid var(--line-hard);background:var(--surface-2);white-space:nowrap;vertical-align:bottom}
+td{padding:7px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+th.num,td.num{text-align:right}
+.yes{color:var(--done);font-weight:600}
+.no{color:var(--stop);font-weight:600}
+
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.panel{border:1px solid var(--line);background:var(--surface);padding:14px 17px;display:grid;gap:8px}
+.panel ul{margin:0;padding-left:19px;font-size:13.5px;display:grid;gap:3px}
+.panel.rec{border-color:var(--accent);border-left-width:4px}
+
+.note{background:var(--surface-2);border-left:3px solid var(--accent);padding:11px 15px;font-size:13.5px;display:grid;gap:5px}
+.note.warn{border-left-color:var(--wait)}
+.note p{max-width:none}
+code{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);padding:0 4px}
+a{color:var(--accent)}
+footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:var(--muted);display:grid;gap:6px}
+</style>
+
+<div class="wrap">
+
+<header class="plate">
+  <div>
+    <div class="jobno">JOB FBVNK_SIM_LEDGER &middot; F-BVNK &middot; RALLYE MS.893E &middot; MSFS 2024</div>
+    <h1>Ledger Job Card</h1>
+    <p class="small muted" style="margin-top:6px">Operating-cost book for the sim aeroplane, priced off the real 2025 invoices. Status only &mdash; decisions are tapped on the Annunciator, not here.</p>
+  </div>
+  <div style="display:grid;gap:12px;justify-items:end">
+    <div class="stamp">Not installed</div>
+    <dl>
+      <dt>Lane</dt><dd>design &amp; stage</dd>
+      <dt>Leader</dt><dd>FBVNK PM</dd>
+      <dt>Card</dt><dd>15 Sep 2026</dd>
+    </dl>
+  </div>
+</header>
+
+<section>
+  <h2>Who does what <span class="hint">set by Claus 15 Sep</span></h2>
+  <div class="lanes">
+    <div class="lane me"><div class="who">This chat</div><div class="what">Designs and stages. Writes no package bytes, never touches the sim.</div></div>
+    <div class="lane"><div class="who">Records &amp; Checks</div><div class="what">Reviews every kit independently before it goes near the package.</div></div>
+    <div class="lane"><div class="who">FBVNK PM</div><div class="what">Integrates, installs, runs the sim, commits and tags.</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>The path to &ldquo;it runs in the aeroplane&rdquo; <span class="hint">five steps, set by the PM</span></h2>
+  <div class="steps">
+    <div class="step ok"><span class="n">&#10003;</span><span class="t">Stage the ledger</span><span class="s">Done 16:21</span>
+      <span class="d"><code>FBVNK_STAGING/FBVNK_SIM_LEDGER/</code> &mdash; NOTE.md 5,152 B, MD5.txt 96 B. Reported, so frozen.</span></div>
+    <div class="step ok"><span class="n">&#10003;</span><span class="t">Wait for the NK_ wear spec</span><span class="s">Landed 16:26</span>
+      <span class="d"><code>R5_nk_wear_spec/SPEC.md</code>, 17,176 B. Every wear LocalVar with unit, range, writer, reader, persistence and reset value.</span></div>
+    <div class="step ok"><span class="n">&#10003;</span><span class="t">Write the integration design</span><span class="s">Posted</span>
+      <span class="d">Three options with trade-offs, and every ledger figure mapped to an NK_ variable or marked as having none. Below.</span></div>
+    <div class="step now"><span class="n">4</span><span class="t">PM reviews, puts the choice to Claus</span><span class="s">Waiting</span>
+      <span class="d">The option choice reaches you as a red item on the Annunciator, prefixed <code>ledger_</code>. Nothing is built before that review.</span></div>
+    <div class="step todo"><span class="n">5</span><span class="t">Build the kit, review, install</span><span class="s">Not started</span>
+      <span class="d">Files plus a DRY verifier proving every byte and every NK_ read against the spec. Records reviews it; the PM installs and tests it in a sim run.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Your decisions <span class="hint">tapped on the Annunciator &mdash; shown here, not taken here</span></h2>
+  <div class="ticks">
+    <div class="tick done"><span class="box">&#10003;</span><span class="q">Wire the ledger to the iPad wear model, or keep it standalone?</span><time>15 Sep 14:18:07Z</time>
+      <span class="a">You picked <b>&ldquo;Wire it to the iPad wear model (NK_*)&rdquo;</b>. Nothing has been wired &mdash; the design below is the answer to it, and the PM reviews before any build.</span></div>
+    <div class="tick done"><span class="box">&#10003;</span><span class="q">Stage a note in Dropbox, or leave it on the git branch?</span><time>15 Sep 14:18:39Z</time>
+      <span class="a">You picked <b>&ldquo;Stage NOTE.md + MD5.txt in FBVNK_STAGING&rdquo;</b>. Written at 16:21 and frozen. The 74 KB HTML itself stays on the branch: the connector cannot upload local files, and retyping it would break the checksum.</span></div>
+    <div class="tick open"><span class="box"></span><span class="q">Which integration option &mdash; in-sim page, standalone reader, or hybrid?</span><time>not yet asked</time>
+      <span class="a">Goes on the Annunciator as a red <code>ledger_</code> item once the PM has reviewed the design. Recommendation below is the hybrid.</span></div>
+    <div class="tick open"><span class="box"></span><span class="q">At wear rate x1000, do the costs run a thousandfold too?</span><time>not yet asked</time>
+      <span class="a">Bill at the scaled rate, or normalise to REAL and treat the multiplier as a test setting. The starter is capped at 100, so it drifts against everything else at x1000.</span></div>
+    <div class="tick open"><span class="box"></span><span class="q">Is &ldquo;Reset to delivery&rdquo; a free restoration, or a billable one?</span><time>not yet asked</time>
+      <span class="a">It puts the parts back to 85 / 60 / 70 at no cost. Bill it as a full restoration, or record it as a test reset outside the book.</span></div>
+  </div>
+  <div class="note warn">
+    <p><strong>Open for information, no decision needed.</strong> The four wear texture sets do not exist &mdash; only Fresh does &mdash; so the paint band moves and the money moves, the aeroplane's look does not. That is a texture job, out of scope without your order. Separately, eighteen repair prices carry no 2025 invoice and are flagged <code>assumption</code> in the ledger; all sit in one editable block.</p>
+  </div>
+</section>
+
+<section>
+  <h2>What wiring actually buys <span class="hint">the finding that shapes the whole design</span></h2>
+  <div class="cov">
+    <p class="small">Of F-BVNK's real 2025 spend, only the maintenance share has anything in the wear model behind it. The rest is calendar and location fact the model has no knowledge of and never will.</p>
+    <div class="bar" role="img" aria-label="Of EUR 25,716.30 in 2025: hangar 62.2 percent, maintenance 19.7 percent, fuel 14.8 percent, aerodrome 3.3 percent. Only the 19.7 percent maintenance share can be driven by the NK_ wear model.">
+      <span class="seg-a" style="width:62.18%"></span>
+      <span class="seg-nk" style="width:19.66%"></span>
+      <span class="seg-b" style="width:14.84%"></span>
+      <span class="seg-c" style="width:3.33%"></span>
+    </div>
+    <div class="covkey">
+      <div><i class="seg-nk"></i><span><strong>Maintenance, parts &amp; airworthiness (IAC)</strong> &mdash; the only NK_-driven share</span><span class="g">&euro;5,055.14</span><span class="g">19.7%</span></div>
+      <div><i class="seg-a"></i><span>Hangar &amp; maintenance support (Sevenair) &mdash; calendar</span><span class="g">&euro;15,990.00</span><span class="g">62.2%</span></div>
+      <div><i class="seg-b"></i><span>Fuel (AVGAS) &mdash; no uplift or price datum exists</span><span class="g">&euro;3,816.12</span><span class="g">14.8%</span></div>
+      <div><i class="seg-c"></i><span>Aerodrome landing/parking (Cascais) &mdash; no field or movement datum</span><span class="g">&euro;855.04</span><span class="g">3.3%</span></div>
+    </div>
+    <p class="tiny muted">Figures quoted from <span class="mono">F-BVNK_2025_Accounts_1.xlsx</span>, all 42 invoices in the file, &euro;25,716.30 gross. Wiring drives about a fifth of the money. That caps how much in-sim interface is worth building.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Every ledger figure, mapped</h2>
+  <div class="two">
+    <div class="panel">
+      <h3>Has an NK_ variable</h3>
+      <div class="tw" style="border:0">
+        <table>
+          <thead><tr><th>Ledger figure</th><th>LocalVar</th></tr></thead>
+          <tbody>
+            <tr><td>Engine condition</td><td class="mono tiny">NK_ST_C_CYL</td></tr>
+            <tr><td>Magnetos, carburettor, oil system, vacuum</td><td class="mono tiny">C_MAG C_CARB C_OIL C_VAC</td></tr>
+            <tr><td>Alternator</td><td class="mono tiny">NK_ST_C_ALT</td></tr>
+            <tr><td>Starter</td><td class="mono tiny">NK_ST_C_STR</td></tr>
+            <tr><td>Brakes</td><td class="mono tiny">NK_ST_C_BRK</td></tr>
+            <tr><td>Tyres</td><td class="mono tiny">NK_ST_C_TYR</td></tr>
+            <tr><td>Exterior lamps</td><td class="mono tiny">NK_ST_C_LTS</td></tr>
+            <tr><td>Battery</td><td class="mono tiny">NK_ST_BAT_HEALTH</td></tr>
+            <tr><td>Oil quantity</td><td class="mono tiny">NK_ST_OIL_QT</td></tr>
+            <tr><td>Engine hours</td><td class="mono tiny">NK_ST_ENG_HRS</td></tr>
+            <tr><td>Airframe total time</td><td class="mono tiny">NK_ST_TACH</td></tr>
+            <tr><td>Eight discrete faults</td><td class="mono tiny">NK_ST_FAULTS bits 0&ndash;7</td></tr>
+            <tr><td><strong>Every maintenance event</strong></td><td class="mono tiny">NK_ST_MX_LOG</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>No NK_ variable exists</h3>
+      <ul>
+        <li><strong>Propeller condition</strong> &mdash; the wear model has none</li>
+        <li><strong>Landing gear and oleos</strong> &mdash; tyres only</li>
+        <li><strong>Airframe condition</strong> &mdash; hours exist, and nothing reads them</li>
+        <li><strong>Interior</strong></li>
+        <li><strong>Paint and cosmetic condition</strong></li>
+        <li>Fuel uplift in litres, and the price paid</li>
+        <li>Aerodrome fees, landings by field</li>
+        <li>Hangar rent, insurance, airworthiness management</li>
+        <li>Touchdown rate as stored state &mdash; <code>NK_W_VS</code> is session-only</li>
+      </ul>
+      <p class="tiny muted">Five parts also have no price in the ledger yet: carburettor, starter, oil pump and lines, exterior lamps, and oil per quart. The board already records the real lamps &mdash; Aero-Lites AL-3615X-PA landing, AL-3615X-F taxi, NavMax nav set, fitted June 2024 by IAC Coimbra.</p>
+    </div>
+  </div>
+  <div class="note">
+    <p><strong>The key that makes any route safe.</strong> <code>NK_ST_ENG_HRS</code> paired with <code>NK_ST_MX_LOG</code> is a cursor that only ever moves forward &mdash; the maintenance counter increments on every accepted page action and survives Reset to delivery. Store the last-seen pair against each posted invoice and posting becomes idempotent: no double billing across reloads, reconnects or a change of route.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Three ways to wire it</h2>
+  <div class="tw">
+    <table>
+      <thead><tr><th style="width:11%">Option</th><th>What you see</th><th>Files that change</th><th>What can break</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>A</strong><br><span class="tiny muted">in-sim page</span></td>
+          <td>A LEDGER tab on the cockpit iPad beside HANGAR. Tap SERVICE on the cylinders, the invoice posts next to it. Money lands where the work happens.</td>
+          <td>New <code>html_ui/.../AH/LEDGER/</code> page, <code>layout.json</code>, and new persisted <code>L:NK_LG_*</code> in <code>systems.cfg</code>. One sim restart per build.</td>
+          <td><code>systems.cfg [LocalVars]</code> is the same file the wear model lives in. No CSV or year book on a small panel. The book exists only inside the sim.</td>
+        </tr>
+        <tr>
+          <td><strong>B</strong><br><span class="tiny muted">standalone reader</span></td>
+          <td>The ledger you have now, on a second screen, updating as you fly.</td>
+          <td>No package change &mdash; but <code>nk_telemetry.py</code> gains about 30 datums, which breaks md5 <span class="mono tiny">7c14d946</span> and its review.</td>
+          <td>A page opened from a file cannot fetch a local <code>latest.json</code> &mdash; browsers block it. Needs a localhost server or a paste step, on top of a logger whose first real load has not run.</td>
+        </tr>
+        <tr>
+          <td><strong>C</strong><br><span class="tiny muted">hybrid</span></td>
+          <td>A thin strip on the HANGAR page showing running total and cost per hour. The full book, invoices and export stay outside.</td>
+          <td>Smallest package footprint: a few <code>L:NK_LG_*</code> and one strip. No new page.</td>
+          <td>Two places to keep in step. The cursor above has to be right.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="panel rec">
+    <h3>Recommended: C</h3>
+    <p class="small">It puts the fun where you look &mdash; a live cost in the cockpit &mdash; without pushing the whole book onto a panel that cannot export, and without making the ledger depend on a logger that is not proven yet. A is the better toy and the worse book. B is blocked on the file-fetch rule and a fresh review cycle before it starts.</p>
+  </div>
+</section>
+
+<section>
+  <h2>What exists right now</h2>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Artefact</th><th>Where</th><th class="num">Size</th><th>md5</th></tr></thead>
+      <tbody>
+        <tr><td>The ledger itself</td><td class="mono tiny">fbvnk-sim-ledger/FBVNK-LEDGER.html</td><td class="num">74,275 B</td><td class="mono tiny">3bc32d27</td></tr>
+        <tr><td>Install and rules note</td><td class="mono tiny">fbvnk-sim-ledger/README.md</td><td class="num">4,803 B</td><td class="mono tiny">71a8fc02</td></tr>
+        <tr><td>Staging note <span class="pill done">frozen</span></td><td class="mono tiny">FBVNK_STAGING/FBVNK_SIM_LEDGER/NOTE.md</td><td class="num">5,152 B</td><td class="mono tiny">&mdash;</td></tr>
+        <tr><td>Checksums, <code>md5sum -c</code> format</td><td class="mono tiny">FBVNK_STAGING/FBVNK_SIM_LEDGER/MD5.txt</td><td class="num">96 B</td><td class="mono tiny">&mdash;</td></tr>
+        <tr><td>NK_ wear spec <span class="tiny muted">by Records &amp; Checks</span></td><td class="mono tiny">FBVNK_STAGING/R5_nk_wear_spec/SPEC.md</td><td class="num">17,176 B</td><td class="mono tiny">c06f7305</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tiny muted">Git: <span class="mono">yeager74/travel-map</span>, branch <span class="mono">claude/fbvnk-cost-sheet-maintenance-svcsw2</span>, commit <span class="mono">a0d96db</span>. The spec's md5 is as stated by Records and Checks &mdash; <span class="mono">assumption:</span> not re-verified here, because the Dropbox connector returns extracted text rather than the file's bytes.</p>
+</section>
+
+<footer>
+  <p><strong>Decisions are tapped on the F-BVNK Annunciator</strong>, where they wake the PM and reach this chat. This card only reports. It is refreshed when the job moves.</p>
+  <p>No package bytes written. No sim file touched. Nothing installed.</p>
+</footer>
+
+</div>
