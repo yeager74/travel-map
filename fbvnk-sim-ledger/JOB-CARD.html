@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>15 Sep 2026 &middot; rev 2</dd>
+      <dt>Card</dt><dd>15 Sep 2026 &middot; rev 3</dd>
     </dl>
   </div>
 </header>
@@ -185,9 +185,9 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
       <span class="d">Three options with trade-offs, and every ledger figure mapped to an NK_ variable or marked as having none. Below.</span></div>
     <div class="step ok"><span class="n">&#10003;</span><span class="t">PM's first review &mdash; seven fixes</span><span class="s">Done 19:51</span>
       <span class="d">The cursor, the data route, the price source, the Reset to delivery table and the package naming were all corrected. See &ldquo;Design review &mdash; round 2&rdquo; below.</span></div>
-    <div class="step now"><span class="n">5</span><span class="t">PM signs off rev 2, puts the choice to Claus</span><span class="s">Waiting</span>
-      <span class="d">The option pick, the x1000 billing question and the Reset billing question reach you as red items on the Annunciator, prefixed <code>ledger_</code>. Nothing is built before that review.</span></div>
-    <div class="step todo"><span class="n">6</span><span class="t">Build the kit, review, install</span><span class="s">Not started</span>
+    <div class="step ok"><span class="n">&#10003;</span><span class="t">PM signs off rev 3, posts the three picks to Claus</span><span class="s">Done 20:14</span>
+      <span class="d">All three items are red on the Annunciator now: which route, the x1000 billing rule, the Reset billing rule &mdash; each with the PM's own recommendation marked. His taps relay back word for word. Nothing is built before them.</span></div>
+    <div class="step todo"><span class="n">6</span><span class="t">Build the kit, review, install</span><span class="s">Waiting on Claus's three taps</span>
       <span class="d">Files plus a DRY verifier proving every byte and every NK_ read against the spec. Records reviews it; the PM installs and tests it in a sim run.</span></div>
   </div>
 </section>
@@ -348,7 +348,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
         <tr><td class="num">4</td><td>Option C's reason to exist</td><td>First pass stripped all money out of C's strip, leaving only condition/hours/open items &mdash; which the HANGAR page already shows in full. Corrected: C shows a running euro total and cost per hour, the one thing HANGAR doesn't, priced from a small file generated at build time from the ledger's own <code>PRICES</code> block and md5-pinned to it &mdash; one source, never typed twice, a price change costs a rebuild.</td></tr>
         <tr><td class="num">5</td><td>Origin change</td><td><code>file://</code> to <code>http://127.0.0.1</code> is a different browser origin; the book's <code>localStorage</code> does not carry over by itself. Added as a required one-time step: export the book as JSON on the old origin, import it on the new one, then keep the same host:port.</td></tr>
         <tr><td class="num">6</td><td>Reset to delivery, exact</td><td>Card said &ldquo;85 / 60 / 70&rdquo;, missing lamps and oil. Full table below, from SPEC &sect;2.2&ndash;2.4, PM-checked (C_OIL 85, FAILR 1, FAULTS 0; the GENE bit is <code>NK_ST_CB</code> bit 14, and Reset leaves it alone, consistent with FAULTS clearing to 0 while the GENE bit does not). Answered the open question: the engine and propeller reserve funds are money already accrued from hours actually flown, not from reading ENG_HRS as an absolute value &mdash; Reset to delivery is a wear-model convenience, not a real overhaul, and does not touch the reserve. Only an actual &ldquo;Overhaul engine&rdquo; action draws the fund down, matching how the real 2025 book treats a genuine TBO overhaul.</td></tr>
-        <tr><td class="num">7</td><td>Placement and naming &mdash; corrected twice</td><td>First pass called <code>ah-aircraft-socms893-F-BVNK</code> a livery/SimObjects subfolder of <code>ah-aircraft-socms893-mod</code>. Wrong: it is a separate package folder in the Community folder, alongside <code>ah-aircraft-socms893-F-BVNK-CLEAN</code> and a .zip (<span class="mono tiny">assumption</span> &mdash; the sibling folder and .zip are the PM's own report from his laptop, not independently seen here). What this session did verify itself, from the manifest and aircraft.cfg already read: F-BVNK's own <code>manifest.json</code> declares <code>content_type: "LIVERY"</code>, and its <code>aircraft.cfg</code> points <code>base_container</code> at <code>..\socata-ms893-mod</code> &mdash; a sibling reference, not a parent folder. <code>socata-ms893-mod</code> is the mod's only SimObjects aircraft folder. The ledger file lives outside every package folder under every option except A, where it becomes a genuine in-sim page the PM builds.</td></tr>
+        <tr><td class="num">7</td><td>Placement and naming &mdash; corrected twice</td><td>First pass called <code>ah-aircraft-socms893-F-BVNK</code> a livery/SimObjects subfolder of <code>ah-aircraft-socms893-mod</code>. Wrong: it is a separate package folder in the Community folder, alongside <code>ah-aircraft-socms893-F-BVNK-CLEAN</code> and a .zip &mdash; the PM checked his own Community folder directly and confirmed both sit there. What this session verified itself, from the manifest and aircraft.cfg already read: F-BVNK's own <code>manifest.json</code> declares <code>content_type: "LIVERY"</code>, and its <code>aircraft.cfg</code> points <code>base_container</code> at <code>..\socata-ms893-mod</code> &mdash; a sibling reference, not a parent folder. <code>socata-ms893-mod</code> is the mod's only SimObjects aircraft folder. The ledger file lives outside every package folder under every option except A, where it becomes a genuine in-sim page the PM builds.</td></tr>
       </tbody>
     </table>
   </div>
@@ -372,6 +372,16 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     </table>
   </div>
   <p class="tiny muted">A new battery is the separate 3-click ammeter-pad action (SPEC &sect;2.5) &mdash; Reset to delivery does not touch it.</p>
+
+  <h3 style="margin-top:14px">Carried to the kit design <span class="tiny muted" style="font-weight:400">PM, accepting rev 3 &mdash; not another round, nothing to build yet</span></h3>
+  <div class="note">
+    <p>Three points for whoever builds the kit. None change the picks now on the Annunciator; none need a further review round.</p>
+  </div>
+  <ol style="padding-left:20px;display:grid;gap:8px;font-size:13.5px">
+    <li><strong>The posting rule above needs one more split.</strong> &ldquo;Both higher than stored &rarr; post&rdquo; is too strict: SERVICE, top-up, overhaul, repair and Reset only act on the ground with the engine stopped (SPEC &sect;2.4's page action rules), so a SERVICE moves MX_LOG while TACH sits still &mdash; and would never post under an AND rule. Corrected: neither number below the stored pair (else it's a reload, per the rule above); MX_LOG higher on its own posts the maintenance action(s); TACH higher on its own accrues the hourly items. Either or both can be true on a given read.</li>
+    <li><strong>The hybrid duplicates billing logic, not only prices.</strong> Which event bills what lives in two places once there's a HANGAR-page script and a ledger script. Generate both from one source, or pin one to the other, the same way the prices are pinned.</li>
+    <li><strong>Any persisted <code>L:NK_LG_*</code> lands in <code>systems.cfg [LocalVars]</code></strong> &mdash; the wear model's own file. The kit may only append lines there, byte-proven, with every existing wear variable untouched.</li>
+  </ol>
 </section>
 
 <section>
