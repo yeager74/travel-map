@@ -428,6 +428,7 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
           <div class="eyebrow">Aerodrome fees</div>
           <h3>Fields on the card</h3>
           <div class="tw"><table id="fieldTbl"></table></div>
+          <p class="tiny muted" style="margin-top:8px">Cascais AVGAS is &euro;2.83/L &mdash; today's Portugal reference (&euro;2.30 net + 23% VAT), set 15 Sep 2026. Landing and parking there are still the invoiced 2025 figures. The 2025 blended average, &euro;2.29/L, is a separate historical figure &mdash; see the Year Book.</p>
         </div>
       </div>
     </div>
@@ -480,7 +481,11 @@ var PRICES = {
 };
 
 var FIELDS = {
-  LPCS:{name:'Cascais',       land:22.24, park:16.68, fuel:2.29, vat:VAT_PT, coastal:true,  sup:'Cascais Dinâmica E.M., S.A.', fsup:'BP Portugal Combustíveis, S.A.', src:'real'},
+  /* fuel 2.83 = current PT reference (Claus, 15 Sep 2026): 2.30 net + 23% VAT = 2.829, rounded.
+     Landing/parking here are still the invoiced 2025 figures; only the fuel default moved
+     forward to today's price. The 2025 historical average (2.29, blended across every 2025
+     fill-up, several fields) lives in the Year Book comparison and in README.md, untouched. */
+  LPCS:{name:'Cascais',       land:22.24, park:16.68, fuel:2.83, vat:VAT_PT, coastal:true,  sup:'Cascais Dinâmica E.M., S.A.', fsup:'BP Portugal Combustíveis, S.A.', src:'real'},
   LPCO:{name:'Coimbra',       land:20.00, park:12.00, fuel:2.35, vat:VAT_PT, coastal:false, sup:'Aeródromo de Coimbra',        fsup:'BP Portugal Combustíveis, S.A.', src:'assume'},
   LPVL:{name:'Vilar da Luz',  land:23.00, park: 0.00, fuel:0,    vat:VAT_PT, coastal:false, sup:'Vilar da Luz',                fsup:'', src:'real'},
   LEVD:{name:'Valladolid',    land:122.00,park: 0.00, fuel:3.42, vat:VAT_ES, coastal:false, sup:'Aeropuerto de Valladolid',    fsup:'BP Energía España, S.A.U.', src:'real'},

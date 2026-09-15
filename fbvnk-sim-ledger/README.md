@@ -57,7 +57,8 @@ F-BVNK's own 2025 supplier invoices:
 | Engine reserve | €20.79 / h | 2025 cost calculator |
 | Propeller reserve | €1.36 / h | 2025 cost calculator |
 | Cascais landing | €22.24 | Cascais Dinâmica E.M., S.A. |
-| AVGAS at Cascais | €2.29 / L average | 2025 cost calculator |
+| AVGAS at Cascais, 2025 average | €2.29 / L | 2025 cost calculator |
+| AVGAS at Cascais, current reference | €2.83 / L (€2.30 net + 23% VAT) | Claus, 15 Sep 2026 — this is the Ramp tab's live default; every leg's price stays editable |
 
 Opening counters are the real ones as recorded for 2025: TTAF 1265, engine 317 h SMOH
 (overhauled 17-Apr-18), propeller 528 h SMOH (overhauled 16-Nov-11).
