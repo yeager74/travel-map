@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>15 Sep 2026 &middot; rev 3</dd>
+      <dt>Card</dt><dd>15 Sep 2026 &middot; rev 4</dd>
     </dl>
   </div>
 </header>
@@ -175,7 +175,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <section>
-  <h2>The path to &ldquo;it runs in the aeroplane&rdquo; <span class="hint">six steps, set by the PM</span></h2>
+  <h2>The path to &ldquo;it runs in the aeroplane&rdquo; <span class="hint">seven steps, set by the PM</span></h2>
   <div class="steps">
     <div class="step ok"><span class="n">&#10003;</span><span class="t">Stage the ledger</span><span class="s">Done 16:21</span>
       <span class="d"><code>FBVNK_STAGING/FBVNK_SIM_LEDGER/</code> &mdash; NOTE.md 5,152 B, MD5.txt 96 B. Reported, so frozen.</span></div>
@@ -185,10 +185,12 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
       <span class="d">Three options with trade-offs, and every ledger figure mapped to an NK_ variable or marked as having none. Below.</span></div>
     <div class="step ok"><span class="n">&#10003;</span><span class="t">PM's first review &mdash; seven fixes</span><span class="s">Done 19:51</span>
       <span class="d">The cursor, the data route, the price source, the Reset to delivery table and the package naming were all corrected. See &ldquo;Design review &mdash; round 2&rdquo; below.</span></div>
-    <div class="step ok"><span class="n">&#10003;</span><span class="t">PM signs off rev 3, posts the three picks to Claus</span><span class="s">Done 20:14</span>
-      <span class="d">All three items are red on the Annunciator now: which route, the x1000 billing rule, the Reset billing rule &mdash; each with the PM's own recommendation marked. His taps relay back word for word. Nothing is built before them.</span></div>
-    <div class="step todo"><span class="n">6</span><span class="t">Build the kit, review, install</span><span class="s">Waiting on Claus's three taps</span>
-      <span class="d">Files plus a DRY verifier proving every byte and every NK_ read against the spec. Records reviews it; the PM installs and tests it in a sim run.</span></div>
+    <div class="step ok"><span class="n">&#10003;</span><span class="t">Claus taps all three, 18:24&ndash;18:25 UTC</span><span class="s">Done</span>
+      <span class="d">Hybrid, chosen with his own note &ldquo;operate with varible costs only.&rdquo; Bill x100/x1000 as REAL. Reset to delivery not billed. Quoted in full above.</span></div>
+    <div class="step ok"><span class="n">&#10003;</span><span class="t">Design addendum on the three picks</span><span class="s">Posted</span>
+      <span class="d">The variable/fixed cost split for the cockpit strip, the x1000 normalisation rule, and how a Reset is logged without being billed &mdash; below. No option changed; the PM reviews after the V263 run and, if it holds, moves straight to the kit.</span></div>
+    <div class="step todo"><span class="n">7</span><span class="t">Build the kit, review, install</span><span class="s">Not started</span>
+      <span class="d">Generated price + billing-logic file, the HANGAR strip, the <code>L:NK_LG_*</code> LocalVars, the laptop route, a DRY verifier, staged with MD5.txt and NOTE.md. Records reviews it; the PM installs and tests it in a sim run.</span></div>
   </div>
 </section>
 
@@ -210,22 +212,67 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
       <span class="a">You picked <b>&ldquo;Stage NOTE.md + MD5.txt in FBVNK_STAGING&rdquo;</b>. Written at 16:21 and frozen. The 74 KB HTML itself stays on the branch: the connector cannot upload local files, and retyping it would break the checksum.</span>
       <span class="stat"><span class="answered">&#10003; Answered on the Annunciator</span></span></div>
 
-    <div class="tick open"><span class="box"></span><span class="q">Which integration option &mdash; in-sim page, standalone reader, or hybrid?</span><time>not yet asked</time>
-      <span class="a">Goes up as a red <code>ledger_</code> item once the PM has reviewed the design. The recommendation below is the hybrid.</span>
-      <span class="stat"><a class="decide" href="https://claude.ai/artifact/1aDxiL7JRjFx9igTtC6PvF">Decide on the Annunciator &rarr;</a><span class="tiny muted">not tappable here</span></span></div>
+    <div class="tick done"><span class="box">&#10003;</span><span class="q">Which integration option &mdash; in-sim page, standalone reader, or hybrid?</span><time>15 Sep 18:24:28Z</time>
+      <span class="a">You picked <b>&ldquo;Hybrid: a live euro total and cost per hour on the iPad HANGAR page, the full book on the laptop&rdquo;</b>, with the note <b>&ldquo;operate with varible costs only.&rdquo;</b> &mdash; addressed below.</span>
+      <span class="stat"><span class="answered">&#10003; Answered on the Annunciator</span></span></div>
 
-    <div class="tick open"><span class="box"></span><span class="q">At wear rate x1000, do the costs run a thousandfold too?</span><time>not yet asked</time>
-      <span class="a">Bill at the scaled rate, or normalise to REAL and treat the multiplier as a test setting. The starter is capped at 100, so it drifts against everything else at x1000.</span>
-      <span class="stat"><a class="decide" href="https://claude.ai/artifact/1aDxiL7JRjFx9igTtC6PvF">Decide on the Annunciator &rarr;</a><span class="tiny muted">not tappable here</span></span></div>
+    <div class="tick done"><span class="box">&#10003;</span><span class="q">At wear rate x1000, do the costs run a thousandfold too?</span><time>15 Sep 18:24:47Z</time>
+      <span class="a">You picked <b>&ldquo;Treat x100 / x1000 as test settings: bill as if the Wear rate were REAL&rdquo;</b>. The normalisation rule, and how the starter's own cap fits it, are below.</span>
+      <span class="stat"><span class="answered">&#10003; Answered on the Annunciator</span></span></div>
 
-    <div class="tick open"><span class="box"></span><span class="q">Is &ldquo;Reset to delivery&rdquo; a free restoration, or a billable one?</span><time>not yet asked</time>
-      <span class="a">It puts cylinders/magnetos/carburettor/alternator/starter/vacuum/oil-pump to 85, tyres to 60, brakes to 70, lamps to 80 and oil to 7&nbsp;qt &mdash; all at no cost, per SPEC &sect;2.2&ndash;2.4 (the full table is below; a card note here previously missed lamps and oil). Bill it as a full restoration, or record it as a test reset outside the book. Either way the reserve funds are not touched &mdash; see &ldquo;Design review&rdquo; point&nbsp;6.</span>
-      <span class="stat"><a class="decide" href="https://claude.ai/artifact/1aDxiL7JRjFx9igTtC6PvF">Decide on the Annunciator &rarr;</a><span class="tiny muted">not tappable here</span></span></div>
+    <div class="tick done"><span class="box">&#10003;</span><span class="q">Is &ldquo;Reset to delivery&rdquo; a free restoration, or a billable one?</span><time>15 Sep 18:25:21Z</time>
+      <span class="a">You picked <b>&ldquo;Not billed: a test reset, noted outside the book&rdquo;</b>. It puts cylinders/magnetos/carburettor/alternator/starter/vacuum/oil-pump to 85, tyres to 60, brakes to 70, lamps to 80 and oil to 7&nbsp;qt, per SPEC &sect;2.2&ndash;2.4. How it's logged instead of billed is below.</span>
+      <span class="stat"><span class="answered">&#10003; Answered on the Annunciator</span></span></div>
   </div>
 
   <div class="note warn">
     <p><strong>Open for information, no decision needed.</strong> The four wear texture sets do not exist &mdash; only Fresh does &mdash; so the paint band moves and the money moves, the aeroplane's look does not. That is a texture job, out of scope without your order. Separately, eighteen repair prices carry no 2025 invoice and are flagged <code>assumption</code> in the ledger; all sit in one editable block.</p>
   </div>
+</section>
+
+<section>
+  <h2>The three picks, in detail <span class="hint">addendum &mdash; no option changes, the PM asked for precision on each</span></h2>
+
+  <h3>1 &middot; &ldquo;Operate with varible costs only&rdquo;</h3>
+  <p class="small">The cockpit strip's euro total and cost per hour count only what moves with flying. Split along the ledger's own existing categories:</p>
+  <div class="two">
+    <div class="panel">
+      <h3 style="color:var(--done)">In the strip</h3>
+      <ul>
+        <li>Fuel (AVGAS) &mdash; every leg</li>
+        <li>Aerodrome landing/parking &mdash; every leg</li>
+        <li>Scheduled 25/50/100&nbsp;h checks &mdash; they fire only because hours crossed a threshold</li>
+        <li>Unscheduled repairs from squawks and wear</li>
+        <li>Engine reserve &euro;20.79/h and propeller reserve &euro;1.36/h</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3 style="color:var(--wait)">Left out of the strip</h3>
+      <ul>
+        <li>Hangar &amp; maintenance support (Sevenair) &mdash; &euro;1,000 net every month, flown or not</li>
+        <li>Insurance &mdash; &euro;883/year flat</li>
+        <li>Airworthiness management (CAO) &mdash; &euro;720 net, posted once a year</li>
+      </ul>
+      <p class="tiny muted">Nothing is hidden from the money: all three still post to the full book, the invoices list and the Year Book on the laptop, exactly as before. They are excluded only from the compact cockpit figure, which carries its own one-line note &mdash; &ldquo;excl. hangar, insurance, CAO&rdquo; &mdash; so it is never mistaken for the whole story.</p>
+    </div>
+  </div>
+  <p class="tiny muted">The one mixed real-world category, &ldquo;Maintenance, parts &amp; airworthiness (IAC)&rdquo;, splits by what triggers it: the scheduled inspections and repairs are variable (in the strip); the CAO management fee inside the same supplier is fixed (out of it).</p>
+
+  <h3 style="margin-top:10px">2 &middot; x100 / x1000 billed as REAL</h3>
+  <p class="small">Two different things scale, so two different rules:</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>What</th><th>Scales with R?</th><th>Billing rule</th></tr></thead>
+      <tbody>
+        <tr><td>Cylinders, magnetos, carburettor, alternator, vacuum, oil pump/lines, tyres, brakes, lamps, oil quantity (SPEC &sect;2.2&ndash;2.3)</td><td class="mono tiny">yes, by R</td><td>Divide the observed condition loss by R before pricing a service or repair &mdash; a part serviced after 6 minutes of sim time at x1000 is billed as the same 6 minutes' worth of REAL wear, not as 6&nbsp;minutes &times; 1000.</td></tr>
+        <tr><td>Starter (SPEC &sect;2.2: &ldquo;the rate factor is capped at 100&rdquo;)</td><td class="mono tiny">yes, capped at 100</td><td>Divide by min(R,&nbsp;100) instead of R &mdash; the wear model itself already treats x100 and x1000 identically for the starter, so the bill matches: the same starter cost at either setting.</td></tr>
+        <tr><td>Engine hours, tach, airframe hours, battery ageing/starts/hours/crank-seconds (SPEC &sect;2.1, &sect;2.5: &ldquo;none&rdquo; / &ldquo;real time&rdquo;)</td><td class="mono tiny">no, never</td><td>No adjustment needed. The scheduled checks and the hourly reserves already price off real elapsed hours, so they are correct at any Wear rate setting without touching this rule.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="margin-top:10px">3 &middot; Reset to delivery, logged not billed</h3>
+  <p class="small">Detected the same way it's identified anywhere else on this card: <code>NK_ST_MX_LOG</code> advances together with the whole SPEC &sect;2.2&ndash;2.4 seed pattern landing at once (ENG_HRS to exactly 300, parts to 85/60/70/80, oil to 7&nbsp;qt, faults cleared, rates back to REAL). When that pattern is seen, the ledger writes one log entry &mdash; timestamp, the MX_LOG value, &ldquo;Reset to delivery &mdash; test action, not billed&rdquo; &mdash; into the tech log's closed-items history. It never becomes an invoice line, never touches the euro total or cost per hour, and (as settled in round 2) never touches the engine or propeller reserve funds either. The action is on the record; the money is untouched.</p>
 </section>
 
 <section>
