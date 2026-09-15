@@ -1,7 +1,8 @@
 # F-BVNK Sim Ledger
 
-A live operating-cost and maintenance book for the MSFS 2024 Socata Rallye MS-893E
-`ah-aircraft-socms893-F-BVNK`, built to the shape of F-BVNK's real 2025 accounts.
+A live operating-cost and maintenance book for the MSFS 2024 Socata Rallye MS-893E,
+package `ah-aircraft-socms893-mod`, livery `ah-aircraft-socms893-F-BVNK` — built to the
+shape of F-BVNK's real 2025 accounts.
 
 One file: **`FBVNK-LEDGER.html`**. No install, no dependencies, no network.
 
@@ -9,21 +10,16 @@ One file: **`FBVNK-LEDGER.html`**. No install, no dependencies, no network.
 
 ## Install
 
-Drop `FBVNK-LEDGER.html` anywhere inside the package folder and open it from there
-(double-click, or right-click → Open with → your browser). Suggested home:
+**Keep this file outside the package.** `ah-aircraft-socms893-mod` is a git repo the
+project manager owns — installs, `layout.json`, commits, tags. This ledger is never a
+package byte, so it does not live inside the sim's Community folder at all: put it on the
+Desktop, in Documents, wherever is convenient, and open it from there (double-click, or
+right-click → Open with → your browser).
 
-```
-ah-aircraft-socms893-F-BVNK\
-├── manifest.json
-├── layout.json
-├── APPLY_COWL_REPAINT.bat
-├── FBVNK-LEDGER.html      <-- here
-└── SimObjects\Airplanes\ah-aircraft-socms893-F-BVNK\
-```
-
-It is inert as far as the sim is concerned: no `.json`, `.cfg`, `.ktx2` or `layout.json`
-entry is touched, so it cannot affect loading. If it ends up listed in `layout.json`,
-that is harmless, but it does not need to be there.
+The one exception: if the wear-model integration is ever built as a genuine in-sim page
+(the "in-sim page" route on the [Job Card](https://claude.ai/artifact/UKVvwBMiX6GUhiKD6HMNa3)),
+that becomes real package bytes built and installed by the project manager — not this
+file, and not something you place by hand.
 
 The book is kept in that browser's local storage, keyed to the file's location. Move the
 file and you start a fresh book — use **Year Book → Copy book as JSON** first, then
@@ -86,10 +82,15 @@ Today the two are joined by hand: you read the iPad page, you type the numbers i
 ledger. **Paste sim summary** will pull block time, litres and touchdown rate out of
 pasted text to save typing.
 
-*assumption:* an automatic feed is straightforward — the ledger would read the `NK_*`
-LocalVars instead of its own health figures — but the exact variable names, units and
-scaling have not been confirmed, and nothing should be wired until they are. That belongs
-to the package owner, not to this file.
+The `NK_*` LocalVars are now fully specified (`SPEC.md`, project manager's Records &
+Checks helper, md5 `c06f7305`) — names, units, ranges, writers and Reset-to-delivery
+values, all confirmed against the package source, nothing guessed. An integration design
+exists mapping every ledger figure to an `NK_` variable or marking it as having none, with
+a wiring plan (an idempotent cursor on `NK_ST_MX_LOG` paired with `NK_ST_TACH`, a named
+data route, one source of truth for prices). Full detail and current status:
+[F-BVNK Ledger Job Card](https://claude.ai/artifact/UKVvwBMiX6GUhiKD6HMNa3). Nothing is
+wired yet — the project manager reviews the design and Claus picks the route on the
+[F-BVNK Annunciator](https://claude.ai/artifact/1aDxiL7JRjFx9igTtC6PvF) before any build.
 
 ## Paint states
 
