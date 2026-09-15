@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>15 Sep 2026 &middot; rev 4</dd>
+      <dt>Card</dt><dd>15 Sep 2026 &middot; rev 5</dd>
     </dl>
   </div>
 </header>
@@ -257,6 +257,21 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     </div>
   </div>
   <p class="tiny muted">The one mixed real-world category, &ldquo;Maintenance, parts &amp; airworthiness (IAC)&rdquo;, splits by what triggers it: the scheduled inspections and repairs are variable (in the strip); the CAO management fee inside the same supplier is fixed (out of it).</p>
+
+  <h3 style="margin-top:10px">1a &middot; Fuel consumption source <span class="tiny muted" style="font-weight:400">added 15 Sep, after rev 4 &mdash; Claus's own note</span></h3>
+  <p class="small">Claus: fuel is a variable (already true above) and asked how consumption gets into the book &mdash; from the amount refilled, or from &ldquo;the fpl5&rdquo;, priced off the real 2025 spreadsheet or invoices.</p>
+  <div class="two">
+    <div class="panel">
+      <h3 style="color:var(--done)">Already built</h3>
+      <p class="small">The amount refilled is the ledger's own primary path today &mdash; the Ramp tab's Uplift (L) field, posted with whatever &euro;/L is typed alongside it. The default price just moved to today's Portugal reference, &euro;2.83/L gross (&euro;2.30 net + 23% VAT, Claus 15 Sep 2026) at Cascais; every other field keeps its own 2025-invoiced price, and every leg's figure stays editable regardless.</p>
+    </div>
+    <div class="panel">
+      <h3 style="color:var(--wait)">Not built yet, needs a decision first</h3>
+      <p class="small">&ldquo;The fpl5&rdquo; isn't a source this chat can identify with confidence &mdash; asked Claus directly, in chat, below.</p>
+      <p class="small">A genuine automated route does exist: MSFS's own SimConnect fuel-burned variables (for example <code>GENERAL ENG FUEL USED SINCE START</code> per engine), read through the same local telemetry route already designed for the hybrid pick. Unlike everything else on this card, these are <em>not</em> <code>NK_</code> LocalVars and are not in <code>SPEC.md</code> &mdash; <span class="mono tiny">assumption</span>: they exist and behave as documented for MSFS generally; unconfirmed against this specific package. Adding them to <code>nk_telemetry.py</code> is the same kind of change as any other reader addition: a new md5, a new review, the Builder's file to touch, not this chat's.</p>
+      <p class="tiny muted">Open question, not decided here: if fuel is ever wired automatically, does it also feed the in-sim HANGAR strip's live euro figure, or does fuel stay a laptop-side entry (manual or paste) even under the hybrid pick? That changes what &ldquo;live&rdquo; means in pick&nbsp;1 and is worth a plain answer before it's built.</p>
+    </div>
+  </div>
 
   <h3 style="margin-top:10px">2 &middot; x100 / x1000 billed as REAL</h3>
   <p class="small">Two different things scale, so two different rules:</p>
