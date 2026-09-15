@@ -447,12 +447,23 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <section>
+  <h2>Sim Logbook: review-and-sign <span class="hint">posted for visibility &mdash; not a decision, nothing for the Annunciator</span></h2>
+  <p class="small">Claus asked, in chat, for the ledger's Logbook tab to present a prefilled entry (route, times, what posted) after a leg is filed, for him to review and sign, with the leg's cost only revealed after signing, styled in a nostalgic handwritten hand. Built and pushed: <span class="mono tiny">yeager74/travel-map</span>, branch <span class="mono tiny">claude/fbvnk-cost-sheet-maintenance-svcsw2</span>, commit <span class="mono tiny">5e72853</span>.</p>
+  <div class="note">
+    <p><strong>Same lane as the rest of this file.</strong> Pure HTML/CSS/JS inside <span class="mono tiny">FBVNK-LEDGER.html</span> &mdash; no package bytes, no sim file, nothing installed. Ramp gained two clock-time fields (off/on blocks); filing a leg shows a review card instead of the invoice list, a signature line confirms it, then a short handwritten cost line and the itemised invoices follow. Logbook rows now carry those times and who signed.</p>
+  </div>
+  <div class="note warn">
+    <p><strong>One line of the request, not built here.</strong> Claus described the trigger as the moment &ldquo;the flight is landed and has come to a stop with the batt master off&rdquo; &mdash; that's reading live SimVars/LocalVars off the running aeroplane. Per the 15 Sep chain of command, simulator integration is coordinated by the PM, not this session, so what shipped instead reuses the existing manual trigger: the pilot's own click on &ldquo;File the leg,&rdquo; already done after shutdown, same as every leg before it. If a genuine on-touchdown/battery-off auto-trigger is wanted, that's a SimConnect/LocalVar read against the running sim for the PM to scope &mdash; not something built or routed around here.</p>
+  </div>
+</section>
+
+<section>
   <h2>What exists right now</h2>
   <div class="tw">
     <table>
       <thead><tr><th>Artefact</th><th>Where</th><th class="num">Size</th><th>md5</th></tr></thead>
       <tbody>
-        <tr><td>The ledger itself</td><td class="mono tiny">fbvnk-sim-ledger/FBVNK-LEDGER.html</td><td class="num">74,275 B</td><td class="mono tiny">3bc32d27</td></tr>
+        <tr><td>The ledger itself</td><td class="mono tiny">fbvnk-sim-ledger/FBVNK-LEDGER.html</td><td class="num">86,606 B</td><td class="mono tiny">7b4cda14</td></tr>
         <tr><td>Install and rules note</td><td class="mono tiny">fbvnk-sim-ledger/README.md</td><td class="num">4,803 B</td><td class="mono tiny">71a8fc02</td></tr>
         <tr><td>Staging note <span class="pill done">frozen</span></td><td class="mono tiny">FBVNK_STAGING/FBVNK_SIM_LEDGER/NOTE.md</td><td class="num">5,152 B</td><td class="mono tiny">&mdash;</td></tr>
         <tr><td>Checksums, <code>md5sum -c</code> format</td><td class="mono tiny">FBVNK_STAGING/FBVNK_SIM_LEDGER/MD5.txt</td><td class="num">96 B</td><td class="mono tiny">&mdash;</td></tr>
@@ -460,7 +471,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
       </tbody>
     </table>
   </div>
-  <p class="tiny muted">Git: <span class="mono">yeager74/travel-map</span>, branch <span class="mono">claude/fbvnk-cost-sheet-maintenance-svcsw2</span>, commit <span class="mono">a0d96db</span>. The spec's md5 is as stated by Records and Checks &mdash; <span class="mono">assumption:</span> not re-verified here, because the Dropbox connector returns extracted text rather than the file's bytes.</p>
+  <p class="tiny muted">Git: <span class="mono">yeager74/travel-map</span>, branch <span class="mono">claude/fbvnk-cost-sheet-maintenance-svcsw2</span>, commit <span class="mono">5e72853</span>. The spec's md5 is as stated by Records and Checks &mdash; <span class="mono">assumption:</span> not re-verified here, because the Dropbox connector returns extracted text rather than the file's bytes.</p>
 </section>
 
 <footer>
