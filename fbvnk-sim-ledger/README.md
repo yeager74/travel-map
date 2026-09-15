@@ -1,8 +1,8 @@
 # F-BVNK Sim Ledger
 
-A live operating-cost and maintenance book for the MSFS 2024 Socata Rallye MS-893E,
-package `ah-aircraft-socms893-mod`, livery `ah-aircraft-socms893-F-BVNK` — built to the
-shape of F-BVNK's real 2025 accounts.
+A live operating-cost and maintenance book for the MSFS 2024 Socata Rallye MS-893E — the
+mod's aircraft folder `socata-ms893-mod`, painted by the separate `ah-aircraft-socms893-F-BVNK`
+Community package — built to the shape of F-BVNK's real 2025 accounts.
 
 One file: **`FBVNK-LEDGER.html`**. No install, no dependencies, no network.
 
@@ -10,11 +10,12 @@ One file: **`FBVNK-LEDGER.html`**. No install, no dependencies, no network.
 
 ## Install
 
-**Keep this file outside the package.** `ah-aircraft-socms893-mod` is a git repo the
-project manager owns — installs, `layout.json`, commits, tags. This ledger is never a
-package byte, so it does not live inside the sim's Community folder at all: put it on the
-Desktop, in Documents, wherever is convenient, and open it from there (double-click, or
-right-click → Open with → your browser).
+**Keep this file outside every package folder.** `ah-aircraft-socms893-mod` (the aircraft)
+and `ah-aircraft-socms893-F-BVNK` (the livery, a separate Community package that points
+back at it) are git-owned by the project manager — installs, `layout.json`, commits, tags.
+This ledger is never a package byte, so it does not live inside the sim's Community folder
+at all: put it on the Desktop, in Documents, wherever is convenient, and open it from
+there (double-click, or right-click → Open with → your browser).
 
 The one exception: if the wear-model integration is ever built as a genuine in-sim page
 (the "in-sim page" route on the [Job Card](https://claude.ai/artifact/UKVvwBMiX6GUhiKD6HMNa3)),
