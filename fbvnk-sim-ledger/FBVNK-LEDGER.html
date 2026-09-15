@@ -217,6 +217,7 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
     <button class="tab" role="tab" id="tab-tech"   aria-selected="false" data-pane="tech">Tech Log <span class="badge" id="sqBadge" hidden>0</span></button>
     <button class="tab" role="tab" id="tab-air"    aria-selected="false" data-pane="air">Airframe</button>
     <button class="tab" role="tab" id="tab-ledger" aria-selected="false" data-pane="ledger">Ledger</button>
+    <button class="tab" role="tab" id="tab-log"    aria-selected="false" data-pane="log">Logbook</button>
     <button class="tab" role="tab" id="tab-paint"  aria-selected="false" data-pane="paint">Paint Shop</button>
     <button class="tab" role="tab" id="tab-year"   aria-selected="false" data-pane="year">Year Book</button>
     <button class="tab" role="tab" id="tab-book"   aria-selected="false" data-pane="book">Rule Book</button>
@@ -351,6 +352,24 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
       </div>
       <hr class="rule">
       <div class="tw" style="max-height:620px; overflow-y:auto"><table id="ledgerTbl"></table></div>
+    </div>
+  </section>
+
+  <!-- ================= LOGBOOK ================= -->
+  <section class="pane" id="pane-log" role="tabpanel" aria-labelledby="tab-log" hidden>
+    <div class="sheet">
+      <div class="eyebrow">Carnet de route &mdash; sim</div>
+      <h2>Logbook</h2>
+      <p class="small muted">Every leg you file on the Ramp tab writes its own row here, auto-filled &mdash; no separate typing, the way a real carnet gets filled in after each flight.</p>
+      <div class="note warn" style="margin-top:10px">
+        <p><strong>Draft columns.</strong> This follows the standard French journey-log layout (date, d&eacute;part, arriv&eacute;e, dur&eacute;e, nature, totaux, pilote, observations) &mdash; it is <em>not yet checked against your real NK carnet</em>. Session couldn't view the actual scanned pages: the download host is blocked by this session's network policy, and a photographed page has no text to extract. Send a page (or the blank form) and this gets aligned to it exactly.</p>
+      </div>
+      <div class="btnrow" style="margin-top:10px">
+        <button class="btn ghost small" id="btn-log-csv">Copy as CSV</button>
+      </div>
+      <hr class="rule">
+      <div class="tw" style="max-height:620px; overflow-y:auto"><table id="logTbl"></table></div>
+      <p class="tiny muted" style="margin-top:8px">Totaux is sim hours only &mdash; it never joins or overwrites NK's real total time. Heure d&eacute;part/arriv&eacute;e aren't shown: the Ramp tab logs block <em>duration</em>, not clock times; say if you want departure/arrival times added there to fill those columns too.</p>
     </div>
   </section>
 
@@ -994,6 +1013,37 @@ function renderLedger(){
     '</tbody><tfoot><tr><td colspan="5">Total — '+rows.length+' invoices</td><td class="num">'+eur(tn)+'</td><td class="num">'+eur(tv)+'</td><td class="num">'+eur(tg)+'</td></tr></tfoot>';
 }
 
+/* Carnet de route — standard French journey-log columns (date, départ, arrivée, durée,
+   nature, totaux, pilote, observations). Draft: not yet checked against the real NK carnet.
+   Totaux is sim hours only, running from 0 for this book — it never touches or continues
+   NK's real total time. */
+function hhmm(h){
+  var totalMin = Math.round(h*60);
+  var hh = Math.floor(totalMin/60), mm = totalMin%60;
+  return hh+':'+String(mm).padStart(2,'0');
+}
+function renderLogbook(){
+  var legs = S.legs.slice().sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
+  var run = 0;
+  var rows = legs.map(function(l, i){
+    var prev = run; run += l.hours;
+    var from = FIELDS[l.from] ? l.from+' '+FIELDS[l.from].name : l.from;
+    var to   = FIELDS[l.to]   ? l.to+' '+FIELDS[l.to].name   : l.to;
+    var nature = l.from===l.to ? 'Local' : 'Navigation';
+    return {n:i+1, date:l.date, from:from, to:to, dur:l.hours, nature:nature, prev:prev, run:run, note:l.note||''};
+  });
+  $('logTbl').innerHTML =
+    '<thead><tr><th class="num">#</th><th>Date</th><th>D&eacute;part</th><th>Arriv&eacute;e</th><th class="num">Dur&eacute;e</th><th>Nature</th><th>Pilote</th>'+
+    '<th class="num">Report</th><th class="num">Ce vol</th><th class="num">Total</th><th>Observations</th></tr></thead><tbody>'+
+    (rows.length ? rows.map(function(r){
+      return '<tr><td class="num">'+r.n+'</td><td class="mono">'+esc(r.date)+'</td><td>'+esc(r.from)+'</td><td>'+esc(r.to)+'</td>'+
+        '<td class="num mono">'+hhmm(r.dur)+'</td><td class="small">'+r.nature+'</td><td class="small">Claus Thanner</td>'+
+        '<td class="num mono">'+hhmm(r.prev)+'</td><td class="num mono">'+hhmm(r.dur)+'</td><td class="num mono">'+hhmm(r.run)+'</td>'+
+        '<td class="small">'+esc(r.note)+'</td></tr>';
+    }).join('') : '<tr><td colspan="11" class="muted">No legs filed yet.</td></tr>')+
+    (rows.length ? '</tbody><tfoot><tr><td colspan="9">Total sim hours</td><td class="num mono">'+hhmm(run)+'</td><td></td></tr></tfoot>' : '</tbody>');
+}
+
 function renderPaint(){
   var v = S.health.paint, band = bandFor(v);
   var next = PAINT_BANDS[PAINT_BANDS.indexOf(band)+1];
@@ -1098,7 +1148,7 @@ function renderBook(){
 
 function render(){
   renderStatus(); renderMeters(); renderSeasonMini(); renderHealth();
-  renderCounters(); renderSquawks(); renderLedger(); renderPaint(); renderYear(); renderBook();
+  renderCounters(); renderSquawks(); renderLedger(); renderLogbook(); renderPaint(); renderYear(); renderBook();
 }
 
 /* ============================================================
@@ -1142,7 +1192,7 @@ function syncFuelPrice(){
 }
 
 function switchPane(name){
-  ['ramp','tech','air','ledger','paint','year','book'].forEach(function(p){
+  ['ramp','tech','air','ledger','log','paint','year','book'].forEach(function(p){
     $('pane-'+p).hidden = (p!==name);
     $('tab-'+p).setAttribute('aria-selected', String(p===name));
   });
@@ -1233,6 +1283,20 @@ function boot(){
         .map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
     }).join('\n');
     copy(head+body, S.spend.length+' rows copied as CSV.');
+  });
+  $('btn-log-csv').addEventListener('click', function(){
+    var legs = S.legs.slice().sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
+    var run = 0;
+    var head = 'No.,Date,Depart,Arrivee,Duree,Nature,Pilote,Report,Ce vol,Total,Observations\n';
+    var body = legs.map(function(l, i){
+      var prev = run; run += l.hours;
+      var from = FIELDS[l.from] ? l.from+' '+FIELDS[l.from].name : l.from;
+      var to   = FIELDS[l.to]   ? l.to+' '+FIELDS[l.to].name   : l.to;
+      var nature = l.from===l.to ? 'Local' : 'Navigation';
+      return [i+1, l.date, from, to, hhmm(l.hours), nature, 'Claus Thanner', hhmm(prev), hhmm(l.hours), hhmm(run), l.note||'']
+        .map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
+    }).join('\n');
+    copy(head+body, legs.length+' rows copied as CSV.');
   });
   $('btn-bat').addEventListener('click', function(){ copy($('batOut').textContent, 'Batch script copied.'); });
   $('btn-export').addEventListener('click', function(){
