@@ -82,7 +82,10 @@ section{display:grid;gap:12px}
 
 /* tick rows */
 .ticks{border:1px solid var(--line);background:var(--surface)}
-.tick{display:grid;grid-template-columns:22px 1fr auto;gap:4px 13px;padding:12px 16px;border-top:1px solid var(--line);align-items:start}
+.tick{display:grid;grid-template-columns:22px 1fr auto;gap:4px 13px;padding:12px 16px 13px;
+  border-top:1px solid var(--line);border-left:4px solid transparent;align-items:start}
+.tick.done{border-left-color:var(--done)}
+.tick.open{border-left-color:var(--stop);background:var(--stop-soft)}
 .tick:first-child{border-top:0}
 .box{width:16px;height:16px;border:1.5px solid var(--line-hard);margin-top:3px;display:grid;place-items:center;
   font:700 11px var(--body);color:var(--surface)}
@@ -91,6 +94,14 @@ section{display:grid;gap:12px}
 .tick .q{font-weight:600}
 .tick .a{font-size:13.5px;grid-column:2;color:var(--muted)}
 .tick .a b{color:var(--ink);font-weight:600}
+.tick .stat{grid-column:2;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:3px}
+.decide{display:inline-flex;align-items:center;gap:7px;font:600 12.5px var(--body);text-decoration:none;
+  color:var(--surface);background:var(--stop);border:1px solid var(--stop);padding:5px 11px}
+.decide:hover{filter:brightness(1.12)}
+.decide:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.answered{display:inline-flex;align-items:center;gap:6px;font:600 12px var(--body);
+  color:var(--done);background:var(--done-soft);border:1px solid var(--done);padding:3px 9px}
+.notehere{background:var(--stop-soft);border-left:3px solid var(--stop)}
 .tick time{font:400 12px var(--mono);color:var(--muted);white-space:nowrap}
 @media(max-width:560px){.tick{grid-template-columns:22px 1fr}.tick time{grid-column:2}}
 
@@ -180,19 +191,36 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <section>
-  <h2>Your decisions <span class="hint">tapped on the Annunciator &mdash; shown here, not taken here</span></h2>
+  <h2>Your decisions <span class="hint">shown here &mdash; taken on the Annunciator</span></h2>
+
+  <div class="note notehere">
+    <p><strong>Nothing is decided on this page.</strong> This card is a mirror. Every question below is tapped on the
+    <a href="https://claude.ai/artifact/1aDxiL7JRjFx9igTtC6PvF">F-BVNK Annunciator</a> &mdash; that is the only record, and a tap
+    there wakes the project manager and reaches this chat. Red rows are waiting on you. Green rows show the answer that came back.</p>
+  </div>
+
   <div class="ticks">
     <div class="tick done"><span class="box">&#10003;</span><span class="q">Wire the ledger to the iPad wear model, or keep it standalone?</span><time>15 Sep 14:18:07Z</time>
-      <span class="a">You picked <b>&ldquo;Wire it to the iPad wear model (NK_*)&rdquo;</b>. Nothing has been wired &mdash; the design below is the answer to it, and the PM reviews before any build.</span></div>
+      <span class="a">You picked <b>&ldquo;Wire it to the iPad wear model (NK_*)&rdquo;</b>. Nothing has been wired &mdash; the design below is the answer to it, and the PM reviews before any build.</span>
+      <span class="stat"><span class="answered">&#10003; Answered on the Annunciator</span></span></div>
+
     <div class="tick done"><span class="box">&#10003;</span><span class="q">Stage a note in Dropbox, or leave it on the git branch?</span><time>15 Sep 14:18:39Z</time>
-      <span class="a">You picked <b>&ldquo;Stage NOTE.md + MD5.txt in FBVNK_STAGING&rdquo;</b>. Written at 16:21 and frozen. The 74 KB HTML itself stays on the branch: the connector cannot upload local files, and retyping it would break the checksum.</span></div>
+      <span class="a">You picked <b>&ldquo;Stage NOTE.md + MD5.txt in FBVNK_STAGING&rdquo;</b>. Written at 16:21 and frozen. The 74 KB HTML itself stays on the branch: the connector cannot upload local files, and retyping it would break the checksum.</span>
+      <span class="stat"><span class="answered">&#10003; Answered on the Annunciator</span></span></div>
+
     <div class="tick open"><span class="box"></span><span class="q">Which integration option &mdash; in-sim page, standalone reader, or hybrid?</span><time>not yet asked</time>
-      <span class="a">Goes on the Annunciator as a red <code>ledger_</code> item once the PM has reviewed the design. Recommendation below is the hybrid.</span></div>
+      <span class="a">Goes up as a red <code>ledger_</code> item once the PM has reviewed the design. The recommendation below is the hybrid.</span>
+      <span class="stat"><a class="decide" href="https://claude.ai/artifact/1aDxiL7JRjFx9igTtC6PvF">Decide on the Annunciator &rarr;</a><span class="tiny muted">not tappable here</span></span></div>
+
     <div class="tick open"><span class="box"></span><span class="q">At wear rate x1000, do the costs run a thousandfold too?</span><time>not yet asked</time>
-      <span class="a">Bill at the scaled rate, or normalise to REAL and treat the multiplier as a test setting. The starter is capped at 100, so it drifts against everything else at x1000.</span></div>
+      <span class="a">Bill at the scaled rate, or normalise to REAL and treat the multiplier as a test setting. The starter is capped at 100, so it drifts against everything else at x1000.</span>
+      <span class="stat"><a class="decide" href="https://claude.ai/artifact/1aDxiL7JRjFx9igTtC6PvF">Decide on the Annunciator &rarr;</a><span class="tiny muted">not tappable here</span></span></div>
+
     <div class="tick open"><span class="box"></span><span class="q">Is &ldquo;Reset to delivery&rdquo; a free restoration, or a billable one?</span><time>not yet asked</time>
-      <span class="a">It puts the parts back to 85 / 60 / 70 at no cost. Bill it as a full restoration, or record it as a test reset outside the book.</span></div>
+      <span class="a">It puts the parts back to 85 / 60 / 70 at no cost. Bill it as a full restoration, or record it as a test reset outside the book.</span>
+      <span class="stat"><a class="decide" href="https://claude.ai/artifact/1aDxiL7JRjFx9igTtC6PvF">Decide on the Annunciator &rarr;</a><span class="tiny muted">not tappable here</span></span></div>
   </div>
+
   <div class="note warn">
     <p><strong>Open for information, no decision needed.</strong> The four wear texture sets do not exist &mdash; only Fresh does &mdash; so the paint band moves and the money moves, the aeroplane's look does not. That is a texture job, out of scope without your order. Separately, eighteen repair prices carry no 2025 invoice and are flagged <code>assumption</code> in the ledger; all sit in one editable block.</p>
   </div>
@@ -316,7 +344,8 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <footer>
-  <p><strong>Decisions are tapped on the F-BVNK Annunciator</strong>, where they wake the PM and reach this chat. This card only reports. It is refreshed when the job moves.</p>
+  <p><strong>Decisions are tapped on the <a href="https://claude.ai/artifact/1aDxiL7JRjFx9igTtC6PvF">F-BVNK Annunciator</a></strong>, where they wake the project manager and reach this chat.</p>
+  <p>This card is a mirror, not a live feed: it cannot read the Annunciator's answers by itself, so a tap shows up here when the card is next refreshed. The Annunciator is always the current truth.</p>
   <p>No package bytes written. No sim file touched. Nothing installed.</p>
 </footer>
 
