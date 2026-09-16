@@ -1971,8 +1971,15 @@ function chipSel(id, list, cur){
     }).join('')+
     '</span><input type="hidden" id="'+id+'" value="'+esc(cur)+'">';
 }
+/* N4, left to this session by the PM on 16 Sep. Night and IFR are hours-and-minutes
+   columns - AMC1 FCL.050 cols 8 and 9 - and a number box cannot take 1:12 at all: the
+   browser refuses the colon and the pilot is left with nothing in the field. The book
+   already reads both forms in parseHours, and the hand form's own flight-time field says
+   so on its placeholder, "1.2 or 1:12". So these two are text, read the same way, and
+   stored to the minute like every other time in the book. */
 function hoursBox(id, v){
-  return '<input type="number" id="'+id+'" min="0" step="0.1" value="'+(+v||0)+'">';
+  return '<input type="text" id="'+id+'" inputmode="decimal" placeholder="0:00" '+
+    'autocomplete="off" value="'+(+v > 0 ? hhmm(+v) : '')+'">';
 }
 function selectionsBlock(leg){
   var fd = FIELDS[leg.to] || FIELDS.ZZZZ;
@@ -2027,8 +2034,8 @@ function applySelections(leg){
   leg.crew      = String(g('sel-crew') || '').trim().slice(0,60);
   leg.ldgDay    = Math.round(n('sel-ldgd', 0));
   leg.ldgNight  = Math.round(n('sel-ldgn', 0));
-  leg.nightH    = Math.round(n('sel-night', 0)*10)/10;
-  leg.ifrH      = Math.round(n('sel-ifr', 0)*10)/10;
+  leg.nightH    = toMinute(Math.max(0, parseHours(g('sel-night'))));
+  leg.ifrH      = toMinute(Math.max(0, parseHours(g('sel-ifr'))));
   leg.note      = String(g('sel-note') || '').slice(0,160);
   leg.style     = ['gentle','normal','pressed'].indexOf(g('sel-style')) > -1 ? g('sel-style') : 'normal';
   leg.surface   = ['asphalt','grass','gravel'].indexOf(g('sel-surf')) > -1 ? g('sel-surf') : 'asphalt';
