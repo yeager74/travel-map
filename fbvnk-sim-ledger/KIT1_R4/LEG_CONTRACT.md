@@ -170,15 +170,23 @@ converter's to get right, not the book's.
 `from`/`to` as codes, `power`/`style`, `surface`, `nights`, `handling`, `uplift`, `fuelPrice`,
 `conditionBefore`/`conditionAfter`. The book's labelled defaults stand for all of them.
 
+## Closed since revision 3
+
+1. **Aerodrome coordinates — done.** R17 landed the ARP for all eight from the national AIPs, each
+   with its chapter and whether a second read confirmed it. They are in the book's field table and
+   in `PRICES_AND_BILLING_RULES.json` → `fields`. The closest pair is LPCO–LPVL at 67.5 nm against
+   the 8 nm resolve radius, so nothing can be confused. A position that still does not resolve
+   files as `????` and says so, and naming it once on the review page teaches the book.
+2. **`LEAP` / Teruel — done, and the book was the one that was wrong.** `LEAP` is Ampuriabrava;
+   Teruel is `LETL`. The two codes had been swapped since the first build. Settled not by the AIP
+   alone but by an invoice of Claus's: BP Energía España `2002864264` prints *"Location of
+   Delivery: TEV - LETL - TERUEL"* and bills F-BVNK for 155.000 L on 24 OCT 25 at €366.14, which
+   is €2.3622/L against the 2.36 that row has always carried. `LEMP` is Los Martínez del Puerto in
+   Murcia and nothing of Claus's uses it, so it is dropped. His planning — `LPCS - LETL` then
+   `LETL - LEAP` — reads Cascais → Teruel → Ampuriabrava and was always consistent.
+
 ## Open against this contract
 
-1. **Aerodrome coordinates.** No latitude or longitude is on file for any aerodrome, and this
-   session will not put a position on a real one from recall. Until they are supplied every
-   position resolves to `????`. Eight pairs wanted: LPCS, LPCO, LPVL, LEVD, LEAP, LEST, LEBG,
-   LEMP.
-2. **UTC or local in the carnet.** On the board. The control makes either answer cheap.
-3. **`LEAP` / Teruel.** The book's field table calls `LEAP` "Teruel", but Claus's own flight
-   planning has both `LPCS - LETL` and `LETL - LEAP` for 24 Oct 2025, which are two different
-   aerodromes. At least one name is wrong. Flagged, not corrected.
-4. **Whole litres.** The REM figures are whole litres, the PM's decision; the burn is to 0.1 L.
+1. **UTC or local in the carnet.** On the board. The control makes either answer cheap.
+2. **Whole litres.** The REM figures are whole litres, the PM's decision; the burn is to 0.1 L.
    The book prints what it is given. Claus can ask for decimals.
