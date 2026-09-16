@@ -368,6 +368,18 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
             <span class="small muted" id="f-hint"></span>
           </div>
         </details>
+
+        <details class="fallback" id="coordPanel">
+          <summary>Aerodrome positions &mdash; where she resolves <span class="mono tiny">????</span> from</summary>
+          <p class="small muted" style="margin-top:0">F-BVNK sends latitude and longitude, not ICAO codes, so naming the aerodrome is this book&rsquo;s job. No position is invented here: paste the set Records produces from the official AIPs, with its source against each one. Until then a leg files as <span class="mono">????</span> and says so &mdash; and naming one on the review page teaches the book that position on its own.</p>
+          <div class="btnrow" style="margin-top:0">
+            <button class="btn ghost small" id="btn-coord-paste">Paste a coordinate set</button>
+            <button class="btn ghost small" id="btn-coord-file">Open a file&hellip;</button>
+            <input type="file" id="coordFile" accept=".json,application/json,text/plain" hidden>
+          </div>
+          <p class="tiny muted" id="coordHint">Nothing loaded. Expecting <span class="mono tiny">{"LPCS":{"lat":..,"lon":..,"src":".."}, ...}</span>.</p>
+          <div id="coordList" style="margin-top:10px"></div>
+        </details>
       </div>
 
       <div class="sheet" style="margin-top:14px">
@@ -977,11 +989,22 @@ function nmBetween(a, b){
   var h = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)*Math.sin(dLon/2);
   return 2*R*Math.asin(Math.min(1, Math.sqrt(h)));
 }
+/* Every code the book has a position for, whether or not the price table knows it.
+   LETL is the case in point: Claus flew LPCS-LETL-LEAP in October 2025 and LETL has no
+   row in FIELDS, so a position there would never resolve if this only walked FIELDS.
+   An aerodrome with a position but no row still logs correctly and prices at the
+   default field, which is right - the book knows where she landed, not what it cost. */
+function knownCodes(){
+  var seen = {}, out = [];
+  Object.keys(FIELDS).concat(Object.keys((S && S.fieldPos) || {})).forEach(function(c){
+    if(c !== 'ZZZZ' && !seen[c]){ seen[c] = 1; out.push(c); }
+  });
+  return out;
+}
 function resolveField(lat, lon){
   if(typeof lat !== 'number' || typeof lon !== 'number') return null;
   var best = null;
-  Object.keys(FIELDS).forEach(function(code){
-    if(code === 'ZZZZ') return;
+  knownCodes().forEach(function(code){
     var p = fieldPos(code); if(!p) return;
     var nm = nmBetween({lat:lat, lon:lon}, p);
     if(!best || nm < best.nm) best = {code:code, nm:nm};
@@ -1215,6 +1238,63 @@ function normaliseLeg(rec){
     note:String(rec.note || '').slice(0,160),
     notes:notes
   }};
+}
+
+/* ---------------- aerodrome positions ----------------
+   Contract FBVNK_LEG/2 has the aeroplane sending latitude and longitude, so resolving
+   them to an ICAO code is the book's job - and the book had no coordinate for any
+   aerodrome, because this session will not put a position on a real one from recall.
+   Records is producing them from the official AIPs (NAV Portugal, ENAIRE) with a source
+   URL against each. This is where they go in. Nothing here invents a coordinate: it
+   takes what it is given, checks it is a plausible position, and records where it came
+   from so the Rule Book can show provenance next to every one. */
+function loadCoords(txt){
+  var obj;
+  try{ obj = JSON.parse(String(txt||'')); }
+  catch(e){ coordSay('That is not a coordinate set — expecting JSON keyed by ICAO.', true); return false; }
+  if(!obj || typeof obj !== 'object' || Array.isArray(obj)){ coordSay('Expecting an object keyed by ICAO code.', true); return false; }
+  /* A set may arrive wrapped, e.g. {"source":"...","aerodromes":{...}} */
+  if(obj.aerodromes && typeof obj.aerodromes === 'object') obj = obj.aerodromes;
+
+  var taken = [], refused = [];
+  Object.keys(obj).forEach(function(raw){
+    var code = icao(raw), v = obj[raw];
+    if(!code){ refused.push(raw + ' — not a four-letter code'); return; }
+    var lat = v && numOrNull(v.lat), lon = v && numOrNull(v.lon);
+    if(lat === null || lon === null){ refused.push(code + ' — no lat/lon'); return; }
+    if(lat < -90 || lat > 90 || lon < -180 || lon > 180){ refused.push(code + ' — off the globe'); return; }
+    if(lat === 0 && lon === 0){ refused.push(code + ' — 0,0 is the Atlantic, not an aerodrome'); return; }
+    S.fieldPos[code] = {lat:lat, lon:lon, src:String((v.src || v.source || 'supplied')).slice(0,120)};
+    taken.push(code);
+  });
+
+  if(!taken.length){ coordSay('Nothing usable in that. ' + refused.join('; '), true); return false; }
+  save(); render();
+  coordSay(taken.length + ' position' + (taken.length===1?'':'s') + ' on file: ' + taken.join(', ') +
+           (refused.length ? '. Refused: ' + refused.join('; ') : '.'), false);
+  toast(taken.length + ' aerodrome position' + (taken.length===1?'':'s') + ' loaded. Positions in a record resolve to these now.');
+  return true;
+}
+function coordSay(msg, bad){
+  var el = $('coordHint'); if(!el) return;
+  el.textContent = msg; el.style.color = bad ? 'var(--bad)' : '';
+}
+function renderCoords(){
+  var el = $('coordList'); if(!el) return;
+  var rows = knownCodes().map(function(code){
+    var p = fieldPos(code);
+    return {code:code, p:p, name:(FIELDS[code] ? FIELDS[code].name : 'not in the price table')};
+  });
+  var have = rows.filter(function(r){ return r.p; }).length;
+  el.innerHTML = '<div class="tw"><table><thead><tr><th>ICAO</th><th>Aerodrome</th><th>Position</th><th>Source</th></tr></thead><tbody>'+
+    rows.map(function(r){
+      return '<tr><td class="mono">'+esc(r.code)+'</td><td>'+esc(r.name)+'</td>'+
+        '<td class="mono tiny">'+(r.p ? esc(posTxt(r.p.lat, r.p.lon)) : '<span class="muted">none</span>')+'</td>'+
+        '<td class="tiny muted">'+(r.p ? esc(r.p.src || 'supplied') : '—')+'</td></tr>';
+    }).join('')+'</tbody></table></div>'+
+    '<p class="tiny muted" style="margin-top:8px">'+have+' of '+rows.length+' have a position. '+
+    'A record that carries a position and no ICAO code resolves against these, nearest within '+RESOLVE_RADIUS_NM+
+    ' nm. Without one it files as <span class="mono">????</span>, prices at the default field and says so on the review page.</p>';
 }
 
 function ingestSay(msg, bad){
@@ -1625,7 +1705,7 @@ function renderSignCard(leg, res){
     sel.addEventListener('change', function(){
       var code = this.value; if(!code) return;
       var lat = leg[end==='from'?'depLat':'arrLat'], lon = leg[end==='from'?'depLon':'arrLon'];
-      S.fieldPos[code] = {lat:lat, lon:lon};
+      S.fieldPos[code] = {lat:lat, lon:lon, src:'named by the pilot on the review page, '+leg.date};
       leg[end] = code;
       leg.notes = (leg.notes||[]).concat([
         (end==='from'?'Departure':'Arrival')+' named '+code+' by the pilot. The book now has that position and resolves it by itself from here on. The fees on this leg posted at the default aerodrome before it was named.']);
@@ -2003,7 +2083,7 @@ function renderBook(){
 
 function render(){
   renderStatus(); renderMeters(); renderSeasonMini(); renderHealth(); renderInbox();
-  renderCounters(); renderSquawks(); renderLedger(); renderLogbook(); renderPaint(); renderYear(); renderBook();
+  renderCounters(); renderSquawks(); renderLedger(); renderLogbook(); renderPaint(); renderYear(); renderBook(); renderCoords();
 }
 
 /* ============================================================
@@ -2116,6 +2196,20 @@ function boot(){
   });
   $('btn-ingest-demo').addEventListener('click', function(){ ingestRecord(demoRecord()); });
   $('btn-ingest-watch').addEventListener('click', function(){ setWatch(!WATCH.on); });
+
+  $('btn-coord-paste').addEventListener('click', function(){
+    var t = prompt('Paste the aerodrome coordinate set, keyed by ICAO.');
+    if(t) loadCoords(t);
+  });
+  $('btn-coord-file').addEventListener('click', function(){ $('coordFile').click(); });
+  $('coordFile').addEventListener('change', function(){
+    var f = this.files && this.files[0]; this.value = '';
+    if(!f) return;
+    var rd = new FileReader();
+    rd.onload = function(){ loadCoords(rd.result); };
+    rd.onerror = function(){ coordSay('Could not read that file.', true); };
+    rd.readAsText(f);
+  });
 
   $('btn-file').addEventListener('click', function(){
     if(grounded()){ toast('She is grounded. Clear the broken item first.'); switchPane('tech'); return; }
