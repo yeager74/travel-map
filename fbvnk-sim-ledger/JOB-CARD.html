@@ -458,11 +458,10 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <section>
-  <h2>KIT1 REPORTED <span class="hint">written 16 Sep 03:0x UTC, Claus tapped yes in chat</span></h2>
+  <h2>KIT1 REPORTED <span class="hint">written 16 Sep 05:02&ndash;05:05 &middot; md5s verified on the laptop bytes &middot; in review as K7</span></h2>
   <div class="note">
-    <p><strong>Written and read back clean.</strong> The PM was right not to sign off in Claus's place &mdash; he told Claus so directly, Claus then answered the authorisation request himself, in chat, and the five files below went up immediately after. Verified post-write: refetched all five from Dropbox and every byte size matches the pre-upload numbers exactly; the content reads back intact (no truncation, no escaping damage). <strong>MD5.txt md5: <span class="mono tiny">9f73e6be2abc114df1be11c3b2e774e9</span></strong> &mdash; check this against the laptop bytes.</p>
+    <p><strong>Delivered and verified both ends.</strong> Five files in <span class="mono tiny">/MSFS 2024 Screenshots/FBVNK_STAGING/FBVNK_SIM_LEDGER_KIT1/</span>. This session refetched each one after writing &mdash; byte sizes match the pre-upload numbers, content intact. The PM then checked every md5 against the laptop bytes and confirmed all five. <strong>MD5.txt md5: <span class="mono tiny">9f73e6be2abc114df1be11c3b2e774e9</span></strong>. Folder frozen; Records reviews the kit as <strong>K7</strong>.</p>
   </div>
-  <p class="small">All five files are drafted and verified locally (JSON parses, <span class="mono tiny">md5sum -c</span> passes clean). Destination, unchanged from the original plan: <span class="mono tiny">/MSFS 2024 Screenshots/FBVNK_STAGING/FBVNK_SIM_LEDGER_KIT1/</span>.</p>
   <div class="tw">
     <table>
       <thead><tr><th>File</th><th class="num">Size</th><th>md5</th></tr></thead>
@@ -475,8 +474,54 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
       </tbody>
     </table>
   </div>
-  <p class="small">Both board picks are already in this draft: fixed costs stay laptop-only (22:32:22, &ldquo;as designed&rdquo;); fuel joins the cockpit figure from <span class="mono tiny">L:NK_ST_FP5L_USED</span>, positive deltas only, a drop treated as a refuel and never billed negative, the running litres kept in a persisted <span class="mono tiny">L:NK_LG_*</span> variable under the same reload cursor as everything else (22:34:50, &ldquo;yes&hellip;recommended&rdquo;). Full detail in the files themselves once posted.</p>
-  <p class="tiny muted">Folder is frozen from here, per the usual practice. PM: check the five md5s above against the laptop bytes and hand to Records when ready.</p>
+  <p class="small">Both board picks are carried in the kit: fixed costs stay laptop-only (22:32:22, &ldquo;as designed&rdquo;); fuel joins the cockpit figure from <span class="mono tiny">L:NK_ST_FP5L_USED</span>, positive deltas only, a drop treated as a refuel and never billed negative, the running litres kept in a persisted <span class="mono tiny">L:NK_LG_*</span> variable under the same reload cursor as everything else (22:34:50, &ldquo;yes&hellip;recommended&rdquo;).</p>
+  <p class="small"><strong>Next, and nothing before it:</strong> this session waits for K7. If Records finds gaps in the prices, the rules or the strip specification, they arrive here as one list from the PM and get worked as one revision. The iPad strip itself is built from <span class="mono tiny">STRIP_SPEC.md</span> by the Builder &mdash; package bytes are his lane and the PM's, not this session's.</p>
+  <p class="tiny muted">Five technical gaps are flagged inside the kit rather than guessed &mdash; <span class="mono tiny">PRICES_AND_BILLING_RULES.json &rarr; open_items</span>: the <span class="mono tiny">NK_ST_FAULTS</span> bit map, the hours-since-last-check variable, <span class="mono tiny">TACH</span> vs <span class="mono tiny">ENG_HRS</span> for reserve accrual, the battery-replacement signal, and five parts with no price.</p>
+</section>
+
+<section>
+  <h2>Documents requested from the laptop side <span class="hint">PM offered the read-only route, 16 Sep &mdash; one list, in priority order</span></h2>
+  <p class="small">Destination as the PM set it: read-only copies in <span class="mono tiny">FBVNK_STAGING/LEDGER_DOCS/</span> with an <span class="mono tiny">MD5.txt</span>, names and md5s reported back here. Items 1&ndash;3 would close four of the five open items above and make <span class="mono tiny">STRIP_SPEC.md</span> implementable rather than proposed.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th style="width:4%">#</th><th style="width:26%">File or fact</th><th>What this session would learn from it</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="num">1</td>
+          <td class="mono tiny">SPEC.md<br>(R5, c06f7305)<br><strong>full text</strong></td>
+          <td>Four of the five open items are likely answered in it, and this session has been working from summaries of it rather than the text. Specifically: the <strong><code>NK_ST_FAULTS</code> bit 0&ndash;7 assignment</strong>, without which the &ldquo;repair&rdquo; event cannot post anything; whether an <strong>hours-since-last-check counter exists</strong> or must be derived from deltas; the exact definitions of <strong><code>NK_ST_TACH</code> vs <code>NK_ST_ENG_HRS</code></strong>, so the reserve accrual reads the right one; and <strong>&sect;2.5's battery-replacement action</strong> &mdash; whether it bumps <code>MX_LOG</code> and what <code>BAT_HEALTH</code> lands on. That last one is the only detection rule in the kit still marked <span class="mono tiny">assumption</span>.</td>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td class="mono tiny">systems.cfg<br>[LocalVars] block</td>
+          <td><code>STRIP_SPEC.md</code> proposes seven new <code>L:NK_LG_*</code> names. Needed to confirm <strong>none collide</strong> with a variable already there, and to see the <strong>exact block format</strong> the Builder has to append to, since that append is byte-proven.</td>
+        </tr>
+        <tr>
+          <td class="num">3</td>
+          <td class="mono tiny">HANGAR.js</td>
+          <td>The strip lands on that page. What it <strong>already reads and displays</strong>, how it reads <code>L:</code> vars, and its layout conventions &mdash; so the spec describes something that fits the page instead of something invented beside it. Also checks the premise the whole option-C recommendation rests on: that a running euro total is the one thing HANGAR does not already show.</td>
+        </tr>
+        <tr>
+          <td class="num">4</td>
+          <td class="mono tiny">FP5L.js</td>
+          <td>Vectors V10&ndash;V13 encode the USED behaviour from the PM's summary. Two edge cases the summary does not settle, and which those vectors currently assume: a <strong>top-up smaller than the 0.5 L reset threshold</strong> (does USED keep accumulating straight through it?), and whether <strong>USED can ever read negative</strong> or is clamped at 0. If either differs, the accumulation rule needs a line.</td>
+        </tr>
+        <tr>
+          <td class="num">5</td>
+          <td class="mono tiny">rallye_ms893_int.xml</td>
+          <td>Only if the fault-bit map is not in <code>SPEC.md</code> &mdash; the <code>NK_ST_*</code> writers are there and the bit assignment can be read off them. Skip if item 1 covers it.</td>
+        </tr>
+        <tr>
+          <td class="num">6</td>
+          <td class="mono tiny">columns.json<br><span class="tiny muted">(74 datums)</span></td>
+          <td><span class="tiny muted">Low priority, blocking nothing.</span> Tells this session exactly what the reader already captures, so any future laptop-side feed is specified against the real column list rather than a guess.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <p><strong>Not asked for, deliberately.</strong> The five missing prices are not a package question: carburettor, starter, oil pump/lines, exterior lamps and oil per quart need either a real invoice or Claus's own call. Invoice files are already reachable from this session's own connector, so nothing needs to move for that &mdash; the board's lamp record (Aero-Lites AL-3615X-PA landing, AL-3615X-F taxi, NavMax nav set, IAC Coimbra, June 2024) may have an invoice behind it, and this session will go looking rather than ask for one to be sent. No payware. Nothing out of Claus's financial file.</p>
+  </div>
 </section>
 
 <section>
