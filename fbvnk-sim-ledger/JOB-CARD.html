@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 11</dd>
+      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 12</dd>
     </dl>
   </div>
 </header>
@@ -491,6 +491,50 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <p class="small"><strong>The EASA side is now in, as R18.</strong> It moved one row, added two and left <em>Nature du Vol</em> alone &mdash; the section below has it.</p>
   </div>
   <p class="small"><strong>The P1 figure is closed, and not by me.</strong> Claus, 18:04:32: &ldquo;good bloody question&hellip; ha ha, I should know, but I just carried it over from the previous owners. Keep it the same&rdquo;. The Logbook tab no longer calls it an assumption of this session&rsquo;s &mdash; it quotes him, and the figure stays exactly as his pages carry it.</p>
+</section>
+
+<section>
+  <h2>Logbook layout (V275) <span class="hint">16 Sep 2026 &middot; Claus 21:0x &middot; built and pushed &middot; commit <span class="mono">93417c8</span></span></h2>
+  <p class="small">Claus, word for word: <em>&ldquo;update the cost ledger with what the lates layout of the lookbook looks like&rdquo;</em>. Built from the staged <span class="mono tiny">LEDGER_DOCS_3_LOGBOOK_V275/</span> &mdash; every format below taken from the installed <span class="mono tiny">HANGAR.js</span> (md5 <span class="mono tiny">91fa9dce</span>, the <span class="mono tiny">lbLastText()</span> strings) rather than from the summary, so the two cannot drift.</p>
+  <div class="note">
+    <p><strong>The review-and-sign page&rsquo;s AUTO block is now the iPad&rsquo;s own panel, line for line.</strong> It used to be the book&rsquo;s own shape &mdash; Moteur, En vol, FP-5L, Touch&eacute;, Tacho, R&eacute;f. Tap <em>Logbook &ndash; last leg</em> on the cockpit iPad and read the laptop, and it is the same text:</p>
+    <pre class="mono tiny" style="margin:6px 0 0; padding:9px 12px; background:var(--accent-soft); border-left:3px solid var(--accent); white-space:pre-wrap; line-height:1.55">Leg 12: 08:20Z - 09:41Z (engine start - shutdown)
+Airborne 1:03, block 1:21
+Fuel 220 L -&gt; 194 L (26.4 L)
+Tacho 1228.32 -&gt; 1229.34
+Take-off 08:32Z, 1 landing, last 09:35Z at -180 fpm
+Position dep 38.726 -9.355, arr 40.156 -8.469
+Zulu day 259</pre>
+    <p class="tiny muted" style="margin-top:6px">Verified in the running book. The refuel variant prints <span class="mono tiny">(refuel inside the leg: no leg burn)</span>, an air start prints <span class="mono tiny">No take-off seen</span>, and an engine stop adds its own line &mdash; all three matching the installed strings.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Item</th><th>Format, as the iPad prints it</th></tr></thead>
+      <tbody>
+        <tr><td>Times</td><td class="mono tiny">HH:MMZ</td></tr>
+        <tr><td>Durations</td><td class="mono tiny">h:mm</td></tr>
+        <tr><td>Fuel at start and shutdown</td><td class="mono tiny">whole litres</td></tr>
+        <tr><td>Burn, in brackets</td><td class="mono tiny">0.1 L</td></tr>
+        <tr><td>Tacho</td><td class="mono tiny">0.01 h</td></tr>
+        <tr><td>Touchdown</td><td class="mono tiny">whole fpm</td></tr>
+        <tr><td>Positions</td><td class="mono tiny">three decimals</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note warn">
+    <p><strong>Three places the panel disagrees with the rest of the book on purpose, each said out loud underneath it.</strong></p>
+    <p class="small"><strong>Always Zulu.</strong> The carnet has a UTC/local control and the iPad has none. A line meant to match must not move when that control does, so the panel ignores it. The carnet rows still follow it.</p>
+    <p class="small"><strong>The tacho takes a dot.</strong> The iPad prints <span class="mono tiny">toFixed(2)</span>; Claus writes <span class="mono tiny">1228,32</span> with a comma by hand on page 86, and the carnet keeps his comma. Same number, two hands.</p>
+    <p class="small"><strong>The touchdown is shown negative-down &mdash; the sim&rsquo;s own sign &mdash; because that is what the iPad prints.</strong> The record&rsquo;s <span class="mono tiny">touchdownFpm</span> stays positive-down under <span class="mono tiny">FBVNK_LEG/2</span> and that is what the book bills and checks hard landings on. The line under the panel names both: <em>&ldquo;the record itself carries +180 fpm positive-down, which is what the book bills on.&rdquo;</em> Two signs for one number is exactly what gets read wrong six weeks later, so neither is left implicit.</p>
+  </div>
+  <div class="note">
+    <p><strong>One thing the record cannot give yet: the leg number.</strong> The iPad&rsquo;s first line is <span class="mono tiny">Leg 12:</span> and that number is Claus&rsquo;s cross-reference between the panel and this page. <span class="mono tiny">FBVNK_LEG/2</span> carries no leg counter, so the book reads an optional <span class="mono tiny">legNo</span> when it is there and prints <span class="mono tiny">Leg &mdash;:</span> with the reference when it is not. <strong>For the Builder:</strong> adding <span class="mono tiny">legNo</span> from <span class="mono tiny">NK_LB_N</span> would close the last gap in &ldquo;line for line&rdquo;. It goes in the contract at the next revision either way.</p>
+  </div>
+  <div class="note">
+    <p><strong>The leg rule now reads the same in both places</strong> &mdash; under the carnet on the Logbook tab and on the review page: <em>&ldquo;A leg is an engine start to shutdown with at least 10 s airborne in one stretch. Ground runs, taxi bumps and hops under 10 s make no entry at all, so a tacho gap between one leg and the next is expected and is not an error.&rdquo;</em> It shows whether or not any run was left out, so the rule is on the page before Claus needs it rather than only after.</p>
+    <p class="small"><strong>His page-86 carnet columns are untouched</strong>, as instructed. This is about how the aeroplane&rsquo;s leg is shown and checked against the iPad, not his paper format. Also fixed in passing: the Carburant line repeated its own figure, reading <em>&ldquo;26.4 L &mdash; FP-5L used, summed from the logger rows: 26.4 L&rdquo;</em>.</p>
+  </div>
+  <p class="tiny muted"><strong>Pushed</strong> at <span class="mono">93417c87d006f435f1eaeab0c288bc02131543c4</span>, <span class="mono">fbvnk-sim-ledger/FBVNK-LEDGER.html</span>, 157,874 B, md5 <span class="mono tiny">82b968b0</span>. Regression set green; the seeded book is unmoved at 8 legs, 16 invoices, 18.4 hours. <strong>The card&rsquo;s plate already reads 16 Sep 2026 &middot; rev 11</strong> &mdash; the 15 Sep / rev 5 the PM saw was an older published version.</p>
 </section>
 
 <section>
