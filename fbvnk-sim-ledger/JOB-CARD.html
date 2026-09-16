@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 9</dd>
+      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 10</dd>
     </dl>
   </div>
 </header>
@@ -480,7 +480,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <section>
-  <h2>Review after each flight <span class="hint">design proposal, nothing built &mdash; full table in <span class="mono tiny">KIT1_R4/NOTE.md</span></span></h2>
+  <h2>Review after each flight <span class="hint">design proposal, nothing built &mdash; full table in <span class="mono tiny">KIT1_R5/NOTE.md</span></span></h2>
   <p class="small">Claus asked what selections the review page should offer, and said <em>&ldquo;Maybe u already set this up, I haven&rsquo;t checked yet&rdquo;</em>. He has not, so here is the page as it actually stands with an automatic leg, read off the running book rather than described from the source.</p>
   <div class="note">
     <p><strong>What is already there.</strong> It opens by itself when a record arrives. Prefilled: route with off/on times, Date, Dur&eacute;e, Nature, Carburant with the rung that produced it, and an <span class="mono tiny">AUTO</span> block carrying Moteur, En vol, FP-5L, Touch&eacute;, Tacho and the record&rsquo;s reference. It lists every <span class="mono tiny">assumption:</span> it had to make, and every invoice and tech-log line the leg posted. Then a signature line, and the cost appears only once he signs.</p>
@@ -491,6 +491,70 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <p class="small"><strong>The EASA side is now in, as R18.</strong> It moved one row, added two and left <em>Nature du Vol</em> alone &mdash; the section below has it.</p>
   </div>
   <p class="small"><strong>The P1 figure is closed, and not by me.</strong> Claus, 18:04:32: &ldquo;good bloody question&hellip; ha ha, I should know, but I just carried it over from the previous owners. Keep it the same&rdquo;. The Logbook tab no longer calls it an assumption of this session&rsquo;s &mdash; it quotes him, and the figure stays exactly as his pages carry it.</p>
+</section>
+
+<section>
+  <h2>KIT1 revision 5 &mdash; REPORTED <span class="hint">Claus&rsquo;s carnet rule of 18:34 &middot; two defects it exposed &middot; one decision for the board &middot; Records reviews it as K7e</span></h2>
+  <div class="note warn">
+    <p><strong>Working Claus&rsquo;s rule through the book found two things wrong with the book, not one rule to add.</strong> His words, 18:34: <em>&ldquo;If NO airborne event, no log entry at all. Eg, engine starts, taxi etc. if no airborne (flight even) NO log book entry. Only airborne (flight time) events goes into the logbook. So, from time to time there may be a tacho log entry &lsquo;discrepency&rsquo; between last leg and current (last) leg - just like real world, so just accept this.&rdquo;</em></p>
+  </div>
+  <div class="note warn">
+    <p><strong>A1 &middot; the air start, which the old reading got backwards.</strong> The carnet test was the <span class="mono tiny">noTakeOff</span> flag, and that is not the same claim as the airborne event. An <strong>air start is spawned airborne</strong>: the flag is true and it is still a flight. The book was keeping <strong>every air start out of Claus&rsquo;s logbook</strong>. The test is now the airborne figure when the record carries one, falling back to whether a take-off or landing time exists when it does not &mdash; an aeroplane that took off was airborne whether or not the record put a number on it. A record claiming zero airborne <em>and</em> a take-off time contradicts itself: the airborne figure wins and the page says the converter is worth checking.</p>
+  </div>
+  <div class="note warn">
+    <p><strong>A2 &middot; a refusal that would have thrown away your first real record.</strong> A record stating <span class="mono tiny">airborneHours: 0.0</span> was <strong>refused outright</strong> &mdash; not filed, not posted, gone with its fuel and its engine time. The block-time fallback fired only when the airborne field was <em>missing</em>, and zero is not missing. The Builder&rsquo;s first real read, <span class="mono tiny">2026-09-16/16:14:01Z/1250.07</span>, is exactly that shape: <span class="mono tiny">airborneHours 0.0</span> with <span class="mono tiny">blockHours 0.081</span>. Fixed &mdash; it now files on <strong>0:05</strong> of block time, posts, and stays off the carnet. It was found by putting that record through the book verbatim rather than reading it against the contract.</p>
+  </div>
+  <div class="note">
+    <p><strong>A3 &middot; the tacho gap is not flagged, and never was.</strong> Searched the book for any tacho continuity check between consecutive legs: there is none, and there never was one, so there was nothing to make neutral. The line under the Logbook page now reads: <em>&ldquo;1 run with no airborne time is not on this page &mdash; only airborne events go in the logbook. It is in the Ledger, and its fuel and fees posted as usual. The tacho gap it leaves between legs is expected, not an error.&rdquo;</em></p>
+  </div>
+
+  <h3 style="margin-top:14px">A4 &middot; the accrual clock &mdash; a correction, not a confirmation <span class="tiny muted" style="font-weight:400">for the board</span></h3>
+  <div class="note warn">
+    <p>The PM asked this session to confirm the engine reserve accrues on TACH. <strong>It does not, in the laptop book.</strong></p>
+    <p class="small"><span class="mono tiny">PRICES_AND_BILLING_RULES.json</span> says the reserves accrue on <span class="mono tiny">NK_ST_TACH</span> deltas. That is right for the <strong>cockpit strip</strong>. The <strong>laptop book</strong> accrues on <span class="mono tiny">leg.hours</span>, which is <strong>airborne time</strong> &mdash; and so do the wear model, the sinking funds and the 25 / 50 / 100-hour inspection counters. The two halves of this project bill the same aeroplane on different clocks.</p>
+    <p class="small"><strong>The size of it is measured off your own page 86, not estimated.</strong> Tacho 7,9200 h against 6,6667 h flown over the same eight legs &mdash; 0,1567 h per leg, <strong>18.80 % more</strong>.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Basis, at &euro;20.79 engine + &euro;1.36 propeller = &euro;22.15/h</th><th class="num">Page 86&rsquo;s eight legs</th><th class="num">Your real 2025 year, 73.00 flown h</th></tr></thead>
+      <tbody>
+        <tr><td>Airborne &mdash; what the book does</td><td class="num">&euro;147.67</td><td class="num">&mdash;</td></tr>
+        <tr><td>Tacho &mdash; what the kit says</td><td class="num">&euro;175.43</td><td class="num">&mdash;</td></tr>
+        <tr><td><strong>Not accrued</strong></td><td class="num"><strong>&euro;27.76</strong> &middot; &euro;3.47/leg</td><td class="num"><strong>&euro;303.98</strong> &middot; &euro;285.31 engine, &euro;18.66 prop</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">The inspection counters carry the same difference: 100 flown hours is 118.80 tacho hours, so an inspection due on tacho arrives <strong>15.82 flown hours late</strong> on the book&rsquo;s basis. Every figure computed in Python <span class="mono tiny">Decimal</span> with <span class="mono tiny">ROUND_HALF_UP</span> from page 86&rsquo;s own totals and the kit&rsquo;s own rates.</p>
+  <div class="note">
+    <p><strong>Your call, and this session will not take it.</strong> The case for airborne is that you keep your carnet on airborne time and said so. The case for tacho is that an engine wears while it idles, and the real reserve rates were set against a real aeroplane&rsquo;s real hours. Whichever way you answer, both halves take the same answer. The book is unchanged pending it, and the divergence is now written into both <span class="mono tiny">PRICES_AND_BILLING_RULES.json</span> and <span class="mono tiny">STRIP_SPEC.md</span> so neither can be read without it.</p>
+  </div>
+  <div class="note">
+    <p><strong>Fuel that falls between legs, and why it needs no assumed burn rate.</strong> Once V275 stops the aeroplane closing ground-run legs, fuel burnt between legs is billed by nothing. But the gap is <em>measurable</em>: previous leg&rsquo;s <span class="mono tiny">fp5lArr</span> less this leg&rsquo;s <span class="mono tiny">fp5lStart</span>, straight off the FP-5L. <strong>Proposed, not built:</strong> bill that difference when it is positive and no uplift is declared between the two, at the departure field&rsquo;s price, labelled on the review page. At Cascais&rsquo;s &euro;2.30/L a 3 L gap is <strong>&euro;6.90</strong> gross, a 10 L gap <strong>&euro;23.00</strong>. This session has <strong>no measured ground burn rate for F-BVNK and assumes none</strong> &mdash; the one real ground run carries a refuel (fp5l 231&nbsp;&rarr;&nbsp;234), so no burn is readable from it at all.</p>
+  </div>
+
+  <h3 style="margin-top:14px">What Tarbes exposed <span class="tiny muted" style="font-weight:400">this session&rsquo;s own initiative &mdash; reverse it if it is wrong</span></h3>
+  <div class="note warn">
+    <p>The first real record departs and arrives at <strong>Tarbes LFBT</strong>, which is in neither the field table nor R17. It resolves to nothing, files as <span class="mono tiny">????</span> and prices at the default field &mdash; all by design and labelled. But the review page&rsquo;s aerodrome picker offered <strong>only the eight codes already in the table</strong>, so it could not have been named. On the first night with the converter live, every leg from Tarbes would have filed as <span class="mono tiny">????</span> with no way to fix it.</p>
+    <p class="small">There is now a box beside the picker that takes any four-letter code. Typing <span class="mono tiny">LFBT</span> learns the position against it, the carnet row reads <span class="mono tiny">LFBT</span>, and the next leg from there resolves by itself &mdash; verified at <strong>0.4 nm</strong> and <strong>0.0 nm</strong>. <strong>It invents no fees.</strong> An aerodrome with no entry in the field table is priced at the default and the card says so outright, because a made-up landing fee would be worse than an honest default.</p>
+    <p class="small">Two defects turned up building it and are fixed: naming a field fired twice (the keystroke&rsquo;s <span class="mono tiny">change</span> and the native one on blur) so the note landed twice, and re-rendering the card from inside a handler on an element inside that card threw a DOM error.</p>
+    <p class="small"><strong>Still needed, and not invented here:</strong> LFBT&rsquo;s ARP from the French AIP &mdash; Records&rsquo; work, R19 if the PM wants it &mdash; and its landing, parking and fuel figures, which are Claus&rsquo;s or the PM&rsquo;s.</p>
+  </div>
+  <div class="note">
+    <p><strong>Two fields added, nothing switched.</strong> <span class="mono tiny">realEngineStart</span> / <span class="mono tiny">realShutdown</span>, the PC clock in UTC at the logger rows that opened and closed the leg. <strong>The sim clock stays what the carnet prints</strong> &mdash; the carnet is the aeroplane&rsquo;s book and it is her clock that belongs in it &mdash; and the PM says the question of which Claus prefers has not been put to him. The book carries both and the review page speaks only where they differ: <em>&ldquo;The PC clock and the aeroplane&rsquo;s clock differ on this leg: she says 09:00 &rarr; 10:00, the laptop says 21:03 &rarr; 22:04. The carnet takes her clock.&rdquo;</em></p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>File</th><th class="num">Size</th><th>md5</th></tr></thead>
+      <tbody>
+        <tr><td class="mono tiny">PRICES_AND_BILLING_RULES.json</td><td class="num">66,796 B</td><td class="mono tiny">da176bd578343121b1c3fb334bf6ac98</td></tr>
+        <tr><td class="mono tiny">TEST_VECTORS.json</td><td class="num">58,700 B</td><td class="mono tiny">2a816f1ef1c44ded6be7d107d2a15671</td></tr>
+        <tr><td class="mono tiny">LEG_CONTRACT.md</td><td class="num">22,822 B</td><td class="mono tiny">074be1f510ef847e1a9ea011e38454a5</td></tr>
+        <tr><td class="mono tiny">STRIP_SPEC.md</td><td class="num">13,186 B</td><td class="mono tiny">1f99dec6744aff2378e8c009f3bb1914</td></tr>
+        <tr><td class="mono tiny">NOTE.md</td><td class="num">42,988 B</td><td class="mono tiny">266616509df19f1108f5ce9e109987a4</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tiny muted"><span class="mono">fbvnk-sim-ledger/KIT1_R5/</span> on <span class="mono">claude/fbvnk-cost-sheet-maintenance-svcsw2</span>, commit <span class="mono">e0d924b02e232b92443dae7e6abb36f775e48c4e</span>. Staging folder <span class="mono tiny">FBVNK_SIM_LEDGER_KIT1_R5/</span> carries <span class="mono tiny">MD5.txt</span> and <span class="mono tiny">READ_THIS_FIRST.md</span>, same reason as R4. Thirty-three vectors now, V1&ndash;V32: <strong>V29</strong> the airborne-event rule, <strong>V30</strong> the zero-airborne refusal with the real record in it, <strong>V31</strong> the real-clock pair, <strong>V32</strong> the accrual disagreement written down so it cannot be read past. R1&ndash;R4 stay frozen.</p>
 </section>
 
 <section>
@@ -529,7 +593,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <section>
-  <h2>Review page &mdash; what R18 changes <span class="hint">design proposal, nothing built &middot; full text in <span class="mono tiny">KIT1_R4/NOTE.md</span></span></h2>
+  <h2>Review page &mdash; what R18 changes <span class="hint">design proposal, nothing built &middot; full text in <span class="mono tiny">KIT1_R5/NOTE.md</span></span></h2>
   <p class="small">R18 read AMC1 / GM1 FCL.050 off the EASA Easy Access Rules HTML, <strong>Revision from August 2023</strong>, and FCL.050 off the EUR-Lex consolidated text of 30.04.2026. Records states its own limit: <strong>whether AMC1 / GM1 FCL.050 changed after August 2023 is not verified</strong> &mdash; the newer text is PDF/XML only and was not fetched. Everything below inherits that limit.</p>
   <div class="tw">
     <table>
@@ -624,8 +688,8 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <section>
-  <h2>Contract <span class="mono">FBVNK_LEG/2</span> <span class="hint">revised after K7b and V274 &middot; full text in <span class="mono tiny">KIT1_R4/LEG_CONTRACT.md</span> &middot; the sim half is installed</span></h2>
-  <p class="small">Claus's order, relayed 16 Sep 14:42: &ldquo;all these numbers shall not require pilot input, they shall be entered automatically &hellip; Airborne times, take off and landing, fuel from the FP5L at engine start (dep) and engine shutdown (arr), simulator integration should show up on either the EFB (automatically) or the cockpit iPad, either way.&rdquo; Both halves now exist: <strong>V274 installed 16:44:49</strong> records the leg, and the laptop book takes automatic legs as its primary input with the hand form demoted to a collapsed fallback. The table below is revision&nbsp;1 of the contract, kept for the record; <strong>revision&nbsp;2 is what the converter is built to</strong> and it is written out in full in <span class="mono tiny">KIT1_R4/LEG_CONTRACT.md</span> &mdash; the R3 copy is superseded, and so is the one in the R4 staging folder.</p>
+  <h2>Contract <span class="mono">FBVNK_LEG/2</span> <span class="hint">revised after K7b and V274 &middot; full text in <span class="mono tiny">KIT1_R5/LEG_CONTRACT.md</span> &middot; both halves installed</span></h2>
+  <p class="small">Claus's order, relayed 16 Sep 14:42: &ldquo;all these numbers shall not require pilot input, they shall be entered automatically &hellip; Airborne times, take off and landing, fuel from the FP5L at engine start (dep) and engine shutdown (arr), simulator integration should show up on either the EFB (automatically) or the cockpit iPad, either way.&rdquo; Both halves now exist: <strong>V274 installed 16:44:49</strong> records the leg, and the laptop book takes automatic legs as its primary input with the hand form demoted to a collapsed fallback. The table below is revision&nbsp;1 of the contract, kept for the record; <strong>revision&nbsp;2 is what the converter is built to</strong> and it is written out in full in <span class="mono tiny">KIT1_R5/LEG_CONTRACT.md</span> &mdash; the R3 copy is superseded, and so is the one in the R4 staging folder.</p>
   <div class="note">
     <p><strong>What changed in revision 2, all of it implemented and tested in the book.</strong> Positions instead of ICAO codes, with the book resolving them and labelling what it cannot. Zulu times, with a UTC/local control on the carnet. A landing count, the arrival time being the last one. <span class="mono tiny">touchdownFpm</span> positive for descent, clamped at 0 &mdash; and a <em>negative</em> value said out loud rather than quietly flipped, because it means either a converter that forgot to negate, in which case every landing comes through soft and the hard-landing check silently never fires again, or an arrival with no descent. Two fuel numbers, REM for the carnet columns and a separate burn with a <span class="mono tiny">burnSource</span> chain, because a refuel inside the leg makes start-minus-shutdown wrong by a factor of seven on a 200&nbsp;&rarr;&nbsp;190 leg. And V274's <span class="mono tiny">noTakeOff</span> and <span class="mono tiny">stopInAir</span>: an engine run that never got airborne is filed and posts but stays <strong>out of the carnet</strong>, because a ground run is not a flight, and the Logbook page says how many are being left out.</p>
   </div>
@@ -832,17 +896,18 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <table>
       <thead><tr><th>Artefact</th><th>Where</th><th class="num">Size</th><th>md5</th></tr></thead>
       <tbody>
-        <tr><td>The ledger itself</td><td class="mono tiny">fbvnk-sim-ledger/FBVNK-LEDGER.html</td><td class="num">146,792 B</td><td class="mono tiny">9df87f05</td></tr>
+        <tr><td>The ledger itself</td><td class="mono tiny">fbvnk-sim-ledger/FBVNK-LEDGER.html</td><td class="num">152,677 B</td><td class="mono tiny">7dd833a6</td></tr>
         <tr><td>Install and rules note</td><td class="mono tiny">fbvnk-sim-ledger/README.md</td><td class="num">5,767 B</td><td class="mono tiny">1a645093</td></tr>
-        <tr><td>KIT1 R4, five files <span class="pill done">reported</span></td><td class="mono tiny">fbvnk-sim-ledger/KIT1_R4/</td><td class="num">172,036 B</td><td class="mono tiny">see the R4 table above</td></tr>
-        <tr><td>Checksums + pointer, R4</td><td class="mono tiny">FBVNK_STAGING/FBVNK_SIM_LEDGER_KIT1_R4/</td><td class="num">3,368 B</td><td class="mono tiny">&mdash;</td></tr>
+        <tr><td>KIT1 R5, five files <span class="pill done">reported</span></td><td class="mono tiny">fbvnk-sim-ledger/KIT1_R5/</td><td class="num">204,492 B</td><td class="mono tiny">see the R5 table above</td></tr>
+        <tr><td>Checksums + pointer, R5</td><td class="mono tiny">FBVNK_STAGING/FBVNK_SIM_LEDGER_KIT1_R5/</td><td class="num">4,537 B</td><td class="mono tiny">&mdash;</td></tr>
+        <tr><td>KIT1 R4, five files <span class="pill done">frozen</span></td><td class="mono tiny">fbvnk-sim-ledger/KIT1_R4/</td><td class="num">172,036 B</td><td class="mono tiny">see the R4 table above</td></tr>
         <tr><td>Staging note <span class="pill done">frozen</span></td><td class="mono tiny">FBVNK_STAGING/FBVNK_SIM_LEDGER/NOTE.md</td><td class="num">5,152 B</td><td class="mono tiny">&mdash;</td></tr>
         <tr><td>Checksums, <code>md5sum -c</code> format</td><td class="mono tiny">FBVNK_STAGING/FBVNK_SIM_LEDGER/MD5.txt</td><td class="num">96 B</td><td class="mono tiny">&mdash;</td></tr>
         <tr><td>NK_ wear spec <span class="tiny muted">by Records &amp; Checks</span></td><td class="mono tiny">FBVNK_STAGING/R5_nk_wear_spec/SPEC.md</td><td class="num">17,176 B</td><td class="mono tiny">c06f7305</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="tiny muted">Git: <span class="mono">yeager74/travel-map</span>, branch <span class="mono">claude/fbvnk-cost-sheet-maintenance-svcsw2</span>, commit <span class="mono">86d39e0</span>. The spec's md5 is as stated by Records and Checks &mdash; <span class="mono">assumption:</span> not re-verified here, because the Dropbox connector returns extracted text rather than the file's bytes.</p>
+  <p class="tiny muted">Git: <span class="mono">yeager74/travel-map</span>, branch <span class="mono">claude/fbvnk-cost-sheet-maintenance-svcsw2</span>, commit <span class="mono">e0d924b</span>. The spec's md5 is as stated by Records and Checks &mdash; <span class="mono">assumption:</span> not re-verified here, because the Dropbox connector returns extracted text rather than the file's bytes.</p>
 </section>
 
 <footer>
