@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 15</dd>
+      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 16</dd>
     </dl>
   </div>
 </header>
@@ -495,6 +495,19 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <p class="small"><strong>The EASA side is now in, as R18.</strong> It moved one row, added two and left <em>Nature du Vol</em> alone &mdash; the section below has it.</p>
   </div>
   <p class="small"><strong>The P1 figure is closed, and not by me.</strong> Claus, 18:04:32: &ldquo;good bloody question&hellip; ha ha, I should know, but I just carried it over from the previous owners. Keep it the same&rdquo;. The Logbook tab no longer calls it an assumption of this session&rsquo;s &mdash; it quotes him, and the figure stays exactly as his pages carry it.</p>
+</section>
+
+<section>
+  <h2>Version 19 ported, K7e carried onto it <span class="hint">Sim Ledger v20 &middot; commit <span class="mono">b474d35</span> &middot; hold lifted and honoured</span></h2>
+  <div class="note">
+    <p><strong>Version 19 is the PM&rsquo;s publish on top of my 22:10 page, so it predates the K7e remedy.</strong> I read all <strong>2,819 lines</strong> of the live page before republishing it &mdash; publishing code unread is not something this session does &mdash; then took it as the new base and ported the four things it was missing: the bounded <span class="mono tiny">tachHours</span>, <span class="mono tiny">S.tach.lastKey</span>, the <span class="mono tiny">chronoKey</span> captured before the ingest path rewrites a back-dated leg, and the A5 floor.</p>
+    <p class="small"><strong>Every K7e sequence reproduces on the ported page exactly as on the branch:</strong> another machine <strong>3.17</strong> against 332.99, out-of-order <strong>4.00</strong> against 5.80, the <span class="mono tiny">tachStop</span> typo 3.68, P3 sound, a real 3&nbsp;h ground run still 5.00, V33/V34 unchanged at 6.03, and a 20&nbsp;s hop shows <span class="mono tiny">0:01</span>. Full regression green; seeded book unmoved at 8 legs, 16 invoices, 18.4 hours.</p>
+  </div>
+  <div class="note">
+    <p><strong>Everything the PM built is kept</strong> &mdash; the entry card at the top of the Ramp tab, the iPad figure layout, the one-tap chips writing the same <span class="mono tiny">sel-*</span> fields, the Dropbox pickup with its STOP codes, the storage listener, <span class="mono tiny">clearEntry</span>. The declared Dropbox capability carried forward on republish.</p>
+    <p class="small"><strong>Two things fixed in passing, both in the PM&rsquo;s half.</strong> The carnet CSV export still wrote a hardcoded <span class="mono tiny">PIC</span> and <span class="mono tiny">&ldquo;P1&rdquo;</span> where the table on screen already used the pilot&rsquo;s chosen Fonctions and Nature du Vol &mdash; so a copied file disagreed with the page it came from. And a comment still said four rows move money where the rendered text says five.</p>
+  </div>
+  <p class="tiny muted">Commit <span class="mono">b474d35948371c84034e8c1c317ca01a2e5b6de6</span>, book 176,741&nbsp;B, md5 <span class="mono tiny">62169ab1</span>. Sim Ledger <strong>version 20</strong>, published on top of the live <span class="mono tiny">1789590725-d53d</span> &mdash; which was already newer than the base the PM quoted, so it was read rather than assumed. Records reviews V19 as K24; this is V19 plus the K7e remedy.</p>
 </section>
 
 <section>
