@@ -442,7 +442,7 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
         <div class="sheet" style="margin-top:14px">
           <div class="eyebrow">Sinking funds</div>
           <h2 style="margin-bottom:6px">Reserves</h2>
-          <p class="small muted" style="margin-bottom:10px">Every flown hour quietly sets aside &euro;20.79 for the engine and &euro;1.36 for the propeller &mdash; the real 2025 reserve rates. Reach TBO with a full pot and the overhaul is already paid for.</p>
+          <p class="small muted" style="margin-bottom:10px">Every hour on the <strong>hour meter</strong> quietly sets aside &euro;20.79 for the engine and &euro;1.36 for the propeller &mdash; the real 2025 reserve rates. Claus&rsquo;s pick, 16 Sep: <em>&ldquo;Tacho time (the hour meter)&rdquo;</em>, so ground running counts too. Reach TBO with a full pot and the overhaul is already paid for.</p>
           <div class="tw"><table id="reserveTbl"></table></div>
         </div>
         <div class="sheet" style="margin-top:14px">
@@ -803,6 +803,10 @@ function blankState(seeded){
     seasonStart:'2026-01-01',
     lastDate:'2026-01-01',
     counters:{ ttaf:1265.0, engSMOH:317.0, propSMOH:528.0, hrs:0 },
+    /* The hour meter's own place in the book. cursor is the last real NK_ST_TACH reading
+       the book has seen; carried is what has already been accrued since that reading from
+       records that had no tacho, so the meter's progression is never counted twice. */
+    tach:{ cursor:null, carried:0 },
     due:{ next25:25, next50:50, next100:100, caoYear:null, insYear:null },
     billedMonths:[],
     reserves:{ engine:0, prop:0 },
@@ -863,9 +867,89 @@ function accrueTo(iso){
 function tyreWear(r){ return r<=150?0.45 : r<=300?0.9 : r<=450?2.0 : r<=600?4.5 : 9.5; }
 function gearWear(r){ return r<=200?0.20 : r<=400?0.50 : r<=500?1.4 : r<=600?3.5 : 8.0; }
 
+/* ---------------- the accrual clock ----------------
+   Claus, on the Annunciator at 21:05:42 local, 16 Sep 2026, asked which clock the reserves
+   and the inspection counters should run on. His answer, word for word:
+
+       "Tacho time (the hour meter)"
+
+   So money and the hour counters run on the hour meter. Airborne time keeps the carnet's
+   Heures de Vol and the airborne totals, and nothing else.
+
+   The subtlety is that it is the meter's PROGRESSION, not the leg's own span. Under V275
+   only airborne legs become records at all, so the engine time between one record and the
+   next - taxiing, a run-up, a ground run that made no entry - sits in the gap between the
+   last record's stop and this record's stop. A real hour meter counts every second of it,
+   and so does this: the leg's own tachStart is used only for the first record and for the
+   sanity check, never to throw the gap away.
+
+   A record with no reading at all cannot be measured that way. Rather than lose its hours
+   the book accrues its airborne time, says so, and CARRIES that figure: the next record
+   that does have a reading subtracts it from the measured gap, so the same hours are never
+   billed twice. The eight seeded legs are all of this kind - they were hand-filed before
+   the aeroplane began writing tacho - which is why the seeded reserves do not move. */
+function tachHours(leg){
+  var T = S.tach || (S.tach = {cursor:null, carried:0});
+  var r2 = function(v){ return Math.round(v*100)/100; };
+  var start = numOrNull(leg.tachStart), stop = numOrNull(leg.tachStop);
+  var air = leg.hours || 0;
+
+  if(stop === null){
+    T.carried = r2(T.carried + air);
+    return {hours:air, basis:'airborne', note:
+      'No hour-meter reading on this record, so it accrues its airborne time, '+hhmm(air)+
+      '. The clock is the hour meter and airborne always runs short of it; the difference is carried and settled against the next record that does carry a reading.'};
+  }
+
+  if(T.cursor !== null && start !== null && start < T.cursor - 0.005){
+    var own = stop > start ? r2(stop - start) : 0, was = T.cursor;
+    T.cursor = stop; T.carried = 0;
+    return {hours:own, basis:'own span', note:
+      'The hour meter went backwards: this record opens at '+tachoTxt(start)+' where the last one closed at '+
+      tachoTxt(was)+'. That is a reload or another machine, not flying, so nothing negative is posted. '+
+      'This leg accrues its own '+num(own,2)+' h and the book resumes from the new reading.'};
+  }
+
+  if(T.cursor === null){
+    if(start === null || stop <= start){
+      T.cursor = stop; T.carried = 0;
+      return {hours:air, basis:'airborne', note:
+        'First hour-meter reading in the book, and the record gives no usable span for it, so this leg accrues its airborne time. The meter is picked up at '+tachoTxt(stop)+' and every record after it is measured against that.'};
+    }
+    var first = r2(stop - start);
+    T.cursor = stop; T.carried = 0;
+    return {hours:first, basis:'own span', note:
+      'First hour-meter reading in the book: '+tachoTxt(start)+' to '+tachoTxt(stop)+', '+num(first,2)+
+      ' h. From here the book measures the meter\u2019s progression between records, which is what counts the ground running between them.'};
+  }
+
+  var gap = r2(stop - T.cursor), settled = Math.max(0, r2(gap - T.carried));
+  var over = T.carried > gap + 0.005, before = T.cursor, carried = T.carried;
+  T.cursor = stop; T.carried = 0;
+
+  var note = null;
+  if(carried > 0.005)
+    note = over
+      ? 'The hour meter has moved '+num(gap,2)+' h since '+tachoTxt(before)+', and '+num(carried,2)+
+        ' h were already accrued from records that carried no reading. Nothing more is posted here \u2014 the airborne fallback had already covered it.'
+      : 'The hour meter has moved '+num(gap,2)+' h since '+tachoTxt(before)+', less the '+num(carried,2)+
+        ' h already accrued from records with no reading: '+num(settled,2)+' h.';
+  else if(start !== null && gap > r2(stop - start) + 0.005)
+    note = 'The hour meter has moved '+num(gap,2)+' h since the last record closed at '+tachoTxt(before)+
+      ', against '+num(r2(stop - start),2)+' h on this leg itself. The difference ran on the ground between the two and is accrued, as the hour meter counts it.';
+
+  return {hours:settled, basis:'meter progression', note:note};
+}
+
 function fileLeg(leg){
   var posted = [], raised = [];
-  var iso = leg.date, h = leg.hours;
+  var iso = leg.date;
+  /* Claus's clock, 21:05:42: the hour meter, not airborne. leg.hours stays airborne and
+     stays what the carnet totals; h is what the money and the counters run on. */
+  var clk = tachHours(leg);
+  var h = clk.hours;
+  leg.accrualHours = h; leg.accrualBasis = clk.basis;
+  if(clk.note) leg.notes = (leg.notes || []).concat([clk.note]);
   var styleM = leg.style==='gentle'?0.75 : leg.style==='pressed'?1.45 : 1.0;
   var surfT  = leg.surface==='gravel'?1.8 : leg.surface==='grass'?1.25 : 1.0;
   var coastal = (FIELDS[leg.from]&&FIELDS[leg.from].coastal) || (FIELDS[leg.to]&&FIELDS[leg.to].coastal);
@@ -902,17 +986,23 @@ function fileLeg(leg){
   S.reserves.engine  += h * 20.79;
   S.reserves.prop    += h * 1.36;
 
-  /* --- wear --- */
-  var H = S.health;
-  H.engine   -= h * 1.15 * styleM;
-  H.prop     -= h * 0.55 * styleM * (leg.surface==='gravel'?1.9:1);
+  /* --- wear ---
+     Airborne, deliberately, and this is the one place the tacho decision was NOT applied.
+     Claus's pick named the two reserves and the inspection counters. These coefficients
+     were rated against airborne hours, so moving them to the meter would quietly re-rate
+     every one of them by the 18.8 % the two clocks differ by - a change nobody asked for.
+     The real wear model is the iPad's (HANGAR.js, NK_*) and is the PM's to set. Flagged in
+     R6 as this session's own call rather than left silent. */
+  var H = S.health, wh = leg.hours;
+  H.engine   -= wh * 1.15 * styleM;
+  H.prop     -= wh * 0.55 * styleM * (leg.surface==='gravel'?1.9:1);
   H.brakes   -= (0.75 * styleM) + (leg.rate>400 ? 0.5 : 0);
   H.tyres    -= tyreWear(leg.rate) * surfT;
   H.gear     -= gearWear(leg.rate);
-  H.airframe -= h * 0.32;
-  H.avionics -= h * 0.22;
-  H.interior -= h * 0.26;
-  H.paint    -= h * 0.95 * (leg.surface==='asphalt'?1:1.3) + (coastal?0.6:0);
+  H.airframe -= wh * 0.32;
+  H.avionics -= wh * 0.22;
+  H.interior -= wh * 0.26;
+  H.paint    -= wh * 0.95 * (leg.surface==='asphalt'?1:1.3) + (coastal?0.6:0);
 
   /* carrying deferred worn items costs you */
   S.squawks.forEach(function(sq){
@@ -1957,8 +2047,10 @@ function renderCounters(){
     '<tr><td>Airframe total (TTAF)</td><td class="num">'+num(c.ttaf,1)+'</td><td class="num">—</td><td class="num">—</td></tr>'+
     '<tr><td>Engine since overhaul</td><td class="num">'+num(c.engSMOH,1)+'</td><td class="num">2000.0</td><td class="num">'+num(2000-c.engSMOH,1)+'</td></tr>'+
     '<tr><td>Propeller since overhaul</td><td class="num">'+num(c.propSMOH,1)+'</td><td class="num">2000.0</td><td class="num">'+num(2000-c.propSMOH,1)+'</td></tr>'+
-    '<tr><td>Flown this season</td><td class="num">'+num(c.hrs,1)+'</td><td class="num">—</td><td class="num">—</td></tr>'+
-    '</tbody>';
+    '<tr><td>Hour meter this season</td><td class="num">'+num(c.hrs,1)+'</td><td class="num">—</td><td class="num">—</td></tr>'+
+    '</tbody>'+
+    '<tfoot><tr><td colspan="4" class="tiny muted" style="text-align:left">Every counter here runs on the hour meter, Claus&rsquo;s pick of 16 Sep: <em>&ldquo;Tacho time (the hour meter)&rdquo;</em>. It counts the ground running between legs as well as the flying, so it runs ahead of the carnet&rsquo;s airborne total'+
+      (S.tach && S.tach.cursor !== null ? ', and stands at '+tachoTxt(S.tach.cursor) : '')+'.</td></tr></tfoot>';
   $('reserveTbl').innerHTML =
     '<thead><tr><th>Fund</th><th class="num">Rate €/h</th><th class="num">Held</th><th class="num">Target</th></tr></thead><tbody>'+
     '<tr><td>Engine overhaul</td><td class="num">20.79</td><td class="num">'+eur(S.reserves.engine)+'</td><td class="num">'+eur(35000)+'</td></tr>'+
