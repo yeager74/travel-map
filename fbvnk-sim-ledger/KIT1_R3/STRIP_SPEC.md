@@ -133,7 +133,6 @@ net to the cent first, VAT off the rounded net, gross as the sum of the two, so 
 to its own printed lines. Full rule in `PRICES_AND_BILLING_RULES.json` → `rounding`. **The strip
 must use the same routine as the laptop book**, or the two disagree by a cent on every `.xx5`.
 
-
 Either way the eleven variables to read — `NK_ST_C_ALT`, `NK_ST_C_BRK`, `NK_ST_C_CARB`,
 `NK_ST_C_CYL`, `NK_ST_C_LTS`, `NK_ST_C_MAG`, `NK_ST_C_OIL`, `NK_ST_C_STR`, `NK_ST_C_TYR`,
 `NK_ST_C_VAC`, `NK_ST_OIL_QT` — all exist in the package today, as does `NK_ST_WEAR` (58) for the

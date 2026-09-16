@@ -15,7 +15,7 @@ the bytes they saw.
 |---|---|---|
 | **F1** | The brake price is derived at the wrong VAT rate | Not the way K7b proposed. See below — it is bigger than a rate. |
 | **F2** | No rounding mode stated, and V6 depends on it | `rounding` in the rules file; V6 is 31.19; V18 pins it a second time on a real invoice. |
-| **F3** | An overhaul would also bill seven pro-rata services | `posting_cursor.rule_overhaul_consumes_the_step`; V14 extended with the conditions. |
+| **F3** | An overhaul would also bill seven pro-rata services | `posting_cursor.rule_overhaul_consumes_the_step`; V14 extended with the conditions. The bug was worth **815.50**, not the 815.49 K7b quoted — same money, rounded in a different place; see below. |
 
 ### F1 — neither fix K7b offered is the right one
 
@@ -56,6 +56,14 @@ F1 took the only 21 % line out of the kit, and that was the one thing that would
 case too (382.50 × 0.21 = 80.325), so it pins the rounding rule a second time. It is the only
 vector in the kit checked against a figure printed on a real invoice rather than derived from the
 price table.
+
+### F3, and a small correction back to K7b
+
+K7b put the overhaul double-bill at 815.49 on top of the 35,000.00. The figure is **815.50**. Both
+are the same money: K7b summed the four exact products and rounded once at the end, and the rule
+decided in F2 rounds **once per posting line** — each of those four services would be its own line
+in the book. Two of the four are `.xx5` cases in their own right, 415.125 and 164.205, so the
+overhaul vector is itself a third and fourth demonstration that the rounding mode is not cosmetic.
 
 ### Three open items closed, and one of them bites
 

@@ -515,7 +515,7 @@
       "worked_examples": [
         "V1 magneto, R=1, serviced from condition 42: observed depletion 100-42 = 58 points, divisor 1, normalised 58.0 → 885.60 × 0.58 = 513.65.",
         "V15 cylinder, R=1000, serviced from condition 35: observed depletion 100-35 = 65 points, divisor 1000, normalised 0.065 → 2767.50 × 0.00065 = 1.80.",
-        "V16 brakes, R=100, serviced from condition 70: observed depletion 100-70 = 30 points, divisor 100, normalised 0.3 → 1318.21 × 0.003 = 3.95."
+        "V16 brakes, R=100, serviced from condition 70: observed depletion 100-70 = 30 points, divisor 100, normalised 0.3 → 1340.00 × 0.003 = 4.02. (R3: the gross moved from 1,318.21 to 1,340.00 with F1 - see prices.brakes.)"
       ],
       "what_this_does_not_touch": "Hourly reserves, scheduled 25/50/100 h checks, fuel, aerodrome fees, hangar, insurance and CAO. Every one of those prices off real elapsed hours, litres or the calendar, never off a condition loss, so no divisor reaches them. Also untouched: the laptop ledger FBVNK-LEDGER.html, whose own health model runs on real flown hours with no R in it at all. If that book is ever fed the sim's NK_ST_C_* values, this rule starts applying to it too.",
       "overhaul_is_not_pro_rata": "An overhaul (V14) is a whole-unit replacement at its catalogue figure, not a fraction of remaining life. 35,000.00 posts in full whatever the condition was. Same for a battery replacement and a propeller overhaul."
@@ -576,7 +576,7 @@
         "new_persisted_variables": "The eleven L:NK_LG_PREV_* above, and nothing else. 11 instead of 22.",
         "the_cost": "Exact only when R was constant from the part's last service to this one. If R moved, the whole depletion is divided by whichever R happens to be in force at the moment of service, which is wrong in both directions: service at x1 after wearing the part at x1000 and the posting is 1000× too high. rule_r_changes_mid_leg must then widen from \"R changed inside this posting step\" to \"R changed at any point since this part was last serviced\", and flag rather than price."
       },
-      "for_the_laptop_book": "FBVNK-LEDGER.html takes its legs from the aeroplane as records (contract FBVNK_LEG/1). If a record is to carry a service, it carries conditionBefore and conditionAfter as maps keyed by the eleven variable names above, plus the R in force. No persistence problem on that side: the aeroplane holds the snapshot and sends it.",
+      "for_the_laptop_book": "FBVNK-LEDGER.html takes its legs from the aeroplane as records (contract FBVNK_LEG/2, written out in LEG_CONTRACT.md in this folder). If a record is to carry a service, it carries conditionBefore and conditionAfter as maps keyed by the eleven variable names above, plus the R in force. No persistence problem on that side: the aeroplane holds the snapshot and sends it.",
       "design_3_at_the_action": {
         "source": "K7b section 4, verified against HANGAR.js act() line 189 (live 29919c4a).",
         "how": "The SERVICE action already calls this.L() in the same function. Immediately before this.set(item.key, 100), this.L(item.key) holds the exact pre-service condition and this.L(\"NK_ST_WEAR\") holds the R at that instant. Write both to new L:NK_LG_* vars there. The same holds for the oil action (line 190) and for the seven parts in the overhaul action (line 191).",
@@ -659,7 +659,7 @@
     "rule_overhaul_consumes_the_step": {
       "status": "K7b F3. Verified by Records against HANGAR.js line 191, the ovh action.",
       "fact": "One Overhaul action, and so one MX_LOG step, sets NK_ST_C_CYL, MAG, CARB, OIL, ALT, STR and VAC to 100, ENG_HRS to 0 and OIL_QT to 8, all together.",
-      "the_bug_it_prevents": "Read through the plain detection table, that one action matches seven services, a top-up and the overhaul. At R=1 from Reset-to-delivery levels (85) the four priced parts alone would add 815.49 on top of the 35,000.00 engoh: cyl 2,767.50 + mag 885.60 + alt 1,094.70 + vac 688.80, each x 0.15.",
+      "the_bug_it_prevents": "Read through the plain detection table, that one action matches seven services, a top-up and the overhaul. At R=1 from Reset-to-delivery levels (85) the four priced parts alone would add 815.50 on top of the 35,000.00 engoh: cyl 2,767.50 + mag 885.60 + alt 1,094.70 + vac 688.80, each x 0.15. K7b quotes 815.49, which is the same money summed first and rounded once at the end; the rounding rule decided in F2 rounds once per posting line, and each of the four is its own line, so the book would have shown 815.50. Two of the four are .xx5 cases in their own right, 415.125 and 164.205.",
       "rule": "An MX_LOG step whose read shows NK_ST_ENG_HRS at 0 posts engoh and nothing else. The seven engine parts reading 100 in that same step post nothing, and OIL_QT reading 8 in that same step posts nothing. The overhaul consumes them: they are what an overhaul IS, not nine separate jobs.",
       "discriminator_unchanged": "Reset to delivery also seeds those parts, but to 85 and not 100, and sets ENG_HRS to 300. ENG_HRS 0 means overhaul; ENG_HRS 300 with the full seed set means Reset. See V3 and V14.",
       "vector": "V14, extended in this revision with the seven conditions before and after."
@@ -717,8 +717,8 @@
     {
       "event": "repair",
       "detection": "a NK_ST_FAULTS bit clears",
-      "posting": "depends on which of the 8 fault bits — bit-to-component map not yet supplied, see posting_cursor.fault_bit_to_component_map",
-      "confidence": "detection confirmed, mapping open"
+      "posting": "No posting by design - raise the flag, per the PM. The bit-to-component map is CLOSED in R3, off SPEC section 2.4: see posting_cursor.fault_bit_to_component_map. Four of the eight components have no price key, which is the part still open.",
+      "confidence": "detection and mapping both confirmed; pricing for four of the eight components is a Claus decision"
     },
     {
       "event": "rate_change",
@@ -740,9 +740,9 @@
     },
     {
       "event": "hourly_reserves",
-      "detection": "NK_ST_TACH (or NK_ST_ENG_HRS — see open_items) higher than stored",
+      "detection": "NK_ST_TACH higher than stored. CLOSED in R3: the reserves accrue on TACH deltas, never on ENG_HRS, because an overhaul sets ENG_HRS to 0 and a Reset sets it to 300 - see hours_sources.",
       "posting": "reserves_per_flown_hour, both engine and propeller, on the elapsed hours",
-      "confidence": "confirmed for the rate; exact source variable for 'hours elapsed this posting' listed under open_items"
+      "confidence": "confirmed, rate and source variable both"
     },
     {
       "event": "fuel",
@@ -754,7 +754,7 @@
       "event": "scheduled_check_25_50_100h",
       "detection": "hours crossing 25/50/100 h thresholds since last check",
       "posting": "prices.insp25 / insp50 / insp100",
-      "confidence": "billing confirmed; exact NK_ variable or derived counter that tracks 'hours since last check' not yet confirmed against SPEC, see open_items"
+      "confidence": "billing confirmed. R3, off SPEC section 2.1: there is NO hours-since-last-check variable in the package - the three hours variables are TACH, ENG_HRS and AF_HRS and none of them tracks inspection intervals. The reader must keep its own counter from TACH deltas, which is what the laptop book already does. Closed as 'no such variable exists', not as 'not yet found'."
     },
     {
       "event": "propeller_overhaul",

@@ -230,7 +230,7 @@
       "ramp_tab_typed_uplift_l": 40,
       "field": "LPCS",
       "fuel_per_litre": 2.3,
-      "expected_behaviour": "Billed litres = 38.4 (the FP5L_USED value read BEFORE the uplift resets it), not the typed 40 L uplift. Gross = 38.4 × 2.30 = 88.32. The typed Ramp uplift (40 L) is the fallback only when FP5L_USED cannot be read — today, always, since nk_telemetry.py does not read it yet.",
+      "expected_behaviour": "Billed litres = 38.4 (the FP5L_USED value read BEFORE the uplift resets it), not the typed 40 L uplift. Gross = 38.4 × 2.30 = 88.32. The typed Ramp uplift is the last fallback, after the logger burn, the aircraft burn and the tank totals — see LEG_CONTRACT.md and V19-V23. R3: the line that said nk_telemetry.py does not read FP5L_USED is retired; the B26 logger kit adds an fp5l_used datum at V274.",
       "expected_postings": [
         {
           "type": "fuel",
@@ -240,7 +240,7 @@
           "note": "38.4 * 2.30 = 88.32, computed here, not estimated"
         }
       ],
-      "status": "Strip inclusion still open — board item ledger_fuel_in_strip. This vector covers the laptop-book billing math only, not whether the HANGAR strip shows it."
+      "status": "R3: strip inclusion is no longer open — board item ledger_fuel_in_strip was answered YES on 15 Sep 22:34:50, and V10-V13 cover the strip side. This vector covers the laptop-book billing math."
     },
     {
       "id": "V8_service_on_part_with_no_price_yet",
@@ -445,8 +445,9 @@
           "alt": 164.21,
           "vac": 103.32,
           "carb_str_oil": "no price on file, so they would have logged rather than posted",
-          "total_extra": 815.49,
-          "arithmetic": "each at (100 - 85)/1 = 15 points of REAL wear, so gross x 0.15: 2767.50 x 0.15 = 415.13, 885.60 x 0.15 = 132.84, 1094.70 x 0.15 = 164.21, 688.80 x 0.15 = 103.32. Sum 815.50."
+          "total_extra": 815.5,
+          "arithmetic": "each at (100 - 85)/1 = 15 points of REAL wear, so gross x 0.15: 2767.50 x 0.15 = 415.13, 885.60 x 0.15 = 132.84, 1094.70 x 0.15 = 164.21, 688.80 x 0.15 = 103.32. Sum 815.50.",
+          "why_not_K7b_s_815_49": "815.50 and 815.49 are the same money rounded in two different places. K7b summed the four exact products and rounded once at the end. The decided rule (F2) rounds ONCE PER POSTING LINE, and each of those four services would be its own line in the book, so the book would have shown 815.50. Two of the four are .xx5 cases in their own right - 415.125 and 164.205 - which makes this a third and fourth demonstration that the rounding mode is not cosmetic."
         },
         "rule": "PRICES_AND_BILLING_RULES.json -> posting_cursor.rule_overhaul_consumes_the_step."
       }
