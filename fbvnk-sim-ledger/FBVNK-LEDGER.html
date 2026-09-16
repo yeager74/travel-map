@@ -224,6 +224,15 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
 .carnet td.obs .clip{display:block; height:30px; overflow:hidden}
 .carnet td.obs .auto{display:block; font-size:9.5px; line-height:1.15; opacity:.72; font-family:"IBM Plex Sans",sans-serif}
 .carnet td.fill{min-width:52px}
+/* The oil columns are printed but he does not keep them — a single pen stroke, page 86. */
+.carnet td.struck{position:relative}
+.carnet td.struck::after{content:''; position:absolute; left:14%; right:14%; top:50%;
+  height:1px; background:var(--carnet-ink); opacity:.5; transform:rotate(-7deg)}
+/* TACHO is not printed on the page. He ruled it in himself, so it is in his hand, not the printer's. */
+.carnet th.hand{font-family:"Caveat",cursive; font-size:16px; letter-spacing:.02em;
+  text-transform:none; font-weight:700; color:var(--carnet-ink)}
+.carnet td.tach{font-variant-numeric:tabular-nums}
+.carnet td.ditto{text-align:center; letter-spacing:.14em}
 .carnet tbody tr:nth-child(even) td{background:transparent}
 .carnet th:last-child, .carnet td:last-child{border-right:0}
 .carnet tfoot td{
@@ -231,8 +240,6 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
   border-top:2px solid var(--carnet-red); border-bottom:0;
 }
 .carnetphoto{border:1px solid var(--carnet-line); background:var(--sheet-2); padding:14px 16px; color:var(--ink-2); font-size:13px}
-.carnetphoto img{display:block; margin:10px auto 0; max-height:340px; border:1px solid var(--carnet-line)}
-.carnetphoto img[hidden]{display:none}
 .signcard{background:var(--carnet-paper); border:1px solid var(--carnet-line); box-shadow:var(--shadow); padding:16px 18px; transform:rotate(-0.4deg)}
 .signcard .hwline{font-family:"Caveat",cursive; color:var(--carnet-ink); font-size:19px; line-height:1.45}
 .signcard dl{display:grid; grid-template-columns:auto 1fr; gap:3px 12px; margin:8px 0}
@@ -244,6 +251,26 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
 .chit{background:var(--carnet-paper); border:1px dashed var(--carnet-line); box-shadow:var(--shadow); padding:14px 18px; transform:rotate(0.6deg); max-width:440px}
 .chit .script{font-family:"Caveat",cursive; font-size:21px; line-height:1.35; color:var(--carnet-ink)}
 .chit .total{font-family:"Caveat",cursive; font-size:30px; color:var(--carnet-ink); font-weight:700}
+
+/* ---- inbound leg records: the aeroplane files, the pilot signs ---- */
+.drop{
+  border:1px dashed var(--rule-hard); border-radius:3px; background:var(--sheet-2);
+  padding:22px 16px; text-align:center; display:flex; flex-direction:column; gap:4px;
+  cursor:pointer; margin-top:14px;
+}
+.drop:hover,.drop:focus-visible{border-color:var(--accent); background:var(--accent-soft); outline:none}
+.drop.over{border-color:var(--accent); border-style:solid; background:var(--accent-soft)}
+.drop strong{font-size:14px}
+.signcard dl.rec{grid-template-columns:auto 1fr; gap:2px 12px}
+.signcard dl.rec dd{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--carnet-ink)}
+.fallback{border:1px solid var(--rule); background:var(--sheet-2); padding:0 14px; margin-top:16px}
+.fallback>summary{cursor:pointer; padding:11px 0; font-size:11px; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--ink-2); font-weight:600}
+.fallback>summary:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.fallback[open]{padding-bottom:16px}
+.dot{display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--ink-2);
+  margin-right:6px; vertical-align:middle}
+.dot.live{background:var(--ok)}
 </style>
 
 <div class="wrap">
@@ -283,19 +310,35 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
   <section class="pane" id="pane-ramp" role="tabpanel" aria-labelledby="tab-ramp">
     <div class="cols c2">
       <div class="sheet">
-        <div class="eyebrow">After every landing</div>
-        <h2>Close out the leg</h2>
-        <p class="small muted">Six numbers off the sim's end-of-flight screen. Everything else &mdash; fuel bill, landing and parking fees, wear, inspections, hangar rent &mdash; is posted for you.</p>
-        <hr class="rule">
-        <div class="grid-form">
+        <div class="eyebrow">Engine off, battery master off</div>
+        <h2>F-BVNK files the leg</h2>
+        <p class="small muted">Times off and on, wheels up and wheels down, the two aerodromes, the FP-5L total at engine start and at shutdown, the touchdown rate &mdash; all of it comes off the aeroplane when she stops. None of it is typed. What you do is read the page and sign it.</p>
+        <div class="drop" id="legDrop" tabindex="0" role="button" aria-label="Drop the leg record here, or open one">
+          <strong>Drop the leg record here</strong>
+          <span class="small muted">LEG.json, straight off the aeroplane &mdash; or click to open one</span>
+        </div>
+        <div class="btnrow">
+          <button class="btn" id="btn-ingest-clip">Take it off the clipboard</button>
+          <button class="btn ghost small" id="btn-ingest-paste">Paste it</button>
+          <button class="btn ghost small" id="btn-ingest-watch" aria-pressed="false"><span class="dot" id="watchDot"></span>Watch for legs</button>
+          <button class="btn ghost small" id="btn-ingest-demo">Send a demo leg</button>
+        </div>
+        <p class="tiny muted" id="ingestHint">Nothing inbound yet.</p>
+        <input type="file" id="legFile" accept=".json,application/json,text/plain" hidden>
+
+        <details class="fallback" id="manualLeg">
+          <summary>File a leg by hand &mdash; fallback</summary>
+          <p class="small muted" style="margin-top:0">For a leg the aeroplane never recorded: one flown before the integration went in, or a record that did not arrive. Every figure below is one she files for herself.</p>
+          <div class="grid-form">
           <div class="field"><label for="f-date">Date</label><input type="date" id="f-date"></div>
           <div class="field"><label for="f-from">From</label><select id="f-from"></select></div>
           <div class="field"><label for="f-to">To</label><select id="f-to"></select></div>
-          <div class="field"><label for="f-dep-time">Off blocks</label><input type="time" id="f-dep-time"></div>
-          <div class="field"><label for="f-block">Block time (h)</label><input type="text" id="f-block" inputmode="decimal" placeholder="1.2 or 1:12"></div>
-          <div class="field"><label for="f-arr-time">On blocks</label><input type="time" id="f-arr-time"></div>
-          <div class="field"><label for="f-fp5l-dep">FP-5L at start (L)</label><input type="number" id="f-fp5l-dep" min="0" step="1" placeholder="total on the gauge"></div>
-          <div class="field"><label for="f-fp5l-arr">FP-5L at shutdown (L)</label><input type="number" id="f-fp5l-arr" min="0" step="1" placeholder="total on the gauge"></div>
+          <div class="field"><label for="f-dep-time">Take-off</label><input type="time" id="f-dep-time"></div>
+          <div class="field"><label for="f-block">Flight time (airborne)</label><input type="text" id="f-block" inputmode="decimal" placeholder="1.2 or 1:12"></div>
+          <div class="field"><label for="f-arr-time">Landing</label><input type="time" id="f-arr-time"></div>
+          <div class="field"><label for="f-fp5l-dep">Carburant d&eacute;part (L)</label><input type="number" id="f-fp5l-dep" min="0" step="1" placeholder="total on the gauge"></div>
+          <div class="field"><label for="f-fp5l-arr">Carburant arriv&eacute;e (L)</label><input type="number" id="f-fp5l-arr" min="0" step="1" placeholder="total on the gauge"></div>
+          <div class="field"><label for="f-tach">Tacho at shutdown</label><input type="number" id="f-tach" min="0" step="0.01" placeholder="1236.24"></div>
           <div class="field"><label for="f-fuel">Uplift (L)</label><input type="number" id="f-fuel" min="0" step="1" placeholder="0"></div>
           <div class="field"><label for="f-price">&euro; per litre</label><input type="number" id="f-price" min="0" step="0.01"></div>
           <div class="field"><label for="f-rate">Touchdown (fpm)</label><input type="number" id="f-rate" min="0" step="10" placeholder="180"></div>
@@ -318,12 +361,18 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
             <select id="f-handling"><option value="0" selected>No</option><option value="95">Yes (&euro;95.00)</option></select>
           </div>
           <div class="field"><label for="f-note">Note (optional)</label><input type="text" id="f-note" placeholder="Local, 3 circuits"></div>
-        </div>
-        <div class="btnrow">
-          <button class="btn" id="btn-file">File the leg</button>
-          <button class="btn ghost small" id="btn-paste">Paste sim summary</button>
-          <span class="small muted" id="f-hint"></span>
-        </div>
+          </div>
+          <div class="btnrow">
+            <button class="btn" id="btn-file">File it by hand</button>
+            <button class="btn ghost small" id="btn-paste">Paste sim summary</button>
+            <span class="small muted" id="f-hint"></span>
+          </div>
+        </details>
+      </div>
+
+      <div class="sheet" style="margin-top:14px">
+        <div class="eyebrow">Waiting for your signature</div>
+        <div id="legInbox"></div>
       </div>
 
       <div>
@@ -420,11 +469,11 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
     <div class="sheet">
       <div class="eyebrow">Carnet de route &mdash; sim</div>
       <h2>Logbook</h2>
-      <p class="small muted">Every leg you file on the Ramp tab writes its own row here, auto-filled &mdash; no separate typing, the way the real carnet gets filled in after each flight. Columns, order and ruling follow NK's own book.</p>
+      <p class="small muted">The aeroplane files each leg on the Ramp tab and it writes its own row here &mdash; times, aerodromes, flight time, fuel and tacho, nothing typed. Columns, order, ruling and hand follow page 86 of NK&rsquo;s own book.</p>
       <div class="carnetphoto" id="carnetPhoto">
-        <p style="margin:0"><strong>Columns taken from the real book.</strong> The printed headings below are the ones in NK's own <em>Carnet de Route</em> &mdash; three languages per column, left page then right page &mdash; transcribed by the project manager from Claus's colour scan (<span class="mono tiny">F-BVNK - JOURNEY LOGBOOK - COMPLETE - COLOR - 2023-05-13 - PDF 1.pdf</span>) and staged in <span class="mono tiny">FBVNK_STAGING/LEDGER_DOCS/</span>. <span class="mono tiny">assumption:</span> this page follows that transcription; this session read the transcription, not the scan itself &mdash; JPEGs cannot be opened from here.</p>
-        <p style="margin:8px 0 0" class="tiny muted">Staged alongside it, if you want the originals: <span class="mono tiny">F-BVNK_logbook_COVER_red_p1.jpg</span> (md5 8a972853) and <span class="mono tiny">F-BVNK_logbook_FILLED_2023_p92.jpg</span> (md5 d91701fe) &mdash; the April 2023 spread, &ldquo;NEW OWNER, FIRST FLIGHT&rdquo;.</p>
-        <img id="carnetPhotoImg" alt="F-BVNK Carnet de Route, original page" hidden>
+        <p style="margin:0"><strong>Built from page 86.</strong> Claus sent the scan on 16 Sep 2026 (<span class="mono tiny">P_86.pdf</span>) with: &ldquo;the logbook needs to be updated to reflect my NK bookkeeping &hellip; I have made my own line with tacho time etc, not a total oil but as said depart and arrive, also I am using airborne (flight time) and not block time.&rdquo; This page follows it: dates <span class="mono tiny">DD.MM</span> with the year once at the head, his name written out on the first row and ditto marks under it, <span class="mono tiny">PIC</span> in Fonctions, flight time <span class="mono tiny">HH+MM</span> and airborne not block, the tank total in litres in Carburant D&eacute;part and Arriv&eacute;e, the two Huile columns struck through, <span class="mono tiny">NIL</span> in Incidents, and TACHO &mdash; his own column, ruled in by hand &mdash; as <span class="mono tiny">1228,32</span>.</p>
+        <p style="margin:8px 0 0" class="tiny muted">The page is self-consistent on the two things this build leans on. Fuel: seven of its eight rows open at the litres the row above closed on, and the eighth steps 92 to 220, a 128 L uplift showing itself between two rows. Tacho: 1236,24 less 1228,32 is 7,9200 hours against 6,6667 hours flown, so the tacho runs 0,1567 h per leg more than the flight time &mdash; it turns on the ground, which is why nothing here derives one from the other.</p>
+        <p style="margin:8px 0 0" class="tiny muted"><span class="mono tiny">assumption:</span> the figure written beside <span class="mono tiny">P1</span> in Nature du Vol is read here as the running total of P1 time. The scan does not resolve it and the project manager has been asked to confirm. Everything else above is read straight off the page.</p>
       </div>
       <div class="btnrow" style="margin-top:10px">
         <button class="btn ghost small" id="btn-log-csv">Copy as CSV</button>
@@ -701,14 +750,14 @@ function blankState(seeded){
     billedMonths:[],
     reserves:{ engine:0, prop:0 },
     health:{ engine:88, prop:92, brakes:74, tyres:80, gear:86, airframe:84, avionics:79, interior:82, paint:91 },
-    squawks:[], done:[], spend:[], legs:[]
+    squawks:[], done:[], spend:[], legs:[], ingested:[]
   };
 }
 
 function load(){
   try{
     var raw = localStorage.getItem(KEY);
-    if(raw){ var o = JSON.parse(raw); if(o && o.v===1) return o; }
+    if(raw){ var o = JSON.parse(raw); if(o && o.v===1){ o.ingested = o.ingested || []; return o; } }
   }catch(e){}
   return seedExamples(blankState(true));
 }
@@ -759,7 +808,10 @@ function fileLeg(leg){
   var surfT  = leg.surface==='gravel'?1.8 : leg.surface==='grass'?1.25 : 1.0;
   var coastal = (FIELDS[leg.from]&&FIELDS[leg.from].coastal) || (FIELDS[leg.to]&&FIELDS[leg.to].coastal);
 
-  posted = posted.concat(accrueTo(iso));
+  /* Standing costs that fell due on the way to this date. They are the leg's postings in
+     the ledger but they are not what the leg cost — the chit and the carnet keep them apart. */
+  var accrued = accrueTo(iso);
+  posted = posted.concat(accrued);
 
   /* --- fuel --- */
   if(leg.litres > 0 && leg.price > 0){
@@ -845,11 +897,303 @@ function fileLeg(leg){
   });
 
   var raisedClean = raised.filter(Boolean);
-  leg.postedIds = posted.map(function(r){ return r.id; });
+  leg.postedIds  = posted.map(function(r){ return r.id; });
+  leg.accruedIds = accrued.map(function(r){ return r.id; });
   leg.raisedIds = raisedClean.map(function(s){ return s.id; });
   S.legs.push(leg);
   S.lastDate = iso;
   return {posted:posted, raised:raisedClean};
+}
+
+/* ---------------- inbound leg records ----------------
+   Claus, relayed by the PM, 16 Sep 2026, word for word: "all these numbers shall not
+   require pilot input, they shall be entered automatically, I have explained, I think,
+   that to the chat. Airborne times, take off and landing, fuel from the FP5L at engine
+   start (dep) and engine shutdown (arr), simulator integration should show up on either
+   the EFB (automatically) or the cockpit iPad, either way."
+
+   So a record off the aeroplane is how a leg gets into this book. She writes one at
+   shutdown; the book reads it, posts the fuel, the fees, the wear and whatever check
+   fell due, and hands back a filled-in carnet page to review and sign. The hand form is
+   the fallback for a leg she never recorded.
+
+   Contract FBVNK_LEG/1, published on the Job Card for the Builder to accept or adjust.
+   Only "from" and "to" are required. Anything else missing is derived where it can be
+   and printed on the review page where it cannot — nothing is filled in silently. */
+var LEG_SCHEMA = 'FBVNK_LEG/1';
+
+/* Thresholds for reading "how she was flown" out of power data. This session's proposal,
+   not measured off the aeroplane — the Builder or Claus sets the real ones, and until
+   then a record can simply carry "style" itself and skip the inference. */
+var POWER_RULE = { pressedRpm:2600, gentleRpm:2350, pressedFraction:0.35 };
+
+function hmFrom(v){
+  if(v===null || v===undefined) return '';
+  var s = String(v).trim(), m = s.match(/(\d{1,2}):([0-5]\d)/);
+  if(m) return String(+m[1]).padStart(2,'0')+':'+m[2];
+  m = s.match(/^(\d{2})([0-5]\d)$/);
+  return m ? m[1]+':'+m[2] : '';
+}
+/* Minutes a to b, wrapping once past midnight — a leg that lands after 0000 is still
+   the same leg, and must not come out negative. */
+function minsBetween(a,b){
+  if(!a || !b) return 0;
+  var d = ((+b.slice(0,2))*60 + (+b.slice(3,5))) - ((+a.slice(0,2))*60 + (+a.slice(3,5)));
+  return d < 0 ? d + 1440 : d;
+}
+function icao(v){
+  var s = String(v===null||v===undefined?'':v).trim().toUpperCase();
+  return /^[A-Z]{4}$/.test(s) ? s : '';
+}
+function numOrNull(v){
+  if(v===null || v===undefined || v==='') return null;
+  var n = +v; return isFinite(n) ? n : null;
+}
+function toMinute(h){ return h===null ? null : Math.round(h*60)/60; }
+
+/* A record off the aeroplane becomes a leg this book can post — or a reason why not. */
+function normaliseLeg(rec){
+  if(!rec || typeof rec !== 'object' || Array.isArray(rec)) return {ok:false, why:'That is not a leg record.'};
+  var notes = [];
+
+  if(rec.schema && String(rec.schema).indexOf('FBVNK_LEG/') !== 0)
+    return {ok:false, why:'Not an F-BVNK leg record — its schema reads "'+String(rec.schema).slice(0,28)+'".'};
+  if(rec.schema && rec.schema !== LEG_SCHEMA)
+    notes.push('Record is '+rec.schema+'; this book reads '+LEG_SCHEMA+'. Fields it does not know are ignored.');
+
+  var from = icao(rec.from), to = icao(rec.to);
+  if(!from || !to) return {ok:false, why:'The record needs a four-letter departure and destination.'};
+
+  var date = /^\d{4}-\d{2}-\d{2}$/.test(String(rec.date||'')) ? rec.date : '';
+  if(!date){ date = today(); notes.push('assumption: no date in the record — filed as '+date+'.'); }
+
+  var engineStart = hmFrom(rec.engineStart), takeOff = hmFrom(rec.takeOff);
+  var landing = hmFrom(rec.landing), shutdown = hmFrom(rec.shutdown);
+
+  /* Heures de Vol is airborne time — wheels off to wheels on, per Claus. Block time is
+     kept on the record and shown, but it is not what the carnet column totals. */
+  var airborne = numOrNull(rec.airborneHours);
+  if(airborne === null && takeOff && landing) airborne = minsBetween(takeOff, landing)/60;
+  var block = numOrNull(rec.blockHours);
+  if(block === null && engineStart && shutdown) block = minsBetween(engineStart, shutdown)/60;
+
+  var hours = airborne;
+  if(hours === null){
+    hours = block;
+    if(hours !== null) notes.push('No take-off or landing time in the record — Heures de Vol taken off the block time instead.');
+  }
+  if(hours === null || hours <= 0) return {ok:false, why:'The record carries no flight time: no take-off and landing, no block time.'};
+  hours = toMinute(hours);
+
+  var fp5lDep = numOrNull(rec.fp5lStart), fp5lArr = numOrNull(rec.fp5lShutdown);
+  if(fp5lDep !== null) fp5lDep = Math.max(0, fp5lDep);
+  if(fp5lArr !== null) fp5lArr = Math.max(0, fp5lArr);
+
+  /* Fuel billed. KIT1's rule stands: the FP-5L reading first, the uplift as the fallback.
+     Start less shutdown is what she burned, and you pay for what you burn. */
+  var uplift = numOrNull(rec.uplift);
+  var burn = (fp5lDep !== null && fp5lArr !== null) ? Math.max(0, fp5lDep - fp5lArr) : null;
+  var litres = 0, fuelSrc = '';
+  if(burn !== null && burn > 0){
+    litres = Math.round(burn*10)/10;
+    fuelSrc = 'FP-5L: '+num(fp5lDep,0)+' at start less '+num(fp5lArr,0)+' at shutdown';
+  } else if(uplift !== null && uplift > 0){
+    litres = uplift; fuelSrc = 'uplift as recorded';
+    notes.push('Fuel billed off the uplift, not the FP-5L — the record gave no usable start/shutdown pair.');
+  } else {
+    notes.push('No fuel billed: the record carries neither an FP-5L pair nor an uplift.');
+  }
+
+  var price = numOrNull(rec.fuelPrice);
+  if(price === null || price <= 0){
+    price = (FIELDS[to] || FIELDS.ZZZZ).fuel || FIELDS.ZZZZ.fuel;
+    if(litres > 0) notes.push('assumption: fuel at '+eur(price)+'/L, the standing price for '+to+' — the record carried none.');
+  }
+
+  var rate = numOrNull(rec.touchdownFpm);
+  if(rate === null){
+    rate = 150;
+    notes.push('assumption: touchdown taken as 150 fpm — the record carried no rate, so no hard-landing check was made on this leg.');
+  } else rate = Math.abs(Math.round(rate));
+
+  /* Style is the one judgement in the book and the aeroplane can only infer it. Power
+     data, then a style the record states outright, then "by the book" and it says so. */
+  var style = 'normal', p = rec.power;
+  if(p && typeof p === 'object'){
+    var over = numOrNull(p.minutesAboveCruise), rpm = numOrNull(p.maxRpm);
+    var pressed = !!p.hardBraking ||
+                  (over !== null && hours > 0 && over > hours*60*POWER_RULE.pressedFraction) ||
+                  (rpm !== null && rpm >= POWER_RULE.pressedRpm);
+    var gentle = !pressed && ((over === 0) || (rpm !== null && rpm <= POWER_RULE.gentleRpm));
+    style = pressed ? 'pressed' : gentle ? 'gentle' : 'normal';
+  } else if(['gentle','normal','pressed'].indexOf(rec.style) > -1){
+    style = rec.style;
+  } else {
+    notes.push('assumption: flown by the book — the record carried no power data to judge it on.');
+  }
+
+  var surface = ['asphalt','grass','gravel'].indexOf(rec.surface) > -1 ? rec.surface : 'asphalt';
+  if(!rec.surface) notes.push('assumption: asphalt at '+to+' — the record carried no surface.');
+
+  var nights = numOrNull(rec.nights);
+  nights = nights === null ? 0 : Math.max(0, Math.round(nights));
+
+  /* TACHO. His own column on page 86, ruled in by hand, and the one figure on the page
+     that is neither a clock nor a gauge reading. The package already carries it: the PM
+     verified NK_ST_TACH as LocalVar 11, so the aeroplane can send it without a new
+     variable. Measured off page 86, the tacho runs 0.1567 h per leg more than the flight
+     time (7.9200 tacho hours against 6.6667 flown, over eight legs) — it turns on the
+     ground too, so it is never derived from the flight time here. Sent, or blank. */
+  var tachStart = numOrNull(rec.tachStart), tachStop = numOrNull(rec.tachStop);
+  if(tachStop === null && tachStart === null) notes.push('No tacho in the record — the TACHO column stays empty on this row.');
+
+  var legId = String(rec.legId || '').trim();
+  if(!legId){
+    legId = 'DERIVED-'+date+'-'+from+'-'+to+'-'+String(takeOff||engineStart||'0000').replace(':','');
+    notes.push('No legId in the record — one derived from the date, route and time, so a repeat cannot post twice.');
+  }
+
+  return {ok:true, notes:notes, leg:{
+    legId:legId, src:'aircraft', schema:rec.schema || null,
+    date:date, from:from, to:to,
+    hours:hours, airborne:toMinute(airborne), block:toMinute(block),
+    engineStart:engineStart, shutdown:shutdown, takeOff:takeOff, landing:landing,
+    depTime: takeOff || engineStart, arrTime: landing || shutdown,
+    fp5lDep:fp5lDep, fp5lArr:fp5lArr, burn:burn,
+    litres:litres, fuelSrc:fuelSrc, price:price,
+    tachStart:tachStart, tachStop:tachStop,
+    rate:rate, nights:nights, handling: rec.handling ? 95 : 0,
+    style:style, surface:surface,
+    note:String(rec.note || '').slice(0,160),
+    notes:notes
+  }};
+}
+
+function ingestSay(msg, bad){
+  var el = $('ingestHint'); if(!el) return;
+  el.textContent = msg;
+  el.style.color = bad ? 'var(--bad)' : '';
+}
+
+function ingestRecord(obj){
+  if(Array.isArray(obj)) return ingestBatch(obj);
+  if(obj && Array.isArray(obj.legs)) return ingestBatch(obj.legs);
+
+  var r = normaliseLeg(obj);
+  if(!r.ok){ ingestSay(r.why, true); toast(r.why); return false; }
+  var leg = r.leg;
+  if((S.ingested||[]).indexOf(leg.legId) > -1){
+    ingestSay('Already in the book — '+leg.legId+'. Nothing posted twice.', true);
+    return false;
+  }
+  if(grounded()){
+    ingestSay('She is grounded. Clear the broken item in the tech log before she files another leg.', true);
+    toast('She is grounded. Clear the broken item first.'); switchPane('tech'); return false;
+  }
+  if(leg.date < S.lastDate) leg.date = S.lastDate;
+
+  var res = fileLeg(leg);
+  S.ingested.push(leg.legId);
+  save(); render(); renderSignCard(leg, res);
+  switchPane('ramp');
+  ingestSay('Filed from the aeroplane · '+leg.from+'–'+leg.to+' · '+hhmm(leg.hours)+' · '+leg.legId, false);
+  toast('F-BVNK filed the leg. Read the page and sign it.' +
+        (res.raised.length ? ' '+res.raised.length+' new squawk'+(res.raised.length===1?'':'s')+'.' : ''));
+  return true;
+}
+
+function ingestBatch(arr){
+  var n = 0, i;
+  for(i=0;i<arr.length;i++){ if(ingestRecord(arr[i])) n++; }
+  if(arr.length > 1) ingestSay(n+' of '+arr.length+' legs filed. The last one is on the page to sign.', n===0);
+  return n > 0;
+}
+
+function ingestText(txt){
+  var t = String(txt===null||txt===undefined?'':txt).trim();
+  if(!t){ ingestSay('Nothing there to read.', true); return false; }
+  var obj;
+  try{ obj = JSON.parse(t); }
+  catch(e){ ingestSay('That is not a leg record — the aeroplane writes JSON.', true); return false; }
+  return ingestRecord(obj);
+}
+function ingestFile(f){
+  if(!f) return;
+  var rd = new FileReader();
+  rd.onload = function(){ ingestText(rd.result); };
+  rd.onerror = function(){ ingestSay('Could not read that file.', true); };
+  rd.readAsText(f);
+}
+
+/* Route B: the book watches the folder it is served from. That works when the book is
+   opened off the same local server the aeroplane writes LEG.json into. On any other
+   origin the fetch fails, and after a few tries the line under the buttons says so
+   rather than sitting there looking live. */
+var WATCH = {on:false, timer:null, seen:'', misses:0};
+function watchTick(){
+  fetch('LEG.json?t='+Date.now(), {cache:'no-store'})
+    .then(function(r){ if(!r.ok) throw new Error(String(r.status)); return r.text(); })
+    .then(function(txt){
+      WATCH.misses = 0;
+      if(txt === WATCH.seen) return;
+      WATCH.seen = txt;
+      ingestText(txt);
+    })
+    .catch(function(){
+      WATCH.misses++;
+      if(WATCH.misses === 4)
+        ingestSay('Watching ./LEG.json — nothing is answering on this origin. Serve the book out of the folder F-BVNK writes into, or use the buttons above.', false);
+    });
+}
+function setWatch(on){
+  WATCH.on = on; WATCH.misses = 0;
+  var b = $('btn-ingest-watch');
+  b.setAttribute('aria-pressed', String(on));
+  b.lastChild.nodeValue = on ? 'Watching' : 'Watch for legs';
+  $('watchDot').className = 'dot' + (on ? ' live' : '');
+  if(WATCH.timer){ clearInterval(WATCH.timer); WATCH.timer = null; }
+  if(on){ ingestSay('Watching ./LEG.json every 4 seconds.', false); watchTick(); WATCH.timer = setInterval(watchTick, 4000); }
+  else ingestSay('Not watching. Drop a record in, or use a button.', false);
+}
+
+/* A record the aeroplane would have written, so the whole path can be walked without
+   the sim running. Built off the book's own state — never rnd(), which belongs to the
+   seeded wear sequence and must stay untouched. */
+function demoRecord(){
+  var n = S.legs.length;
+  var pairs = [['LPCS','LPCO'],['LPCO','LPCS'],['LPCS','LPVL'],['LPVL','LPCS'],['LPCS','LPCS']];
+  var p = pairs[n % pairs.length];
+  var d = S.lastDate > today() ? S.lastDate : today();
+  var hm = function(m){ m = ((m % 1440) + 1440) % 1440; return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); };
+  var startMin = 9*60 + 40 + (n % 5) * 25;
+  var offMin = startMin + 11, onMin = offMin + 52 + (n % 4) * 9, stopMin = onMin + 7;
+  /* Fuel carries: this leg starts on the litres the last one finished with, exactly as it
+     does on page 86, where seven of eight rows do that and the eighth steps 92 to 220.
+     220 is the figure that page fills to, so that is what a top-up goes to here. */
+  var burn = 26 + (n % 4) * 5, prevArr = null;
+  for(var j = S.legs.length - 1; j >= 0; j--){ if(S.legs[j].fp5lArr || S.legs[j].fp5lArr === 0){ prevArr = S.legs[j].fp5lArr; break; } }
+  var start = (prevArr === null || prevArr < burn + 20) ? 220 : prevArr;
+  var air = (onMin - offMin) / 60;
+  /* Tacho runs on past the flight: 0.1567 h per leg, the figure measured off page 86. */
+  var prev = null;
+  for(var k = S.legs.length - 1; k >= 0; k--){ if(S.legs[k].tachStop || S.legs[k].tachStop === 0){ prev = S.legs[k].tachStop; break; } }
+  var tachStart = prev === null ? 1228.32 : prev;
+  return {
+    schema: LEG_SCHEMA,
+    legId: 'FBVNK-'+d.replace(/-/g,'')+'-'+String(n+1).padStart(2,'0'),
+    tail: 'F-BVNK', date: d, from: p[0], to: p[1],
+    engineStart: hm(startMin), takeOff: hm(offMin), landing: hm(onMin), shutdown: hm(stopMin),
+    airborneHours: Math.round(((onMin-offMin)/60)*100)/100,
+    blockHours: Math.round(((stopMin-startMin)/60)*100)/100,
+    fp5lStart: start, fp5lShutdown: Math.max(0, start - burn),
+    uplift: 0, touchdownFpm: 140 + (n % 6) * 55,
+    tachStart: Math.round(tachStart*100)/100,
+    tachStop: Math.round((tachStart + air + 0.1567)*100)/100,
+    nights: 0, handling: false,
+    surface: p[1]==='LPVL' ? 'grass' : 'asphalt',
+    power: { maxRpm: 2450 + (n % 3) * 90, minutesAboveCruise: (n % 3) * 8, hardBraking: false },
+    note: p[0]===p[1] ? 'Local, circuits' : ''
+  };
 }
 
 function raise(comp, def){
@@ -968,14 +1312,38 @@ function invoiceCard(r){
     '<div class="tot"><span>Total</span><span class="mono">'+eur(r.gross)+'</span></div></div></div>';
 }
 
+/* A leg's own postings and squawks, read back off the ids it recorded when it was filed.
+   Exact, unlike matching by date, which would hand a leg its neighbour's invoices. */
+function resFor(leg){
+  var byInv = {}; S.spend.forEach(function(r){ byInv[r.id] = r; });
+  var bySq  = {}; S.squawks.concat(S.done).forEach(function(q){ bySq[q.id] = q; });
+  return {
+    posted: (leg.postedIds||[]).map(function(id){ return byInv[id]; }).filter(Boolean),
+    raised: (leg.raisedIds||[]).map(function(id){ return bySq[id];  }).filter(Boolean)
+  };
+}
+
+/* Legs she filed that nobody has signed yet. A batch can land three at once, and every
+   one of them is a page the commander still owes his name to. */
+function renderInbox(){
+  var el = $('legInbox'); if(!el) return;
+  var open = [];
+  S.legs.forEach(function(l, i){ if(!l.signedBy) open.push({l:l, i:i}); });
+  if(!open.length){ el.innerHTML = '<p class="small muted">Every leg in the book is signed.</p>'; return; }
+  el.innerHTML = '<div class="tw"><table><thead><tr><th>Date</th><th>Route</th><th class="num">Dur&eacute;e</th><th>Ref.</th><th></th></tr></thead><tbody>'+
+    open.slice(-8).map(function(o){
+      return '<tr><td class="mono">'+esc(o.l.date)+'</td>'+
+        '<td>'+esc(o.l.from)+'&ndash;'+esc(o.l.to)+'</td>'+
+        '<td class="num">'+hhmm(o.l.hours)+'</td>'+
+        '<td class="tiny muted">'+esc(o.l.legId || 'by hand')+'</td>'+
+        '<td><button class="btn small ghost" data-sign="'+o.i+'">Read and sign</button></td></tr>';
+    }).join('')+'</tbody></table></div>';
+}
+
 function renderLastPosting(res){
   var lastLeg = S.legs[S.legs.length-1];
   if(!lastLeg) return;
-  if(!res){
-    /* no live result — reconstruct the last day's postings so the panel is never empty */
-    var d = S.lastDate;
-    res = {posted: S.spend.filter(function(r){ return r.date===d; }), raised:[]};
-  }
+  if(!res) res = resFor(lastLeg);
   if(lastLeg.signedBy) renderChit(lastLeg, res);
   else renderSignCard(lastLeg, res);
 }
@@ -1012,12 +1380,25 @@ function chitLine(leg, gross){
   return CHIT_LINES[idx % CHIT_LINES.length].replace('{h}', hhmm(leg.hours)+' h').replace('{g}', eur(gross));
 }
 
+/* What the leg cost, kept apart from what merely fell due on the same day. Hangar rent,
+   insurance and the CAO run whether she flies or not, so they never go in the flight's
+   own figure — same line the strip draws (STRIP_SPEC.md, "Strip scope"). */
+function legCost(leg, res){
+  var acc = {}; (leg.accruedIds||[]).forEach(function(id){ acc[id] = 1; });
+  var flight = 0, standing = 0;
+  res.posted.forEach(function(r){ if(acc[r.id]) standing += r.gross; else flight += r.gross; });
+  return {flight:flight, standing:standing};
+}
+
 function renderChit(leg, res){
-  var sum = res.posted.reduce(function(a,r){ return a+r.gross; },0);
+  var c = legCost(leg, res);
   $('lastPosting').innerHTML =
     '<div class="chit">'+
-      '<div class="script">'+esc(chitLine(leg, sum))+'</div>'+
-      '<div class="total" style="margin-top:6px">'+eur(sum)+'</div>'+
+      '<div class="script">'+esc(chitLine(leg, c.flight))+'</div>'+
+      '<div class="total" style="margin-top:6px">'+eur(c.flight)+'</div>'+
+      (c.standing > 0
+        ? '<p class="tiny muted" style="margin-top:6px">And '+eur(c.standing)+' of standing costs fell due on the way &mdash; hangar, insurance, CAO. They run whether she flies or not, so they are not on the leg.</p>'
+        : '')+
       '<p class="tiny muted" style="margin-top:8px">Signed '+esc(leg.signedBy)+' &middot; '+esc(leg.date)+
       (leg.signedAt?' &middot; '+localHM(leg.signedAt)+' local':'')+
       '<span class="stamp" style="margin-left:8px">SIGNED</span></p>'+
@@ -1025,7 +1406,34 @@ function renderChit(leg, res){
     buildPostingHtml(res);
 }
 
+/* Everything the aeroplane sent, laid out under the carnet lines so the pilot can check
+   it against what he just flew. Read-only by design: these are her figures, not his. */
+function recordedBlock(leg){
+  if(leg.src !== 'aircraft') return '';
+  var pair = (leg.fp5lDep!==null && leg.fp5lDep!==undefined && leg.fp5lArr!==null && leg.fp5lArr!==undefined)
+    ? num(leg.fp5lDep,0)+' &rarr; '+num(leg.fp5lArr,0)+' L'+(leg.burn ? ' &middot; '+num(leg.burn,1)+' L burned' : '')
+    : '&mdash;';
+  var html = '<hr class="rule">'+
+    '<p class="tiny" style="letter-spacing:.09em; text-transform:uppercase; color:var(--ink-2); margin:0 0 6px">'+
+      '<span class="stamp" style="font-size:12px; padding:1px 7px; transform:rotate(-3deg)">AUTO</span>'+
+      ' &nbsp;as F-BVNK recorded it</p>'+
+    '<dl class="rec">'+
+      ((leg.engineStart||leg.shutdown) ? '<dt>Moteur</dt><dd>'+(leg.engineStart||'&mdash;')+' &rarr; '+(leg.shutdown||'&mdash;')+
+        (leg.block?'   '+hhmm(leg.block)+' bloc':'')+'</dd>' : '')+
+      ((leg.takeOff||leg.landing) ? '<dt>En vol</dt><dd>'+(leg.takeOff||'&mdash;')+' &rarr; '+(leg.landing||'&mdash;')+
+        (leg.airborne?'   '+hhmm(leg.airborne)+' de vol':'')+'</dd>' : '')+
+      '<dt>FP-5L</dt><dd>'+pair+'</dd>'+
+      '<dt>Touch&eacute;</dt><dd>'+num(leg.rate,0)+' fpm</dd>'+
+      ((leg.tachStop||leg.tachStop===0) ? '<dt>Tacho</dt><dd>'+tachoTxt(leg.tachStart)+' &rarr; '+tachoTxt(leg.tachStop)+'</dd>' : '')+
+      '<dt>R&eacute;f.</dt><dd>'+esc(leg.legId||'')+'</dd>'+
+    '</dl>';
+  if(leg.notes && leg.notes.length)
+    html += '<p class="tiny muted" style="margin-top:8px">'+leg.notes.map(esc).join('<br>')+'</p>';
+  return html;
+}
+
 function renderSignCard(leg, res){
+  var auto = leg.src === 'aircraft';
   var from = (FIELDS[leg.from] ? leg.from+' '+FIELDS[leg.from].name : leg.from) + (leg.depTime?' &middot; off '+leg.depTime:'');
   var to   = (FIELDS[leg.to]   ? leg.to+' '+FIELDS[leg.to].name   : leg.to)   + (leg.arrTime?' &middot; on '+leg.arrTime:'');
   var nature = leg.from===leg.to ? 'Local' : 'Navigation';
@@ -1033,14 +1441,16 @@ function renderSignCard(leg, res){
   if(res.raised.length) entered = entered.concat(res.raised.map(function(sq){ return 'Tech log — '+sq.text; }));
   $('lastPosting').innerHTML =
     '<div class="signcard">'+
-      '<div class="eyebrow">Carnet de route &middot; review before you sign</div>'+
+      '<div class="eyebrow">Carnet de route &middot; '+(auto?'filed by the aeroplane &middot; read it and sign':'review before you sign')+'</div>'+
       '<div class="hwline" style="font-size:23px; margin-top:2px">'+from+' &rarr; '+to+'</div>'+
       '<dl>'+
         '<dt>Date</dt><dd>'+esc(leg.date)+'</dd>'+
         '<dt>Dur&eacute;e</dt><dd>'+hhmm(leg.hours)+'</dd>'+
         '<dt>Nature</dt><dd>'+nature+'</dd>'+
+        (leg.fuelSrc?'<dt>Carburant</dt><dd style="font-size:16px">'+num(leg.litres,1)+' L &mdash; '+esc(leg.fuelSrc)+'</dd>':'')+
         (leg.note?'<dt>Observations</dt><dd style="font-size:16px">'+esc(leg.note)+'</dd>':'')+
       '</dl>'+
+      recordedBlock(leg)+
       (entered.length ? '<p class="small muted" style="margin-top:6px"><strong>Entered this leg:</strong> '+entered.map(esc).join(', ')+'</p>' : '<p class="small muted" style="margin-top:6px">Nothing chargeable this leg.</p>')+
       '<hr class="rule">'+
       '<div class="field"><label for="sign-name">Pilote &mdash; sign to confirm</label><input type="text" id="sign-name" class="signline" value="'+esc(leg.signedBy||'Claus Thanner')+'"></div>'+
@@ -1052,6 +1462,7 @@ function renderSignCard(leg, res){
     save();
     renderChit(leg, res);
     renderLogbook();
+    renderInbox();
   });
 }
 
@@ -1149,7 +1560,8 @@ function legSummary(l){
   var items = [];
   if(l.postedIds && l.postedIds.length){
     var byId = {}; S.spend.forEach(function(r){ byId[r.id] = r; });
-    l.postedIds.forEach(function(id){ if(byId[id]) items.push(byId[id].desc); });
+    var acc = {}; (l.accruedIds||[]).forEach(function(id){ acc[id] = 1; });
+    l.postedIds.forEach(function(id){ if(byId[id] && !acc[id]) items.push(byId[id].desc); });
   }
   if(l.raisedIds && l.raisedIds.length){
     var byId2 = {}; S.squawks.concat(S.done).forEach(function(s){ byId2[s.id] = s; });
@@ -1159,7 +1571,14 @@ function legSummary(l){
 }
 /* The real book writes dates day-month with the year once at the head of the column,
    times as four digits, aerodromes as bare ICAO. */
-function dayMonth(iso){ return iso.slice(8,10)+'-'+iso.slice(5,7); }
+function dayMonth(iso){ return iso.slice(8,10)+'.'+iso.slice(5,7); }
+/* He writes flight time HH+MM, not H:MM — page 86, every row: 01+20, 01+05, 00+50. */
+function hplus(h){
+  var m = Math.round(h*60);
+  return String(Math.floor(m/60)).padStart(2,'0')+'+'+String(m%60).padStart(2,'0');
+}
+/* Tacho to two decimals, comma decimal mark, as he writes it: 1228,32. */
+function tachoTxt(v){ return (v===null || v===undefined || v==='') ? '' : (+v).toFixed(2).replace('.',','); }
 function hhmm4(t){ return t ? t.replace(':','') : ''; }
 function surname(name){
   var parts = String(name||'').trim().split(/\s+/);
@@ -1173,16 +1592,36 @@ function logRows(){
     return {
       date: l.date, prev: prev, run: run, dur: l.hours,
       from: l.from, to: l.to, depT: hhmm4(l.depTime), arrT: hhmm4(l.arrTime),
-      nature: l.from===l.to ? 'Local' : 'Navigation',
-      litres: l.litres || 0,
-      fp5lDep: (l.fp5lDep===0 || l.fp5lDep) ? l.fp5lDep : null,
-      fp5lArr: (l.fp5lArr===0 || l.fp5lArr) ? l.fp5lArr : null,
+      /* Fuel: the tank totals off the FP-5L at engine start and at shutdown, in the
+         Carburant columns, which is where he writes them. The Huile columns are printed
+         but struck through on his pages, so nothing goes in them. */
+      fuelDep: (l.fp5lDep===0 || l.fp5lDep) ? l.fp5lDep : null,
+      fuelArr: (l.fp5lArr===0 || l.fp5lArr) ? l.fp5lArr : null,
+      tach: (l.tachStop===0 || l.tachStop) ? l.tachStop : null,
       note: l.note || '', auto: legSummary(l),
-      crew: surname(l.signedBy) || 'THANNER',
+      name: l.signedBy || 'CLAUS THANNER',
       signed: l.signedBy || '', signedAt: l.signedAt || ''
     };
   });
 }
+
+/* ---------------- the carnet page ----------------
+   Rebuilt 16 Sep 2026 against page 86 of NK's own book, the scan Claus sent, after he
+   wrote: "the logbook needs to be updated to reflect my NK bookkeeping ... you can see
+   the differences, I have made my own line with tacho time etc, not a total oil but as
+   said depart and arrive, also I am using airborne (flight time) and not block time."
+
+   What page 86 shows, and what this page now does:
+     - dates DD.MM, the year written once at the head of the column
+     - his name in full on the first row, ditto marks under it; Fonctions PIC, not CDB
+     - flight time HH+MM, and it is airborne time, not block
+     - Carburant Depart/Arrivee carry the tank total in litres. They run on from row to
+       row: on page 86 seven of eight rows start at the litres the row above finished on,
+       and the eighth steps 92 -> 220, which is a 128 L uplift showing itself.
+     - the two Huile columns are struck through with one pen stroke, unused
+     - Incidents reads NIL when there was nothing
+     - TACHO is his own column, ruled in by hand, engine tacho at shutdown, 1228,32 style
+     - the signature is his initials, not his name written out */
 function renderLogbook(){
   var rows = logRows();
   var total = rows.length ? rows[rows.length-1].run : 0;
@@ -1196,54 +1635,67 @@ function renderLogbook(){
         '<th colspan="2">Equipage &middot; Crew<span class="sub">Tripulaci&oacute;n</span></th>'+
         '<th colspan="2">Lieu &middot; Place<span class="sub">Lugar</span></th>'+
         '<th colspan="2">Heure &middot; Times<span class="sub">Hora</span></th>'+
-        '<th rowspan="2">Heures de Vol<span class="sub">Hour of flight &middot; Horas de Vuelo</span></th>'+
+        '<th rowspan="2">Heures de Vol<span class="sub">Hour of flight &middot; Horas de Vuelo</span>'+
+          '<span class="sub">Report &middot; Brought forward &middot; Suma anterior</span></th>'+
         '<th rowspan="2">Nature du Vol<span class="sub">Nature of flight &middot; Clase del Vuelo</span></th>'+
-        '<th rowspan="2">Report<span class="sub">Brought forward &middot; Suma anterior</span></th>'+
-        '<th colspan="2">Carburant &middot; Fuel<span class="sub">Combustible</span></th>'+
+        '<th colspan="2">Carburant &middot; Fuel<span class="sub">Combustible &middot; Quantit&eacute;</span></th>'+
         '<th colspan="2">Huile &middot; Oil<span class="sub">Aceite</span></th>'+
         '<th rowspan="2">Incidents &middot; Observations<span class="sub">Observations, if any</span></th>'+
+        '<th rowspan="2" class="hand">Tacho</th>'+
         '<th rowspan="2">Signature du Commandant de bord<span class="sub">Person in charge &middot; Comandante a bordo</span></th>'+
         '<th rowspan="2">Visa<span class="sub">Douanes et Autorit&eacute;s A&eacute;ronautiques</span></th>'+
       '</tr>'+
       '<tr>'+
-        '<th>Nom<span class="sub">Name</span></th><th>Fonctions<span class="sub">Duties</span></th>'+
+        '<th>Noms<span class="sub">Names &middot; Apellidos</span></th><th>Fonctions<span class="sub">Duties &middot; Funciones</span></th>'+
         '<th>D&eacute;part<span class="sub">Salida</span></th><th>Arriv&eacute;e<span class="sub">Llegada</span></th>'+
         '<th>D&eacute;part<span class="sub">Salida</span></th><th>Arriv&eacute;e<span class="sub">Llegada</span></th>'+
-        '<th>Quantit&eacute;<span class="sub">Quantity</span></th><th>D&eacute;p. / Arr.<span class="sub">at</span></th>'+
-        '<th>D&eacute;part<span class="sub">FP-5L, start</span></th><th>Arriv&eacute;e<span class="sub">FP-5L, shutdown</span></th>'+
+        '<th>D&eacute;part<span class="sub">Salida</span></th><th>Arriv&eacute;e<span class="sub">Llegada</span></th>'+
+        '<th>D&eacute;part<span class="sub">Salida</span></th><th>Arriv&eacute;e<span class="sub">Llegada</span></th>'+
       '</tr>'+
     '</thead>';
 
-  var body = rows.length ? rows.map(function(r){
+  var body = rows.length ? rows.map(function(r, i){
     var autoTxt = r.auto.join('; ');
-    var obs = '<span class="clip">'+esc(r.note)+
-      (r.auto.length ? '<span class="auto">'+esc(autoTxt)+'</span>' : '')+'</span>';
+    var obs = (r.note || r.auto.length)
+      ? '<span class="clip">'+esc(r.note)+(r.auto.length ? '<span class="auto">'+esc(autoTxt)+'</span>' : '')+'</span>'
+      : 'NIL';
     var full = [r.note].concat(r.auto).filter(Boolean).join(' · ');
+    /* His name written out once at the top of the page, ditto marks under it. */
+    var nom = i===0
+      ? '<td>'+esc(String(r.name).toUpperCase())+'</td>'
+      : '<td class="ditto">&mdash; &quot; &mdash;</td>';
     var sig = r.signed
-      ? esc(r.signed)+(r.signedAt?' <span class="tiny muted">'+localHM(r.signedAt)+'</span>':'')
+      ? '<span title="'+esc(r.signed)+'">'+esc(initials(r.signed))+'</span>'+
+        (r.signedAt?' <span class="tiny muted">'+localHM(r.signedAt)+'</span>':'')
       : '';
     return '<tr>'+
       '<td>'+dayMonth(r.date)+'</td>'+
-      '<td>'+esc(r.crew)+'</td><td>CDB</td>'+
+      nom+'<td>PIC</td>'+
       '<td>'+esc(r.from)+'</td><td>'+esc(r.to)+'</td>'+
       '<td class="fill">'+r.depT+'</td><td class="fill">'+r.arrT+'</td>'+
-      '<td>'+hhmm(r.dur)+'</td>'+
-      '<td>'+r.nature+'</td>'+
-      '<td>'+hhmm(r.prev)+'</td>'+
-      '<td class="fill">'+(r.litres ? num(r.litres,0)+' L' : '')+'</td><td class="fill"></td>'+
-      '<td class="fill">'+(r.fp5lDep===null ? '' : num(r.fp5lDep,0))+'</td>'+
-      '<td class="fill">'+(r.fp5lArr===null ? '' : num(r.fp5lArr,0))+'</td>'+
+      '<td>'+hplus(r.dur)+'</td>'+
+      '<td>P1 <span class="tiny">'+hplus(r.run)+'</span></td>'+
+      '<td class="fill">'+(r.fuelDep===null ? '' : num(r.fuelDep,0))+'</td>'+
+      '<td class="fill">'+(r.fuelArr===null ? '' : num(r.fuelArr,0))+'</td>'+
+      '<td class="fill struck"></td><td class="fill struck"></td>'+
       '<td class="obs"'+(full?' title="'+esc(full)+'"':'')+'>'+obs+'</td>'+
+      '<td class="tach fill">'+tachoTxt(r.tach)+'</td>'+
       '<td>'+sig+'</td>'+
       '<td class="fill"></td>'+
     '</tr>';
   }).join('') : '<tr><td colspan="17" class="muted">No legs filed yet.</td></tr>';
 
   var foot = rows.length
-    ? '<tfoot><tr><td colspan="7">Total &mdash; report &agrave; nouveau</td><td>'+hhmm(total)+'</td><td colspan="9"></td></tr></tfoot>'
+    ? '<tfoot><tr><td colspan="7">Total &mdash; report &agrave; nouveau</td><td>'+hplus(total)+'</td><td colspan="9"></td></tr></tfoot>'
     : '';
 
   $('logTbl').innerHTML = head+'<tbody>'+body+'</tbody>'+foot;
+}
+
+/* The signature on his pages is initials, not the name written out. */
+function initials(name){
+  return String(name||'').trim().split(/\s+/)
+    .map(function(w){ return w.charAt(0).toUpperCase(); }).join('');
 }
 
 function renderPaint(){
@@ -1349,7 +1801,7 @@ function renderBook(){
 }
 
 function render(){
-  renderStatus(); renderMeters(); renderSeasonMini(); renderHealth();
+  renderStatus(); renderMeters(); renderSeasonMini(); renderHealth(); renderInbox();
   renderCounters(); renderSquawks(); renderLedger(); renderLogbook(); renderPaint(); renderYear(); renderBook();
 }
 
@@ -1358,15 +1810,20 @@ function render(){
    ============================================================ */
 function seedExamples(st){
   S = st; RNG = 101; UIDN = 0;
+  /* Eight legs already flown and already signed — the pages behind the one you are on.
+     Times and signatures only: no FP-5L pair, because these were flown before the
+     aeroplane started filing for herself, and a blank Huile column on the old pages is
+     the honest record of when that began. fileLeg reads none of the fields added here,
+     so the seeded wear and squawk sequence is untouched. */
   var legs = [
-    {date:'2026-01-18', from:'LPCS', to:'LPCS', hours:1.2, litres:64,  price:2.19, rate:170, nights:0, handling:0, style:'normal',  surface:'asphalt', note:'Local, three circuits'},
-    {date:'2026-01-31', from:'LPCS', to:'LPVL', hours:1.6, litres:0,   price:0,    rate:190, nights:0, handling:0, style:'normal',  surface:'grass',   note:'Up to Vilar da Luz for lunch'},
-    {date:'2026-02-08', from:'LPVL', to:'LPCS', hours:1.7, litres:132, price:2.13, rate:210, nights:0, handling:0, style:'normal',  surface:'asphalt', note:'Home'},
-    {date:'2026-02-21', from:'LPCS', to:'LPCO', hours:1.1, litres:0,   price:0,    rate:420, nights:1, handling:0, style:'pressed', surface:'asphalt', note:'Coimbra, dropped at IAC'},
-    {date:'2026-03-01', from:'LPCO', to:'LPCS', hours:1.3, litres:0,   price:0,    rate:150, nights:0, handling:0, style:'gentle',  surface:'asphalt', note:'Collected, greaser'},
-    {date:'2026-03-08', from:'LPCS', to:'LPCS', hours:2.4, litres:140, price:2.60, rate:165, nights:0, handling:0, style:'gentle',  surface:'asphalt', note:'Down the coast and back'},
-    {date:'2026-03-16', from:'LPCS', to:'LEVD', hours:4.3, litres:120, price:3.42, rate:230, nights:1, handling:0, style:'normal',  surface:'asphalt', note:'Valladolid, overnight'},
-    {date:'2026-03-18', from:'LEVD', to:'LPCS', hours:4.8, litres:130, price:2.29, rate:180, nights:0, handling:0, style:'normal',  surface:'asphalt', note:'Long leg home'}
+    {date:'2026-01-18', depTime:'10:15', arrTime:'11:27', signedBy:'Claus Thanner', signedAt:'2026-01-18T11:35:00', from:'LPCS', to:'LPCS', hours:1.2, litres:64,  price:2.19, rate:170, nights:0, handling:0, style:'normal',  surface:'asphalt', note:'Local, three circuits'},
+    {date:'2026-01-31', depTime:'11:40', arrTime:'13:16', signedBy:'Claus Thanner', signedAt:'2026-01-31T13:24:00', from:'LPCS', to:'LPVL', hours:1.6, litres:0,   price:0,    rate:190, nights:0, handling:0, style:'normal',  surface:'grass',   note:'Up to Vilar da Luz for lunch'},
+    {date:'2026-02-08', depTime:'14:05', arrTime:'15:47', signedBy:'Claus Thanner', signedAt:'2026-02-08T15:55:00', from:'LPVL', to:'LPCS', hours:1.7, litres:132, price:2.13, rate:210, nights:0, handling:0, style:'normal',  surface:'asphalt', note:'Home'},
+    {date:'2026-02-21', depTime:'09:30', arrTime:'10:36', signedBy:'Claus Thanner', signedAt:'2026-02-21T10:44:00', from:'LPCS', to:'LPCO', hours:1.1, litres:0,   price:0,    rate:420, nights:1, handling:0, style:'pressed', surface:'asphalt', note:'Coimbra, dropped at IAC'},
+    {date:'2026-03-01', depTime:'16:20', arrTime:'17:38', signedBy:'Claus Thanner', signedAt:'2026-03-01T17:46:00', from:'LPCO', to:'LPCS', hours:1.3, litres:0,   price:0,    rate:150, nights:0, handling:0, style:'gentle',  surface:'asphalt', note:'Collected, greaser'},
+    {date:'2026-03-08', depTime:'10:50', arrTime:'13:14', signedBy:'Claus Thanner', signedAt:'2026-03-08T13:22:00', from:'LPCS', to:'LPCS', hours:2.4, litres:140, price:2.60, rate:165, nights:0, handling:0, style:'gentle',  surface:'asphalt', note:'Down the coast and back'},
+    {date:'2026-03-16', depTime:'08:05', arrTime:'12:23', signedBy:'Claus Thanner', signedAt:'2026-03-16T12:31:00', from:'LPCS', to:'LEVD', hours:4.3, litres:120, price:3.42, rate:230, nights:1, handling:0, style:'normal',  surface:'asphalt', note:'Valladolid, overnight'},
+    {date:'2026-03-18', depTime:'09:15', arrTime:'14:03', signedBy:'Claus Thanner', signedAt:'2026-03-18T14:11:00', from:'LEVD', to:'LPCS', hours:4.8, litres:130, price:2.29, rate:180, nights:0, handling:0, style:'normal',  surface:'asphalt', note:'Long leg home'}
   ];
   var res = null;
   legs.forEach(function(l){ res = fileLeg(l); });
@@ -1424,6 +1881,41 @@ function boot(){
   });
   $('f-to').addEventListener('change', syncFuelPrice);
 
+  /* --- the four ways a record gets off the aeroplane and into the book --- */
+  var dz = $('legDrop');
+  dz.addEventListener('click', function(){ $('legFile').click(); });
+  dz.addEventListener('keydown', function(e){
+    if(e.key==='Enter' || e.key===' '){ e.preventDefault(); $('legFile').click(); }
+  });
+  ['dragenter','dragover'].forEach(function(ev){
+    dz.addEventListener(ev, function(e){ e.preventDefault(); dz.classList.add('over'); });
+  });
+  ['dragleave','drop'].forEach(function(ev){
+    dz.addEventListener(ev, function(e){ e.preventDefault(); dz.classList.remove('over'); });
+  });
+  dz.addEventListener('drop', function(e){
+    var dt = e.dataTransfer; if(!dt) return;
+    if(dt.files && dt.files.length){ ingestFile(dt.files[0]); return; }
+    var t = dt.getData('text'); if(t) ingestText(t);
+  });
+  $('legFile').addEventListener('change', function(){
+    ingestFile(this.files && this.files[0]); this.value = '';
+  });
+  $('btn-ingest-clip').addEventListener('click', function(){
+    if(!navigator.clipboard || !navigator.clipboard.readText){
+      ingestSay('This browser will not hand over the clipboard — use Paste it.', true); return;
+    }
+    navigator.clipboard.readText()
+      .then(function(t){ ingestText(t); })
+      .catch(function(){ ingestSay('The browser refused the clipboard. Use Paste it instead.', true); });
+  });
+  $('btn-ingest-paste').addEventListener('click', function(){
+    var t = prompt('Paste the leg record F-BVNK wrote at shutdown.');
+    if(t) ingestText(t);
+  });
+  $('btn-ingest-demo').addEventListener('click', function(){ ingestRecord(demoRecord()); });
+  $('btn-ingest-watch').addEventListener('click', function(){ setWatch(!WATCH.on); });
+
   $('btn-file').addEventListener('click', function(){
     if(grounded()){ toast('She is grounded. Clear the broken item first.'); switchPane('tech'); return; }
     var h = parseHours($('f-block').value);
@@ -1435,6 +1927,7 @@ function boot(){
       depTime: $('f-dep-time').value || '', arrTime: $('f-arr-time').value || '',
       fp5lDep: $('f-fp5l-dep').value==='' ? null : Math.max(0, +$('f-fp5l-dep').value || 0),
       fp5lArr: $('f-fp5l-arr').value==='' ? null : Math.max(0, +$('f-fp5l-arr').value || 0),
+      tachStop: $('f-tach').value==='' ? null : Math.max(0, +$('f-tach').value || 0),
       litres: Math.max(0, +$('f-fuel').value || 0),
       price:  Math.max(0, +$('f-price').value || 0),
       rate:   Math.max(0, +$('f-rate').value || 150),
@@ -1447,7 +1940,7 @@ function boot(){
     var res = fileLeg(leg);
     save(); render(); renderSignCard(leg, res);
     $('f-block').value=''; $('f-fuel').value=''; $('f-note').value=''; $('f-dep-time').value=''; $('f-arr-time').value='';
-    $('f-fp5l-dep').value=''; $('f-fp5l-arr').value='';
+    $('f-fp5l-dep').value=''; $('f-fp5l-arr').value=''; $('f-tach').value='';
     $('f-date').value = leg.date;
     $('f-hint').textContent = grounded() ? 'Now grounded — see the tech log.' : '';
     toast('Leg filed. Review the log below and sign it.' + (res.raised.length ? ' ' + res.raised.length + ' new squawk' + (res.raised.length===1?'':'s') + '.' : ''));
@@ -1477,6 +1970,12 @@ function boot(){
       $('f-hint').textContent = grounded() ? 'Still grounded — more to clear.' : ''; return; }
     var pnt = e.target.closest('[data-paint]');
     if(pnt){ buyPaint(pnt.dataset.paint); return; }
+    var sgn = e.target.closest('[data-sign]');
+    if(sgn){
+      var lg = S.legs[+sgn.dataset.sign];
+      if(lg){ renderSignCard(lg, resFor(lg)); switchPane('ramp'); }
+      return;
+    }
   });
 
   $('l-filter').addEventListener('change', renderLedger);
@@ -1503,12 +2002,14 @@ function boot(){
   });
   $('btn-log-csv').addEventListener('click', function(){
     var rows = logRows();
-    var head = 'Date,Nom,Fonctions,Lieu depart,Lieu arrivee,Heure depart,Heure arrivee,Heures de vol,Nature du vol,Report,Carburant quantite,Carburant dep/arr,FP-5L depart,FP-5L arrivee,Incidents - Observations,Signature du Commandant de bord,Visa\n';
-    var body = rows.map(function(r){
-      return [dayMonth(r.date), r.crew, 'CDB', r.from, r.to, r.depT, r.arrT, hhmm(r.dur), r.nature,
-              hhmm(r.prev), (r.litres?num(r.litres,0)+' L':''), '',
-              (r.fp5lDep===null?'':num(r.fp5lDep,0)), (r.fp5lArr===null?'':num(r.fp5lArr,0)),
-              [r.note].concat(r.auto).filter(Boolean).join('; '), r.signed, '']
+    var head = 'Date,Noms,Fonctions,Lieu depart,Lieu arrivee,Heure depart,Heure arrivee,Heures de vol,Nature du vol,Carburant depart,Carburant arrivee,Huile depart,Huile arrivee,Incidents - Observations,Tacho,Signature du Commandant de bord,Visa\n';
+    var body = rows.map(function(r, i){
+      return [dayMonth(r.date), (i===0 ? String(r.name).toUpperCase() : '— " —'), 'PIC',
+              r.from, r.to, r.depT, r.arrT, hplus(r.dur), 'P1 '+hplus(r.run),
+              (r.fuelDep===null?'':num(r.fuelDep,0)), (r.fuelArr===null?'':num(r.fuelArr,0)),
+              '', '',
+              ([r.note].concat(r.auto).filter(Boolean).join('; ') || 'NIL'),
+              tachoTxt(r.tach), (r.signed ? initials(r.signed) : ''), '']
         .map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
     }).join('\n');
     copy(head+body, rows.length+' rows copied as CSV.');
