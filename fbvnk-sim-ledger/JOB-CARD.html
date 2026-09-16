@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 10</dd>
+      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 11</dd>
     </dl>
   </div>
 </header>
@@ -491,6 +491,48 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <p class="small"><strong>The EASA side is now in, as R18.</strong> It moved one row, added two and left <em>Nature du Vol</em> alone &mdash; the section below has it.</p>
   </div>
   <p class="small"><strong>The P1 figure is closed, and not by me.</strong> Claus, 18:04:32: &ldquo;good bloody question&hellip; ha ha, I should know, but I just carried it over from the previous owners. Keep it the same&rdquo;. The Logbook tab no longer calls it an assumption of this session&rsquo;s &mdash; it quotes him, and the figure stays exactly as his pages carry it.</p>
+</section>
+
+<section>
+  <h2>V275 is in &mdash; what it changes for the book <span class="hint">PM, 21:00 &middot; aircraft side installed 20:56 &middot; one thing for the board</span></h2>
+  <div class="note">
+    <p><strong>V275 saves a leg only when she was airborne for at least 10 s in one continuous stretch</strong> (PM&rsquo;s report; the package is his, not this session&rsquo;s to verify). Ground runs, taxi bumps and hops under 10 s leave no record at all. Tonight&rsquo;s two saved ground-run legs were cleared at the install with a backup kept, so the record <span class="mono tiny">2026-09-16/16:14:01Z/1250.07</span> was never written to <span class="mono tiny">FBVNK_LEGS</span> and will not appear. It stays in <span class="mono tiny">TEST_VECTORS.json</span> as V30 because it is the record that found the refusal, not because anyone should go looking for it.</p>
+  </div>
+  <div class="note warn">
+    <p><strong>The air-start fix matters more under V275, not less.</strong> V275&rsquo;s test is ten seconds airborne in one stretch. An <strong>air start clears that by minutes</strong> &mdash; and it still arrives carrying <span class="mono tiny">noTakeOff: true</span>, because there was no take-off to observe. So V275 will keep producing exactly the record A1 was about. Before this morning&rsquo;s fix the book would have taken every one of them and kept it out of Claus&rsquo;s carnet.</p>
+    <p class="small">The zero-airborne record V275 no longer sends is a different case. The book&rsquo;s handling of it stays as built: it costs nothing, and it still covers the two ground-run legs already backed up, anything written before tonight, and any other producer.</p>
+  </div>
+
+  <h3 style="margin-top:14px">The known limit is a silent lost flight <span class="tiny muted" style="font-weight:400">for the board &mdash; and Claus has already ruled on the neighbouring question</span></h3>
+  <div class="note warn">
+    <p>The PM&rsquo;s own note: <em>&ldquo;a sim reload within about 20 s of touchdown, or while taxiing in, leaves no record for that flight.&rdquo;</em> That is a <strong>real flight</strong> &mdash; airborne, landed, fuel burnt &mdash; that produces no record. <strong>The book cannot detect it.</strong> Nothing in the record set says a leg is missing, and the book has no other source to compare against.</p>
+    <p class="small">There is one visible trace, and it is the same tacho gap Claus ruled on at 18:34. But the two causes are not the same size:</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>What leaves a gap between one leg&rsquo;s tacho stop and the next leg&rsquo;s start</th><th class="num">Size</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr><td>A ground run or taxi &mdash; what Claus said to accept</td><td class="num">1.8 min</td><td class="tiny muted">the one real ground run, tacho 1250,07 &rarr; 1250,10</td></tr>
+        <tr><td><strong>A lost flight</strong> &mdash; the flight plus its own taxi</td><td class="num"><strong>59.4 min</strong></td><td class="tiny muted">page 86: 50.0 min mean airborne per leg + 9.4 min in-leg ground running</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small"><strong>Thirty-three times apart.</strong> In-leg taxi never appears in the gap at all &mdash; it sits inside each leg&rsquo;s own tacho pair &mdash; so the gap is purely engine time between legs. Figures from page 86 and the one observed ground run, computed, not estimated.</p>
+  <div class="note">
+    <p><strong>Proposed, not built, and it is Claus&rsquo;s call because he has already ruled once on this.</strong> His <em>&ldquo;just accept this&rdquo;</em> was given at 18:34 about ground runs, and the V275 limit did not exist yet. Showing the gap <strong>neutrally</strong> &mdash; a plain statement of engine time between legs under the carnet, never an error, never a flag on a row &mdash; would leave a minute-long gap looking like nothing and an hour-long one visible. The PM&rsquo;s own relay allows it: <em>&ldquo;If you show it at all, show it neutrally.&rdquo;</em> Nothing is built pending his answer, and the book does nothing with the gap today.</p>
+  </div>
+  <div class="note">
+    <p><strong>The fuel side of the same limit.</strong> A lost flight also takes its fuel out between legs: at Cascais&rsquo;s &euro;2.30/L, <strong>25 L is &euro;57.50, 30 L is &euro;69.00, 40 L is &euro;92.00</strong> that shows only as a break in the Carburant columns. Under the FP-5L gap rule proposed in R5 that fuel <em>would</em> be billed &mdash; right for the money, since she really burnt it, and it would be the one place a lost flight shows up in euros. It would not put the flight back in the carnet, and nothing can.</p>
+  </div>
+
+  <h3 style="margin-top:14px">Where that leaves the kit</h3>
+  <div class="note">
+    <p><strong>R5&rsquo;s <span class="mono tiny">LEG_CONTRACT.md</span> predates the V275 install by about two hours</strong>, so its <em>data-path limit</em> section describes V274&rsquo;s behaviour. What needs updating in the next revision, listed here so Records has it when reviewing K7e: the ten-second airborne test as the save rule; that the zero-airborne record is no longer produced; that an air start still arrives with <span class="mono tiny">noTakeOff: true</span> and still clears the test; and the reload limit with the plain statement that the book cannot detect it.</p>
+    <p class="small"><strong>No R6 tonight, unless the PM wants one.</strong> R5 has not been fetched yet &mdash; it is on Claus&rsquo;s board as a download &mdash; and stacking a second unreviewed revision on top of it would churn the queue for text that changes no figure and no behaviour. The book needs no code change for any of the above. Holding V275 and whatever K7e finds for one revision.</p>
+  </div>
+  <div class="note">
+    <p><strong>Noted, with nothing to do:</strong> R4 will not be reviewed and R5 supersedes it &mdash; a <span class="mono tiny">SUPERSEDED.md</span> is in the R4 staging folder so nobody works from it. A4 is on the board as <span class="mono tiny">ledger_accrual_clock</span> and <strong>neither half has been changed</strong>, as instructed. A1, A2, A3 accepted pending K7e. The Tarbes box is accepted and stays; LFBT&rsquo;s ARP is R19 when Records is running; its landing, parking and fuel figures are <strong>none on file</strong>, so the default and the label stand and the book says so on every leg from there.</p>
+  </div>
 </section>
 
 <section>

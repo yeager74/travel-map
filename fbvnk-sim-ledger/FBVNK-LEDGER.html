@@ -262,6 +262,11 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
 .drop.over{border-color:var(--accent); border-style:solid; background:var(--accent-soft)}
 .drop strong{font-size:14px}
 .signcard dl.rec{grid-template-columns:auto 1fr; gap:2px 12px}
+/* The iPad's own logbook panel, reproduced. Monospace and preserved line breaks, because
+   the point of it is that it matches the aeroplane's screen character for character. */
+.lbpanel{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.55;
+  color:var(--carnet-ink); background:var(--accent-soft); border-left:3px solid var(--accent);
+  padding:9px 12px; margin:0; white-space:pre-wrap; overflow-wrap:anywhere}
 .signcard dl.rec dd{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--carnet-ink)}
 .fallback{border:1px solid var(--rule); background:var(--sheet-2); padding:0 14px; margin-top:16px}
 .fallback>summary{cursor:pointer; padding:11px 0; font-size:11px; letter-spacing:.09em;
@@ -1186,8 +1191,9 @@ function normaliseLeg(rec){
   if(burnL !== null && burnL > 0 && aircraftUsable){
     burnSource = declared === 'aircraft' ? 'aircraft' : (declared || 'logger');
     litres = Math.round(burnL*10)/10; burn = litres;
-    fuelSrc = (burnSource === 'logger' ? 'FP-5L used, summed from the logger rows' : 'FP-5L used, the leg’s own burn off the aeroplane')
-            + ': '+num(litres,1)+' L';
+    /* The litres are printed beside this line already, so the source says only where they
+       came from. It used to repeat the figure and read "26.4 L — ... rows: 26.4 L". */
+    fuelSrc = (burnSource === 'logger' ? 'FP-5L used, summed from the logger rows' : 'FP-5L used, the leg’s own burn off the aeroplane');
     if(burnSource !== 'logger')
       notes.push('Fuel billed from the ' + burnSource + ' burn, not the logger rows. The logger did not run this leg end to end.');
   } else if(burnL !== null && burnL > 0 && !aircraftUsable){
@@ -1322,6 +1328,12 @@ function normaliseLeg(rec){
   var tachStart = numOrNull(rec.tachStart), tachStop = numOrNull(rec.tachStop);
   if(tachStop === null && tachStart === null) notes.push('No tacho in the record — the TACHO column stays empty on this row.');
 
+  /* The aircraft's own leg counter, NK_LB_N, as printed on the iPad's logbook panel:
+     "Leg 12: ...". It is Claus's cross-reference between the panel and this page, so the
+     book shows it when the record carries it and says so when it does not. Optional. */
+  var legNo = numOrNull(rec.legNo);
+  legNo = (legNo === null || legNo < 0) ? null : Math.round(legNo);
+
   var legId = String(rec.legId || '').trim();
   if(!legId){
     legId = 'DERIVED-'+date+'-'+from+'-'+to+'-'+String(takeOff||engineStart||'0000').replace(':','');
@@ -1329,7 +1341,7 @@ function normaliseLeg(rec){
   }
 
   return {ok:true, notes:notes, leg:{
-    legId:legId, src:'aircraft', schema:rec.schema || null, tz:'Z',
+    legId:legId, legNo:legNo, src:'aircraft', schema:rec.schema || null, tz:'Z',
     date:date, from:from, to:to,
     hours:hours, airborne:toMinute(airborne), block:toMinute(block),
     engineStart:engineStart, shutdown:shutdown, takeOff:takeOff, landing:landing,
@@ -1743,25 +1755,89 @@ function renderChit(leg, res){
 
 /* Everything the aeroplane sent, laid out under the carnet lines so the pilot can check
    it against what he just flew. Read-only by design: these are her figures, not his. */
+/* ---------------- the aircraft's own logbook panel, V275 ----------------
+   Claus, 16 Sep 21:0x: "update the cost ledger with what the lates layout of the lookbook
+   looks like". This reproduces the panel that opens when he taps "Logbook - last leg" on
+   the cockpit iPad, line for line, so the iPad and this page read the same. Every format
+   below is taken from the installed HANGAR.js (V275, 20:56) rather than described: times
+   HH:MMZ, durations h:mm with the hour NOT zero-padded, REM in whole litres, the burn to
+   0.1 L in brackets, tacho to two decimals, positions to three, touchdown whole fpm.
+
+   Three places this panel deliberately disagrees with the rest of the book:
+
+     - It is always Zulu. The carnet has a UTC/local control and the iPad has none, so a
+       line that is meant to match must not move when that control does.
+     - The tacho takes a DOT. The iPad prints toFixed(2); the carnet keeps the comma Claus
+       writes by hand on page 86. Same number, two hands.
+     - The touchdown is shown NEGATIVE-DOWN, the sim's own sign, because that is what the
+       iPad prints. The record's touchdownFpm stays positive-down per FBVNK_LEG/2 and the
+       whole book bills on that. The line under the panel says so, because two signs for
+       one number is exactly the kind of thing that gets read wrong later.
+
+   Where the record carries nothing for a line the book prints an em dash rather than
+   dropping the line, so a gap against the iPad is visible instead of invisible. */
+/* The rule the aeroplane saves a leg by, V275. Said in the same words wherever a leg is
+   shown, so the page and the iPad agree on what is even a leg. */
+var LEG_RULE = 'A leg is an engine start to shutdown with at least 10 s airborne in one stretch. ' +
+  'Ground runs, taxi bumps and hops under 10 s make no entry at all, so a tacho gap between one ' +
+  'leg and the next is expected and is not an error.';
+function lbZ(hm){ return hm ? hm + 'Z' : '--:--'; }
+function lbDur(h){ return (h === null || h === undefined) ? '\u2014' : hhmm(h); }
+function lbFix(v, d){ return (v === null || v === undefined || v === '') ? '\u2014' : (+v).toFixed(d); }
+function zuluDay(iso){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(String(iso||''))) return null;
+  var y = +iso.slice(0,4), m = +iso.slice(5,7), d = +iso.slice(8,10);
+  return Math.round((Date.UTC(y, m-1, d) - Date.UTC(y, 0, 1)) / 86400000) + 1;
+}
+function v275Panel(leg){
+  var L = [];
+  L.push('Leg ' + (leg.legNo === null || leg.legNo === undefined ? '\u2014' : leg.legNo) +
+         ': ' + lbZ(leg.engineStart) + ' - ' + lbZ(leg.shutdown) + ' (engine start - shutdown)');
+  L.push('Airborne ' + lbDur(leg.airborne) + ', block ' + lbDur(leg.block));
+  var hasRem = leg.fp5lDep !== null && leg.fp5lDep !== undefined;
+  L.push((hasRem || leg.refuelInLeg || (leg.burn !== null && leg.burn !== undefined))
+    ? 'Fuel ' + lbFix(leg.fp5lDep, 0) + ' L -> ' + lbFix(leg.fp5lArr, 0) + ' L (' +
+      (leg.refuelInLeg ? 'refuel inside the leg: no leg burn' : lbFix(leg.burn, 1) + ' L') + ')'
+    : 'Fuel \u2014');
+  L.push((leg.tachStart === null || leg.tachStart === undefined) &&
+         (leg.tachStop === null || leg.tachStop === undefined)
+    ? 'Tacho \u2014'
+    : 'Tacho ' + lbFix(leg.tachStart, 2) + ' -> ' + lbFix(leg.tachStop, 2));
+
+  var nl = leg.landings;
+  var ldg = (nl !== null && nl !== undefined && nl > 0)
+    ? ', ' + nl + ' landing' + (nl === 1 ? '' : 's') + ', last ' + lbZ(leg.landing) +
+      ' at ' + (leg.rate === 0 ? 0 : -leg.rate) + ' fpm'
+    : '';
+  /* The iPad reads NK_LB_L_F_NOTO, not the absence of a time, so an air start that somehow
+     carries a take-off stamp still prints "No take-off seen" there. Match it. */
+  L.push(((leg.airStart || !leg.takeOff) ? 'No take-off seen' : 'Take-off ' + lbZ(leg.takeOff)) + ldg);
+  if(leg.stopInAir) L.push('Engine stopped in flight');
+
+  var pos = function(a, b){ return (typeof a === 'number' && typeof b === 'number')
+    ? a.toFixed(3) + ' ' + b.toFixed(3) : '\u2014'; };
+  L.push('Position dep ' + pos(leg.depLat, leg.depLon) + ', arr ' + pos(leg.arrLat, leg.arrLon));
+  var dy = zuluDay(leg.date);
+  L.push('Zulu day ' + (dy === null ? '\u2014' : dy));
+  return L;
+}
+
 function recordedBlock(leg){
   if(leg.src !== 'aircraft') return '';
-  var pair = (leg.fp5lDep!==null && leg.fp5lDep!==undefined && leg.fp5lArr!==null && leg.fp5lArr!==undefined)
-    ? num(leg.fp5lDep,0)+' &rarr; '+num(leg.fp5lArr,0)+' L'+(leg.burn ? ' &middot; '+num(leg.burn,1)+' L burned' : '')
-    : '&mdash;';
   var html = '<hr class="rule">'+
     '<p class="tiny" style="letter-spacing:.09em; text-transform:uppercase; color:var(--ink-2); margin:0 0 6px">'+
       '<span class="stamp" style="font-size:12px; padding:1px 7px; transform:rotate(-3deg)">AUTO</span>'+
-      ' &nbsp;as F-BVNK recorded it</p>'+
-    '<dl class="rec">'+
-      ((leg.engineStart||leg.shutdown) ? '<dt>Moteur</dt><dd>'+(leg.engineStart||'&mdash;')+' &rarr; '+(leg.shutdown||'&mdash;')+
-        (leg.block?'   '+hhmm(leg.block)+' bloc':'')+'</dd>' : '')+
-      ((leg.takeOff||leg.landing) ? '<dt>En vol</dt><dd>'+(leg.takeOff||'&mdash;')+' &rarr; '+(leg.landing||'&mdash;')+
-        (leg.airborne?'   '+hhmm(leg.airborne)+' de vol':'')+'</dd>' : '')+
-      '<dt>FP-5L</dt><dd>'+pair+'</dd>'+
-      '<dt>Touch&eacute;</dt><dd>'+num(leg.rate,0)+' fpm</dd>'+
-      ((leg.tachStop||leg.tachStop===0) ? '<dt>Tacho</dt><dd>'+tachoTxt(leg.tachStart)+' &rarr; '+tachoTxt(leg.tachStop)+'</dd>' : '')+
-      '<dt>R&eacute;f.</dt><dd>'+esc(leg.legId||'')+'</dd>'+
-    '</dl>';
+      ' &nbsp;as F-BVNK logged it &middot; iPad, V275</p>'+
+    '<pre class="lbpanel">'+v275Panel(leg).map(esc).join('\n')+'</pre>'+
+    '<p class="tiny muted" style="margin:6px 0 0">Tap <em>Logbook &ndash; last leg</em> on the cockpit iPad and this is the same text, line for line. '+
+      'Always Zulu here whatever the carnet\u2019s time control shows, tacho with a dot as the iPad prints it, '+
+      'and the touchdown in the <strong>sim\u2019s sign, negative down</strong> &mdash; the record itself carries '+
+      (leg.rate === 0 ? '0' : '+'+leg.rate)+' fpm positive-down, which is what the book bills on.'+
+      (leg.legNo === null || leg.legNo === undefined
+        ? ' The record carries no leg number, so the first line shows a dash; the reference is <span class="mono">'+esc(leg.legId||'')+'</span>.'
+        : ' Reference <span class="mono">'+esc(leg.legId||'')+'</span>.')+
+      (leg.refuelInLeg ? '' : ' The bracket is the FP-5L&rsquo;s own USED count, so it need not equal the difference of the two rounded litre figures.')+
+    '</p>';
   /* An unresolved position is the one thing on this card the pilot can put right, and
      doing it once teaches the book that aerodrome's position for every leg after. The
      fees on THIS leg already posted at the default field - naming it fixes the carnet
@@ -1796,6 +1872,7 @@ function recordedBlock(leg){
       leg.srcNotes.map(esc).join('<br>')+'</p>';
   if(leg.notes && leg.notes.length)
     html += '<p class="tiny muted" style="margin-top:8px">'+leg.notes.map(esc).join('<br>')+'</p>';
+  html += '<p class="tiny muted" style="margin-top:8px">'+LEG_RULE+'</p>';
   return html;
 }
 
@@ -2106,12 +2183,11 @@ function renderLogbook(){
 
   $('logTbl').innerHTML = head+'<tbody>'+body+'</tbody>'+foot;
   var gr = groundRuns(), n = $('logNote');
-  if(n) n.innerHTML = gr
-    ? '<span class="tiny muted">'+gr+' run'+(gr===1?'':'s')+' with no airborne time '+(gr===1?'is':'are')+
+  if(n) n.innerHTML = '<span class="tiny muted">'+
+    (gr ? gr+' run'+(gr===1?'':'s')+' with no airborne time '+(gr===1?'is':'are')+
       ' not on this page \u2014 only airborne events go in the logbook. '+(gr===1?'It is':'They are')+' in the Ledger, and '+
-      (gr===1?'its':'their')+' fuel and fees posted as usual. The tacho gap '+(gr===1?'it leaves':'they leave')+
-      ' between legs is expected, not an error.</span>'
-    : '';
+      (gr===1?'its':'their')+' fuel and fees posted as usual. ' : '')+
+    esc(LEG_RULE)+'</span>';
 }
 
 /* The signature on his pages is initials, not the name written out. */
