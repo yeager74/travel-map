@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 8</dd>
+      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 9</dd>
     </dl>
   </div>
 </header>
@@ -488,9 +488,83 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
   <div class="note warn">
     <p><strong>What is missing is exactly what he asked for.</strong> The only thing on that page he can change is his own name. There is <strong>no remark box and no selections at all</strong>.</p>
     <p class="small">The page is already naming the answer, though: the three <span class="mono tiny">assumption:</span> lines it prints on a normal leg are the fuel price, how she flew it and the surface &mdash; each one a thing the aeroplane cannot know and the pilot can. So the proposal is to turn each stated assumption into a choice and add the remark, which <em>removes</em> three assumption lines rather than adding new ways to be wrong. Nine rows proposed, with the label as in his carnet, the options, the default, and whether it touches money; four do, and they are those same four. Defaults are what the book picks today, so signing without touching anything behaves exactly as now. The selections sit <strong>before</strong> the signature, because four of them change the cost.</p>
-    <p class="small"><strong>The EASA side is deliberately not in that table.</strong> He suggested adapting the EASA logbook entry options; Records is reading AMC1 FCL.050 from the official pages as R18, and this session will not put entry categories in from recall. When it lands, <em>Nature du Vol</em> and <em>Fonctions</em> are the two rows that may widen.</p>
+    <p class="small"><strong>The EASA side is now in, as R18.</strong> It moved one row, added two and left <em>Nature du Vol</em> alone &mdash; the section below has it.</p>
   </div>
   <p class="small"><strong>The P1 figure is closed, and not by me.</strong> Claus, 18:04:32: &ldquo;good bloody question&hellip; ha ha, I should know, but I just carried it over from the previous owners. Keep it the same&rdquo;. The Logbook tab no longer calls it an assumption of this session&rsquo;s &mdash; it quotes him, and the figure stays exactly as his pages carry it.</p>
+</section>
+
+<section>
+  <h2>KIT1 revision 4 &mdash; REPORTED <span class="hint">K7c closed &middot; the two PM questions answered &middot; R17 and R18 folded in &middot; Records reviews it as K7d</span></h2>
+  <div class="note warn">
+    <p><strong>The bytes are on the branch, not in the staging folder, and that is deliberate.</strong> This is a cloud session: its Dropbox connector creates files from inline text and <strong>cannot upload a local file</strong>. Putting the five files in the folder would mean retyping 172&nbsp;KB through the connector &mdash; which is what put <span class="mono tiny">STRIP_SPEC.md</span> one byte out on the R3 upload, a stray blank line that had to be chased against the checksum. The house rule covers this case and says to hand over the branch plus checksums instead of retyping bytes. So the folder carries <span class="mono tiny">MD5.txt</span> and <span class="mono tiny">READ_THIS_FIRST.md</span>, and the five files are at commit <span class="mono">86d39e0</span>.</p>
+    <p class="small"><strong>The <span class="mono tiny">LEG_CONTRACT.md</span> sitting in the staging folder is the 16:01 copy and is superseded</strong> &mdash; 13,183&nbsp;B, md5 <span class="mono tiny">59128451</span>. The current one is 19,115&nbsp;B, md5 <span class="mono tiny">04f3a96a</span>. Do not review the 16:01 copy.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>File</th><th class="num">Size</th><th>md5</th></tr></thead>
+      <tbody>
+        <tr><td class="mono tiny">PRICES_AND_BILLING_RULES.json</td><td class="num">62,981 B</td><td class="mono tiny">850f05f1287c13d1edb5fb94639bf231</td></tr>
+        <tr><td class="mono tiny">TEST_VECTORS.json</td><td class="num">48,228 B</td><td class="mono tiny">e19be09ab0344e21c3b08c356a7c50fd</td></tr>
+        <tr><td class="mono tiny">LEG_CONTRACT.md</td><td class="num">19,115 B</td><td class="mono tiny">04f3a96afda51069ea189578c4b37fa1</td></tr>
+        <tr><td class="mono tiny">STRIP_SPEC.md</td><td class="num">11,857 B</td><td class="mono tiny">a473f64c0f285b4ec594e970ef7b88d7</td></tr>
+        <tr><td class="mono tiny">NOTE.md</td><td class="num">29,855 B</td><td class="mono tiny">7c62ee84c1fc71162a1c2fae47287755</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tiny muted"><span class="mono">fbvnk-sim-ledger/KIT1_R4/</span> on <span class="mono">claude/fbvnk-cost-sheet-maintenance-svcsw2</span>, commit <span class="mono">86d39e0abcf9102c6fe1ad5168b124bcea34f2b2</span>. <span class="mono tiny">md5sum -c MD5.txt</span> from inside a checkout reports all five OK; this session ran it. R1&ndash;R3 stay frozen exactly as K7, K7b and K7c saw them.</p>
+
+  <h3 style="margin-top:14px">The two questions only the book could answer <span class="tiny muted" style="font-weight:400">PM, 18:2x &mdash; both checked in the running book, not read off the source</span></h3>
+  <div class="note">
+    <p><strong>1 &middot; <span class="mono tiny">notes[]</span> was accepted and silently dropped. Now read and shown.</strong> Proved by ingesting a record whose note carried a unique marker and searching the whole rendered document for it: not on the review card, not anywhere, <em>and no page error either</em> &mdash; which is the worst shape of all, because the converter had no way of knowing its notes were being thrown away. Your proposal is the right one and it is built: strings only, twelve at most, 160 characters each, anything dropped <strong>counted out loud</strong>, escaped on output (<span class="mono tiny">&lt;img src=x onerror=&hellip;&gt;</span> renders as text and creates no element &mdash; verified, zero elements). Added to <span class="mono tiny">LEG_CONTRACT.md</span> as optional.</p>
+    <p class="small">They are kept in <strong>their own array</strong>, not merged into the book's notes, and print above them under the heading <em>Du convertisseur</em>. The book's notes are what the book decided (&ldquo;assumption: asphalt at LPCO&rdquo;); <span class="mono tiny">notes[]</span> is what the laptop observed (&ldquo;FP-5L gap of 3 L at 09:41Z, not counted&rdquo;). A pilot signing the page should be able to tell the two apart.</p>
+    <p class="small"><strong>One trap for the Builder:</strong> <span class="mono tiny">note</span> (singular, string) is the carnet's Incidents &middot; Observations column; <span class="mono tiny">notes[]</span> is review-page only and never enters the carnet. The contract says so in both places.</p>
+  </div>
+  <div class="note">
+    <p><strong>2 &middot; <span class="mono tiny">burnSource</span> as JSON <span class="mono tiny">null</span> with <span class="mono tiny">burnL</span> absent is accepted as it stands. No change to the converter.</strong> Tested through <span class="mono tiny">JSON.parse</span>, so the null is a real JSON null. All three V23-family shapes, each run twice &mdash; once with the key <span class="mono tiny">null</span>, once with it absent: FP-5L 200&nbsp;&rarr;&nbsp;158 no refuel gives <span class="mono tiny">rem</span> 42.0&nbsp;L both ways; refuel with uplift 60 gives <span class="mono tiny">uplift</span> 60.0&nbsp;L both ways; refuel with no burn and no uplift bills nothing both ways. Identical in every row. Pinned by V28.</p>
+    <p class="small"><strong>Two things worth knowing before leaning on it.</strong> A <span class="mono tiny">null</span> source <em>with</em> a <span class="mono tiny">burnL</span> present is labelled <span class="mono tiny">logger</span> &mdash; with no rung named the book takes a present burn as the logger's, because that is the only rung that can make one without the aeroplane's own figures. If the converter ever derives <span class="mono tiny">burnL</span> another way it must name the rung, or the review page credits the logger for a number the logger never made. And the string <span class="mono tiny">&quot;none&quot;</span> would work today for the wrong reason: it is ignored as any unrecognised string is, so it behaves like null and would break silently if it ever became meaningful. JSON <span class="mono tiny">null</span> is the value.</p>
+  </div>
+  <div class="note">
+    <p><strong>The import facts are recorded</strong> in <span class="mono tiny">LEG_CONTRACT.md</span>: <span class="mono tiny">LEG.json</span> is the latest conversion only and is what the poller reads; the dated <span class="mono tiny">&lt;YYYY-MM-DD_HHMMSS&gt;.json</span> files are the complete record and are safe to give the book, all of them, more than once, because <span class="mono tiny">legId</span> dedupes; <span class="mono tiny">REJECTED_&lt;stamp&gt;.json</span> never goes to the book. <span class="mono tiny">legId</span> is <span class="mono tiny">&quot;YYYY-MM-DD/HH:MM:SSZ/tach&quot;</span>, worked example <span class="mono tiny">&quot;2026-09-16/08:20:16Z/1228.32&quot;</span>, treated as an opaque string and compared whole.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Review page &mdash; what R18 changes <span class="hint">design proposal, nothing built &middot; full text in <span class="mono tiny">KIT1_R4/NOTE.md</span></span></h2>
+  <p class="small">R18 read AMC1 / GM1 FCL.050 off the EASA Easy Access Rules HTML, <strong>Revision from August 2023</strong>, and FCL.050 off the EUR-Lex consolidated text of 30.04.2026. Records states its own limit: <strong>whether AMC1 / GM1 FCL.050 changed after August 2023 is not verified</strong> &mdash; the newer text is PDF/XML only and was not fetched. Everything below inherits that limit.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Carnet label</th><th>Options</th><th>Default</th><th>Money?</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Fonctions</strong> <span class="pill">changed</span></td><td>PIC &middot; co-pilot &middot; dual &middot; instructor</td><td class="mono tiny">PIC</td><td>no</td></tr>
+        <tr><td><strong>Atterrissages &mdash; jour / nuit</strong> <span class="pill">new</span></td><td>two counts</td><td>the record's <span class="mono tiny">landings</span> by day, 0 at night</td><td>no</td></tr>
+        <tr><td><strong>Nuit / IFR</strong> <span class="pill">new</span></td><td>two times, h:mm</td><td>0 / 0</td><td>no</td></tr>
+        <tr><td><strong>Nature du Vol</strong></td><td>P1 &middot; P1 (&eacute;cole) &middot; P2 &middot; double commande &middot; essai &middot; convoyage</td><td class="mono tiny">P1</td><td>no</td></tr>
+        <tr><td><strong>&Eacute;quipage &mdash; Noms</strong></td><td>him alone, or a second name typed in</td><td>his name, ditto after the first row</td><td>no</td></tr>
+        <tr><td><strong>Incidents &middot; Observations</strong></td><td>free text</td><td class="mono tiny">NIL</td><td>no</td></tr>
+        <tr><td><strong>Comment elle a vol&eacute;</strong></td><td>gentle &middot; by the book &middot; pressed on</td><td>from <span class="mono tiny">power</span>, else by the book</td><td><strong>yes</strong> &mdash; wear</td></tr>
+        <tr><td><strong>Surface</strong></td><td>asphalt &middot; grass &middot; gravel</td><td>asphalt</td><td><strong>yes</strong> &mdash; tyre and prop</td></tr>
+        <tr><td><strong>Nuits stationn&eacute;es</strong></td><td>0, 1, 2 &hellip;</td><td>from the record, else 0</td><td><strong>yes</strong> &mdash; parking</td></tr>
+        <tr><td><strong>Handling</strong></td><td>no &middot; yes</td><td>no</td><td><strong>yes</strong> &mdash; &euro;95.00</td></tr>
+        <tr><td><strong>&euro; par litre</strong></td><td>the field's standing price, or typed</td><td>the field's price</td><td><strong>yes</strong> &mdash; fuel</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note warn">
+    <p><strong>The changed row is this session's error, and R18 caught it.</strong> <em>Fonctions</em> was offered as PIC &middot; PICUS &middot; dual &middot; SPIC. AMC1 FCL.050 (i)(10) says <strong>PIC, SPIC and PICUS are all entered as PIC</strong>, countersigned in the remarks column &mdash; so PICUS and SPIC are not peers of PIC and must not be offered as if they were. The four above are the names printed in AMC1 column 10, <em>PILOT FUNCTION TIME</em>.</p>
+  </div>
+  <div class="note">
+    <p><strong>Nature du Vol is not widened, because R18 gives nothing to widen it with.</strong> There is no direct EASA column for it; the nearest items are col 9 <em>OPERATIONAL CONDITION TIME</em> and the col 12 remarks. The options stay as read off page 86.</p>
+    <p class="small"><strong>The two new rows are pilot-logbook columns, and this is an aircraft journey record.</strong> Records reaches the same reading, labelled as an assumption &mdash; Carburant, Huile, Incidents and Visa with no aircraft type or registration column look like a <em>carnet de route</em>, not a pilot logbook. Claus's document is titled <em>Carnet de Route</em> and carries F-BVNK's own hours. So: <strong>capture both on the review page, keep them off the carnet rows</strong>, which stay the seventeen columns of page 86.</p>
+    <p class="small"><strong>Flight time.</strong> EASA flight time runs from first movement for take-off until the aircraft comes to rest &mdash; nearer block than airborne. Claus: <em>&ldquo;I am using airborne (flight time) and not block time.&rdquo;</em> The book holds both and shows both on the card, but <strong>Dur&eacute;e</strong> is printed without saying which it is. Proposal: label it <em>Dur&eacute;e (en vol)</em> and leave every total airborne, as he asked.</p>
+  </div>
+  <div class="note warn">
+    <p><strong>For the board: one labelling line.</strong> A home MSFS leg is <strong>not flight time</strong> (FCL.010 defines it by a real aircraft moving) and <strong>not an FSTD session</strong> (col 11 needs a qualification number; Art.&nbsp;10b makes qualification a condition). R18 states plainly that <strong>how to log a non-qualified home simulator is not stated in the rules</strong>. Records recommends keeping this book separate from Claus's EASA logbook and labelling it; this session agrees. Proposed line at the head of the Logbook tab and on the review card:</p>
+    <p class="small" style="margin-left:12px"><strong>Home simulator record &mdash; not an EASA logbook.</strong> MSFS 2024, non-qualified device. Not flight time, not FSTD time.</p>
+    <p class="small"><strong>Not built.</strong> It changes what Claus's carnet says about itself, so it goes to the board. It is the one row here this session would ship without waiting, because it can only make the record more accurate about what it is.</p>
+  </div>
+  <div class="note">
+    <p><strong>One thing back to Records.</strong> R18 marks <em>Visa</em> &ldquo;not obvious&rdquo;, assuming it means a countersignature, and says &ldquo;I have not seen the carnet itself.&rdquo; The carnet settles it: the column's printed sub-head on page 86 reads <strong>Visa &middot; <em>Douanes et Autorit&eacute;s A&eacute;ronautiques</em></strong>. It is the customs and aeronautical-authorities column, and the book has carried that sub-head since it was built from the scan.</p>
+  </div>
 </section>
 
 <section>
@@ -550,8 +624,8 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <section>
-  <h2>Contract <span class="mono">FBVNK_LEG/2</span> <span class="hint">revised after K7b and V274 &middot; full text in <span class="mono tiny">KIT1_R3/LEG_CONTRACT.md</span> &middot; the sim half is installed</span></h2>
-  <p class="small">Claus's order, relayed 16 Sep 14:42: &ldquo;all these numbers shall not require pilot input, they shall be entered automatically &hellip; Airborne times, take off and landing, fuel from the FP5L at engine start (dep) and engine shutdown (arr), simulator integration should show up on either the EFB (automatically) or the cockpit iPad, either way.&rdquo; Both halves now exist: <strong>V274 installed 16:44:49</strong> records the leg, and the laptop book takes automatic legs as its primary input with the hand form demoted to a collapsed fallback. The table below is revision&nbsp;1 of the contract, kept for the record; <strong>revision&nbsp;2 is what the converter is built to</strong> and it is written out in full in <span class="mono tiny">KIT1_R3/LEG_CONTRACT.md</span>.</p>
+  <h2>Contract <span class="mono">FBVNK_LEG/2</span> <span class="hint">revised after K7b and V274 &middot; full text in <span class="mono tiny">KIT1_R4/LEG_CONTRACT.md</span> &middot; the sim half is installed</span></h2>
+  <p class="small">Claus's order, relayed 16 Sep 14:42: &ldquo;all these numbers shall not require pilot input, they shall be entered automatically &hellip; Airborne times, take off and landing, fuel from the FP5L at engine start (dep) and engine shutdown (arr), simulator integration should show up on either the EFB (automatically) or the cockpit iPad, either way.&rdquo; Both halves now exist: <strong>V274 installed 16:44:49</strong> records the leg, and the laptop book takes automatic legs as its primary input with the hand form demoted to a collapsed fallback. The table below is revision&nbsp;1 of the contract, kept for the record; <strong>revision&nbsp;2 is what the converter is built to</strong> and it is written out in full in <span class="mono tiny">KIT1_R4/LEG_CONTRACT.md</span> &mdash; the R3 copy is superseded, and so is the one in the R4 staging folder.</p>
   <div class="note">
     <p><strong>What changed in revision 2, all of it implemented and tested in the book.</strong> Positions instead of ICAO codes, with the book resolving them and labelling what it cannot. Zulu times, with a UTC/local control on the carnet. A landing count, the arrival time being the last one. <span class="mono tiny">touchdownFpm</span> positive for descent, clamped at 0 &mdash; and a <em>negative</em> value said out loud rather than quietly flipped, because it means either a converter that forgot to negate, in which case every landing comes through soft and the hard-landing check silently never fires again, or an arrival with no descent. Two fuel numbers, REM for the carnet columns and a separate burn with a <span class="mono tiny">burnSource</span> chain, because a refuel inside the leg makes start-minus-shutdown wrong by a factor of seven on a 200&nbsp;&rarr;&nbsp;190 leg. And V274's <span class="mono tiny">noTakeOff</span> and <span class="mono tiny">stopInAir</span>: an engine run that never got airborne is filed and posts but stays <strong>out of the carnet</strong>, because a ground run is not a flight, and the Logbook page says how many are being left out.</p>
   </div>
@@ -758,15 +832,17 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <table>
       <thead><tr><th>Artefact</th><th>Where</th><th class="num">Size</th><th>md5</th></tr></thead>
       <tbody>
-        <tr><td>The ledger itself</td><td class="mono tiny">fbvnk-sim-ledger/FBVNK-LEDGER.html</td><td class="num">86,606 B</td><td class="mono tiny">7b4cda14</td></tr>
-        <tr><td>Install and rules note</td><td class="mono tiny">fbvnk-sim-ledger/README.md</td><td class="num">4,803 B</td><td class="mono tiny">71a8fc02</td></tr>
+        <tr><td>The ledger itself</td><td class="mono tiny">fbvnk-sim-ledger/FBVNK-LEDGER.html</td><td class="num">146,792 B</td><td class="mono tiny">9df87f05</td></tr>
+        <tr><td>Install and rules note</td><td class="mono tiny">fbvnk-sim-ledger/README.md</td><td class="num">5,767 B</td><td class="mono tiny">1a645093</td></tr>
+        <tr><td>KIT1 R4, five files <span class="pill done">reported</span></td><td class="mono tiny">fbvnk-sim-ledger/KIT1_R4/</td><td class="num">172,036 B</td><td class="mono tiny">see the R4 table above</td></tr>
+        <tr><td>Checksums + pointer, R4</td><td class="mono tiny">FBVNK_STAGING/FBVNK_SIM_LEDGER_KIT1_R4/</td><td class="num">3,368 B</td><td class="mono tiny">&mdash;</td></tr>
         <tr><td>Staging note <span class="pill done">frozen</span></td><td class="mono tiny">FBVNK_STAGING/FBVNK_SIM_LEDGER/NOTE.md</td><td class="num">5,152 B</td><td class="mono tiny">&mdash;</td></tr>
         <tr><td>Checksums, <code>md5sum -c</code> format</td><td class="mono tiny">FBVNK_STAGING/FBVNK_SIM_LEDGER/MD5.txt</td><td class="num">96 B</td><td class="mono tiny">&mdash;</td></tr>
         <tr><td>NK_ wear spec <span class="tiny muted">by Records &amp; Checks</span></td><td class="mono tiny">FBVNK_STAGING/R5_nk_wear_spec/SPEC.md</td><td class="num">17,176 B</td><td class="mono tiny">c06f7305</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="tiny muted">Git: <span class="mono">yeager74/travel-map</span>, branch <span class="mono">claude/fbvnk-cost-sheet-maintenance-svcsw2</span>, commit <span class="mono">5e72853</span>. The spec's md5 is as stated by Records and Checks &mdash; <span class="mono">assumption:</span> not re-verified here, because the Dropbox connector returns extracted text rather than the file's bytes.</p>
+  <p class="tiny muted">Git: <span class="mono">yeager74/travel-map</span>, branch <span class="mono">claude/fbvnk-cost-sheet-maintenance-svcsw2</span>, commit <span class="mono">86d39e0</span>. The spec's md5 is as stated by Records and Checks &mdash; <span class="mono">assumption:</span> not re-verified here, because the Dropbox connector returns extracted text rather than the file's bytes.</p>
 </section>
 
 <footer>
