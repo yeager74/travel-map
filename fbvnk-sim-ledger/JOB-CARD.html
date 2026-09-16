@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 17</dd>
+      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 18</dd>
     </dl>
   </div>
 </header>
@@ -495,6 +495,46 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <p class="small"><strong>The EASA side is now in, as R18.</strong> It moved one row, added two and left <em>Nature du Vol</em> alone &mdash; the section below has it.</p>
   </div>
   <p class="small"><strong>The P1 figure is closed, and not by me.</strong> Claus, 18:04:32: &ldquo;good bloody question&hellip; ha ha, I should know, but I just carried it over from the previous owners. Keep it the same&rdquo;. The Logbook tab no longer calls it an assumption of this session&rsquo;s &mdash; it quotes him, and the figure stays exactly as his pages carry it.</p>
+</section>
+
+<section>
+  <h2>Version 21 ported, and N4 taken <span class="hint">Sim Ledger v22 &middot; commits <span class="mono">4339814</span>, <span class="mono">478ec3c</span></span></h2>
+  <div class="note">
+    <p><strong>Version 21 is the new base, and the &ldquo;untouched&rdquo; claim was verified rather than taken on trust.</strong> I read all <strong>2,911 lines</strong> of the live page before republishing it, then diffed it against my Version 20 source: <strong>six hunks, all UI and pickup</strong>, exactly as reported. The four functions that decide money were extracted from both files and hashed:</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Function</th><th>Lines</th><th>md5, both files</th><th></th></tr></thead>
+      <tbody>
+        <tr><td class="mono tiny">fileLeg</td><td class="num">125</td><td class="mono tiny">a05426c5381faeb72e342091ffcf940b</td><td>identical</td></tr>
+        <tr><td class="mono tiny">tachHours</td><td class="num">82</td><td class="mono tiny">1b93713c20d20e9bb5e2ad8ef2e11c98</td><td>identical</td></tr>
+        <tr><td class="mono tiny">applySelections</td><td class="num">23</td><td class="mono tiny">5ddb1f6c189013641816737554403bf3</td><td>identical</td></tr>
+        <tr><td class="mono tiny">normaliseLeg</td><td class="num">286</td><td class="mono tiny">657a0df18d92572cbd8901c453ff9e95</td><td>identical</td></tr>
+        <tr><td class="mono tiny">enterLeg</td><td class="num">6</td><td class="mono tiny">38525f0183417d2ccb32c68a5f7dd1c9</td><td>identical</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">So the R8 tacho remedy, the A5 floor and the V277 ICAO handling all carry across unchanged, and <strong>K24 F1, F2, F3, F4, N1 and N3 are all kept</strong>.</p>
+  <div class="note">
+    <p><strong>N4 taken, and it was a defect rather than a preference.</strong> Night and IFR are hours-and-minutes columns &mdash; AMC1 FCL.050 cols 8 and 9 &mdash; and they were <span class="mono tiny">&lt;input type="number"&gt;</span>. A browser number field refuses a colon outright, so a pilot typing <span class="mono tiny">1:12</span> was left with an empty box and the leg logged <span class="mono tiny">0:00</span>. Checked on the old build in a browser, not read off the source: typed <span class="mono tiny">1:12</span>, read back <span class="mono tiny">nightH 0</span>.</p>
+    <p class="small">They are text now, read with the book&rsquo;s own <span class="mono tiny">parseHours</span> &mdash; which takes &ldquo;1.2 or 1:12&rdquo;, the wording already on the hand form&rsquo;s flight-time placeholder &mdash; and stored with <span class="mono tiny">toMinute</span>, like every other time in the book, instead of <span class="mono tiny">Math.round(v*10)/10</span>. That rounding was putting <span class="mono tiny">0:45</span> in as <span class="mono tiny">0:48</span> and <span class="mono tiny">0:59</span> as <span class="mono tiny">1:00</span>.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Typed on the card</th><th>v21</th><th>v22</th></tr></thead>
+      <tbody>
+        <tr><td class="mono tiny">1:12 / 0.75</td><td class="mono tiny">0:00 / 0:48</td><td class="mono tiny">1:12 / 0:45</td></tr>
+        <tr><td class="mono tiny">0:59 / 2:05</td><td class="mono tiny">0:00 / 0:00</td><td class="mono tiny">0:59 / 2:05</td></tr>
+        <tr><td class="mono tiny">abc / -3:00</td><td class="mono tiny">0 / 0</td><td class="mono tiny">0 / 0</td></tr>
+        <tr><td>typed, then re-rendered (K24 F4)</td><td>lost</td><td><span class="mono tiny">1:30</span> held</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <p><strong>No money moved, and that is the point.</strong> An untouched page posts the same two invoices to the cent &mdash; AVGAS <span class="mono tiny">50.44 + 11.60 = 62.04</span>, aerodrome <span class="mono tiny">127.00</span>, <span class="mono tiny">189.04</span> gross &mdash; and across the whole harness run legs, spend, hours <strong>22.6</strong>, meter <strong>22.48</strong>, engine reserve <strong>467.36</strong>, prop reserve <strong>30.57</strong> and season gross <strong>15,376.38</strong> are identical on both builds.</p>
+    <p class="small"><strong>One field varies, and it is noise, not a difference.</strong> Component health moved 1.500 on avionics between the two runs. Post-seed squawks use <span class="mono tiny">Math.random</span>, not the seeded sequence, so repeated runs of the <em>unchanged</em> file gave 4 squawks then 2. Read as run-to-run variation and checked that way rather than explained away.</p>
+  </div>
+  <p class="tiny muted">Commits <span class="mono">4339814</span> (port) and <span class="mono">478ec3c</span> (N4), book 180,158&nbsp;B, md5 <span class="mono tiny">b66016a8</span>. Sim Ledger <strong>version 22</strong>, published on <span class="mono tiny">Qos92AuhuMV1Je1onXCSiR</span>; the declared Dropbox capability carried forward. <strong>NOT INSTALLED.</strong></p>
 </section>
 
 <section>
