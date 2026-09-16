@@ -213,7 +213,15 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
   font-family:"Caveat",cursive; font-size:17px; color:var(--carnet-ink); background:transparent;
   border-bottom:1px solid var(--carnet-rule); border-right:1px solid var(--carnet-colrule);
   padding:3px 6px; vertical-align:top;
+  height:38px; white-space:nowrap;
 }
+/* The paper is pre-ruled, so every row is the same height whatever is written on it.
+   Observations is the only cell that can overrun; it clips to the rule and carries the
+   full text in its title, the way a real entry gets written small to fit the line. */
+.carnet td.obs{white-space:normal; min-width:230px}
+.carnet td.obs .clip{display:block; height:30px; overflow:hidden}
+.carnet td.obs .auto{display:block; font-size:9.5px; line-height:1.15; opacity:.72; font-family:"IBM Plex Sans",sans-serif}
+.carnet td.fill{min-width:52px}
 .carnet tbody tr:nth-child(even) td{background:transparent}
 .carnet th:last-child, .carnet td:last-child{border-right:0}
 .carnet tfoot td{
@@ -1200,7 +1208,10 @@ function renderLogbook(){
     '</thead>';
 
   var body = rows.length ? rows.map(function(r){
-    var obs = esc(r.note) + (r.auto.length ? (r.note?'<br>':'')+'<span class="tiny muted">'+r.auto.map(esc).join('; ')+'</span>' : '');
+    var autoTxt = r.auto.join('; ');
+    var obs = '<span class="clip">'+esc(r.note)+
+      (r.auto.length ? '<span class="auto">'+esc(autoTxt)+'</span>' : '')+'</span>';
+    var full = [r.note].concat(r.auto).filter(Boolean).join(' · ');
     var sig = r.signed
       ? esc(r.signed)+(r.signedAt?' <span class="tiny muted">'+localHM(r.signedAt)+'</span>':'')
       : '';
@@ -1208,15 +1219,15 @@ function renderLogbook(){
       '<td>'+dayMonth(r.date)+'</td>'+
       '<td>'+esc(r.crew)+'</td><td>CDB</td>'+
       '<td>'+esc(r.from)+'</td><td>'+esc(r.to)+'</td>'+
-      '<td>'+r.depT+'</td><td>'+r.arrT+'</td>'+
+      '<td class="fill">'+r.depT+'</td><td class="fill">'+r.arrT+'</td>'+
       '<td>'+hhmm(r.dur)+'</td>'+
       '<td>'+r.nature+'</td>'+
       '<td>'+hhmm(r.prev)+'</td>'+
-      '<td>'+(r.litres ? num(r.litres,0)+' L' : '')+'</td><td></td>'+
-      '<td></td>'+
-      '<td>'+obs+'</td>'+
+      '<td class="fill">'+(r.litres ? num(r.litres,0)+' L' : '')+'</td><td class="fill"></td>'+
+      '<td class="fill"></td>'+
+      '<td class="obs"'+(full?' title="'+esc(full)+'"':'')+'>'+obs+'</td>'+
       '<td>'+sig+'</td>'+
-      '<td></td>'+
+      '<td class="fill"></td>'+
     '</tr>';
   }).join('') : '<tr><td colspan="16" class="muted">No legs filed yet.</td></tr>';
 
