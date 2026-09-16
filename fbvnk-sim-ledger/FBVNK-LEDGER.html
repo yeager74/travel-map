@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <meta charset="utf-8">
 <title>F-BVNK Sim Ledger</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@500;600;700&display=swap">
@@ -271,6 +272,42 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
 .dot{display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--ink-2);
   margin-right:6px; vertical-align:middle}
 .dot.live{background:var(--ok)}
+
+/* ---- the entry: what she recorded, in front of the pilot, his choices on one-tap presets ---- */
+.simlabel{font-size:13px; margin:4px 0 8px; color:var(--ink)}
+.signcard.entry{transform:none; padding:18px 20px}
+.entry .simlabel{margin:0 0 10px}
+.entry .etop{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:baseline}
+.entry .route{display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:end; gap:10px;
+  margin-top:8px; padding-bottom:12px; border-bottom:1px solid var(--carnet-line)}
+.entry .ap{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace; font-size:38px; font-weight:500;
+  letter-spacing:.06em; line-height:1; color:var(--carnet-ink); margin-top:3px}
+.entry .apt{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace; font-size:12.5px; color:var(--ink-2); margin-top:5px}
+.entry .r{text-align:right}
+.entry .arrow{font-size:26px; line-height:1; color:var(--accent); padding-bottom:18px}
+.entry .lbl{font-size:10px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-2); font-weight:600}
+.entry .egrid{display:grid; grid-template-columns:1fr 1fr}
+.entry .cell{padding:8px 0 7px; border-bottom:1px solid var(--carnet-line); min-width:0}
+.entry .cell:nth-child(odd){padding-right:12px; border-right:1px solid var(--carnet-line)}
+.entry .cell:nth-child(even){padding-left:14px}
+.entry .cell.wide{grid-column:1 / -1; border-right:0; padding-left:0; padding-right:0}
+.entry .v{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace; font-variant-numeric:tabular-nums;
+  font-size:21px; font-weight:500; color:var(--carnet-ink); margin-top:1px; overflow-wrap:anywhere}
+.entry .v small{font-size:13px; font-weight:400; color:var(--ink-2)}
+.sels{display:grid; gap:2px}
+.selrow{display:grid; grid-template-columns:190px minmax(0,1fr); gap:6px 12px; align-items:center; padding:4px 0}
+.selrow > label{margin:0}
+.selrow input{max-width:280px; padding:6px 9px; font-size:13.5px}
+.selrow .pair{display:flex; gap:8px}
+.selrow .pair input{max-width:96px}
+.eur{display:inline-block; font-size:10px; font-weight:700; color:var(--due); border:1px solid var(--due); border-radius:8px; padding:0 5px; margin-left:4px; letter-spacing:0}
+.chips{display:flex; flex-wrap:wrap; gap:6px}
+.chip{appearance:none; font-family:"IBM Plex Sans",sans-serif; font-size:13px; font-weight:600; line-height:1.2;
+  padding:6px 12px; border:1px solid var(--rule-hard); border-radius:15px; background:var(--sheet); color:var(--ink); cursor:pointer}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--sheet)}
+.chip:focus-visible{outline:2px solid var(--ink); outline-offset:2px}
+@media(max-width:560px){ .selrow{grid-template-columns:1fr; gap:4px} .entry .ap{font-size:30px} .entry .v{font-size:18px} }
 </style>
 
 <div class="wrap">
@@ -308,11 +345,12 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
 
   <!-- ================= RAMP ================= -->
   <section class="pane" id="pane-ramp" role="tabpanel" aria-labelledby="tab-ramp">
+    <div id="entryCard" hidden style="margin-bottom:14px"></div>
     <div class="cols c2">
       <div class="sheet">
         <div class="eyebrow">Engine off, battery master off</div>
         <h2>F-BVNK files the leg</h2>
-        <p class="small muted">Times off and on, wheels up and wheels down, the two aerodromes, the FP-5L total at engine start and at shutdown, the touchdown rate &mdash; all of it comes off the aeroplane when she stops. None of it is typed. What you do is read the page and sign it.</p>
+        <p class="small muted">Times off and on, wheels up and wheels down, the two aerodromes, the FP-5L total at engine start and at shutdown, the touchdown rate &mdash; all of it comes off the aeroplane when she stops. None of it is typed. When the battery master goes off the laptop puts the leg in Dropbox and opens this book, and the entry comes up at the top of this tab with the figures filled in. Tap a preset if something was different, then sign.</p>
         <div class="drop" id="legDrop" tabindex="0" role="button" aria-label="Drop the leg record here, or open one">
           <strong>Drop the leg record here</strong>
           <span class="small muted">LEG.json, straight off the aeroplane &mdash; or click to open one</span>
@@ -320,9 +358,11 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
         <div class="btnrow">
           <button class="btn" id="btn-ingest-clip">Take it off the clipboard</button>
           <button class="btn ghost small" id="btn-ingest-paste">Paste it</button>
-          <button class="btn ghost small" id="btn-ingest-watch" aria-pressed="false"><span class="dot" id="watchDot"></span>Watch for legs</button>
+          <button class="btn ghost small" id="btn-ingest-watch" aria-pressed="false" hidden><span class="dot" id="watchDot"></span>Watch for legs</button>
+          <button class="btn ghost small" id="btn-dbx"><span class="dot" id="dbxDot"></span>Check Dropbox now</button>
           <button class="btn ghost small" id="btn-ingest-demo">Send a demo leg</button>
         </div>
+        <p class="tiny muted" id="dbxHint">Dropbox pickup starts when the book opens inside claude.ai.</p>
         <p class="tiny muted" id="ingestHint">Nothing inbound yet.</p>
         <input type="file" id="legFile" accept=".json,application/json,text/plain" hidden>
 
@@ -849,48 +889,32 @@ function tyreWear(r){ return r<=150?0.45 : r<=300?0.9 : r<=450?2.0 : r<=600?4.5 
 function gearWear(r){ return r<=200?0.20 : r<=400?0.50 : r<=500?1.4 : r<=600?3.5 : 8.0; }
 
 /* ---------------- the accrual clock ----------------
-   Claus, on the Annunciator at 21:05:42 local, 16 Sep 2026, asked which clock the reserves
-   and the inspection counters should run on. His answer, word for word:
+   Claus, on the Annunciator at 21:05:42 local, 16 Sep 2026: "Tacho time (the hour meter)",
+   for the reserves; and at 21:57:47, "NO, the inspection times ... are based on the journey
+   log book airborne hours, NOT tacho." Two clocks, both his. This one is the meter.
 
-       "Tacho time (the hour meter)"
+   It is the meter's PROGRESSION, not the leg's own span: under V275 only airborne legs
+   become records, so the taxi and the ground running between one record and the next sits
+   in the gap, and a real hour meter counts it.
 
-   So money and the hour counters run on the hour meter. Airborne time keeps the carnet's
-   Heures de Vol and the airborne totals, and nothing else.
+   Records' K7e FAILED the first version of this rule, and the numbers were not small: one
+   reading from another machine and the next real record accrued the whole difference
+   between the two meters - 328.09 h, EUR 7,267.19 on their sequence; a mistyped tachStart
+   gave EUR 26,957.43; out-of-order filing double-accrued the case the contract called safe.
+   Their tested remedy, taken as it stands:
 
-   The subtlety is that it is the meter's PROGRESSION, not the leg's own span. Under V275
-   only airborne legs become records at all, so the engine time between one record and the
-   next - taxiing, a run-up, a ground run that made no entry - sits in the gap between the
-   last record's stop and this record's stop. A real hour meter counts every second of it,
-   and so does this: the leg's own tachStart is used only for the first record and for the
-   sanity check, never to throw the gap away.
+     (a) a forward gap more than TACH_MAX_EXTRA_H beyond the leg's own span is two meters,
+         not one: accrue the own span, say so, resume from the new reading. Extended here to
+         the own span itself - a span that exceeds the leg's own flying by the same margin
+         is not a leg either, which is what a mistyped reading looks like.
+     (b) a record that starts before the last one filed NEVER moves the cursor: nothing when
+         its reading closes inside a gap already measured, its own span otherwise.
+     (c) a negative gap never moves the cursor either.
 
-   A record with no reading at all cannot be measured that way. Rather than lose its hours
-   the book accrues its airborne time, says so, and CARRIES that figure: the next record
-   that does have a reading subtracts it from the measured gap, so the same hours are never
-   billed twice. The eight seeded legs are all of this kind - they were hand-filed before
-   the aeroplane began writing tacho - which is why the seeded reserves do not move. */
-/* Records' K7e found this rule FAIL, and the numbers were not small: one reading from
-   another machine, and the next real record accrued the whole difference between the two
-   meters - 328.09 h, EUR 7,267.19, on their sequence. A mistyped tachStart gave
-   EUR 26,957.43. Out-of-order filing, which the contract calls safe, double-accrued.
-
-   Their tested remedy, taken as it stands rather than redesigned:
-
-     (a) A forward gap more than TACH_MAX_EXTRA_H beyond the leg's own span is not a gap,
-         it is two different meters. Accrue the own span, say so, and resume from the new
-         reading. Extended here, consistently, to the own span itself: a span that exceeds
-         the leg's own flying by the same margin is not credible either, which is what a
-         mistyped tachStart looks like.
-     (b) A record that starts before the last one filed NEVER moves the cursor. Its hours
-         are already inside a measured gap, so it accrues nothing when its reading closes
-         below the cursor, and its own span when it does not. That is the late-dropped
-         dated file, and it is the case the contract wrongly called safe.
-     (c) A negative gap, or a reading that closes below the cursor, never moves the cursor
-         either. (K7e P3.)
-
-   Five hours is this session's figure, set where Records left it to be set: it is longer
-   than any ground running between two of Claus's legs and far shorter than the smallest
-   gap a second machine produces. */
+   Five hours is this session's figure, set where Records left it to be set: longer than any
+   ground running between two of Claus's legs, far shorter than the smallest gap a second
+   machine produces. A record with no reading at all accrues its airborne time and CARRIES
+   it, so the next real reading nets it off instead of billing the same hours twice. */
 var TACH_MAX_EXTRA_H = 5;
 
 function tachHours(leg){
@@ -900,7 +924,6 @@ function tachHours(leg){
   var air = leg.hours || 0;
   var key = leg.chronoKey || (String(leg.date||'') + 'T' + String(leg.engineStart || '00:00'));
 
-  /* The leg's own reading, and whether it can be believed. */
   var span = null, wild = false;
   if(start !== null && stop !== null && stop > start){
     span = r2(stop - start);
@@ -912,7 +935,6 @@ function tachHours(leg){
       ' flown, which is not one leg, so the flying time is accrued instead.' : '';
   };
 
-  /* 1. No reading at all: the airborne time, carried against the next real one. */
   if(stop === null){
     T.carried = r2(T.carried + air);
     return {hours:air, basis:'airborne', note:
@@ -920,7 +942,6 @@ function tachHours(leg){
       '. The clock is the hour meter and airborne always runs short of it; the difference is carried and settled against the next record that does carry a reading.'};
   }
 
-  /* 2. Out of order. Never moves the cursor. */
   if(T.lastKey && key < T.lastKey){
     var inside = T.cursor !== null && stop <= T.cursor + 0.005;
     return {hours: inside ? 0 : own(), basis: inside ? 'already measured' : 'own span', note:
@@ -930,33 +951,29 @@ function tachHours(leg){
   }
   T.lastKey = key;
 
-  /* 3. The first reading the book has seen. */
   if(T.cursor === null){
     T.cursor = stop; T.carried = 0;
     return {hours: own(), basis: span === null ? 'airborne' : 'own span', note:
       'First hour-meter reading in the book. From here the book measures the meter\u2019s progression between records, which is what counts the ground running between them.' + ownWhy()};
   }
 
-  /* 4. The meter went backwards. Own span, and resume from the new reading. */
   if(start !== null && start < T.cursor - 0.005){
     var was = T.cursor;
     T.cursor = stop; T.carried = 0;
     return {hours: own(), basis: span === null ? 'airborne' : 'own span', note:
       'The hour meter went backwards: this record opens at '+tachoTxt(start)+' where the last one closed at '+
-      tachoTxt(was)+'. That is a reload or another machine, not flying, so nothing negative is posted. ' +
+      tachoTxt(was)+'. That is a reload or another machine, not flying, so nothing negative is posted. '+
       'This leg accrues its own '+num(own(),2)+' h and the book resumes from the new reading.' + ownWhy()};
   }
 
   var gap = r2(stop - T.cursor);
 
-  /* 5. K7e P3. A reading that closes below the cursor moves nothing. */
   if(gap < 0){
     return {hours:0, basis:'no movement', note:
       'This record closes at '+tachoTxt(stop)+', below the '+tachoTxt(T.cursor)+' the last one reached. '+
       'Nothing is accrued and the meter is left where it is \u2014 a reading that goes down is not flying.'};
   }
 
-  /* 6. K7e P1a. A gap this far beyond the leg is two meters, not one. */
   if(gap - own() > TACH_MAX_EXTRA_H){
     var before1 = T.cursor;
     T.cursor = stop; T.carried = 0;
@@ -965,7 +982,6 @@ function tachHours(leg){
       ', against '+num(own(),2)+' h on this leg. More than '+TACH_MAX_EXTRA_H+' h of that cannot be ground running between two legs, so it is taken as a different meter: only this leg\u2019s own time is accrued and the book resumes from the new reading.' + ownWhy()};
   }
 
-  /* 7. The ordinary case: the meter's progression, less anything already accrued for it. */
   var settled = Math.max(0, r2(gap - T.carried));
   var over = T.carried > gap + 0.005, before = T.cursor, carried = T.carried;
   T.cursor = stop; T.carried = 0;
@@ -1266,7 +1282,7 @@ function normaliseLeg(rec){
 
   /* Where this record sits in time, taken from the record itself. The ingest path pushes a
      back-dated leg forward to the last filed date so the carnet stays in order; the cursor
-     rule needs to know the record's REAL place, so it is captured here, before that. */
+     rule needs the record's REAL place, so it is captured here, before that. */
   var chronoKey = date + 'T' + (engineStart || takeOff || '00:00');
 
   var fp5lDep = numOrNull(rec.fp5lStart), fp5lArr = numOrNull(rec.fp5lShutdown);
@@ -1505,6 +1521,7 @@ function ingestRecord(obj){
   S.ingested.push(leg.legId);
   save(); render(); renderSignCard(leg);
   switchPane('ramp');
+  var ec = $('entryCard'); if(ec && ec.scrollIntoView) ec.scrollIntoView();
   ingestSay('Filed from the aeroplane · '+leg.from+'–'+leg.to+' · '+hhmm(leg.hours)+' · '+leg.legId, false);
   toast('F-BVNK filed the leg. Check the page, change what she could not know, and sign it.');
   return true;
@@ -1752,7 +1769,9 @@ function renderLastPosting(res){
   var lastLeg = S.legs[S.legs.length-1];
   if(!lastLeg) return;
   if(lastLeg.signedBy) renderChit(lastLeg, res || resFor(lastLeg));
-  else renderSignCard(lastLeg);
+  /* Anything still waiting for his signature comes up at the top, oldest first. */
+  var open = S.legs.filter(function(l){ return !l.signedBy; });
+  if(open.length) renderSignCard(open[0]);
 }
 function buildPostingHtml(res){
   var html = '';
@@ -1836,48 +1855,77 @@ function lbZ(hm){ return hm ? hm + 'Z' : '\u2014'; }
 function lbDur(h){ return (h === null || h === undefined) ? '\u2014' : hhmm(h); }
 function lbFix(v, d){ return (v === null || v === undefined || v === '') ? '\u2014' : (+v).toFixed(d); }
 
+/* ---------------- the entry, in front of the pilot ----------------
+   Claus, 16 Sep 2026 22:1x, in chat: "it has to come up to the face of the pilot after main
+   batts off, to have the auto entries in front of him, but ability to chose different
+   entries, with obvious pre options available."
+
+   So the page to sign sits at the top of the Ramp tab, not down in the posting column, and
+   it opens by itself when a leg arrives (the Dropbox pickup below). What she recorded is laid
+   out like the cockpit iPad's new logbook page: the two ICAO codes large, then the figures.
+   The choices underneath are one-tap presets with the book's own pick already pressed. The
+   values still travel through the same sel-* fields, so applySelections, the posting and
+   the defaults are exactly as the cost chat built them. */
+function dmy(iso){ return /^\d{4}-\d{2}-\d{2}$/.test(String(iso||'')) ? iso.slice(8,10)+'.'+iso.slice(5,7)+'.'+iso.slice(0,4) : esc(iso||''); }
+function eCell(label, value, wide){
+  return '<div class="cell'+(wide?' wide':'')+'"><div class="lbl">'+label+'</div><div class="v">'+value+'</div></div>';
+}
+function entryFigures(leg){
+  var auto = leg.src === 'aircraft';
+  var t = function(hm){ return hm ? esc(hm) + (leg.tz === 'Z' ? 'Z' : '') : '—'; };
+  var has = function(v){ return v !== null && v !== undefined && v !== ''; };
+  var depSub = leg.engineStart ? 'engine start '+t(leg.engineStart) : (leg.depTime ? 'off '+t(leg.depTime) : '&nbsp;');
+  var arrSub = leg.shutdown ? 'shutdown '+t(leg.shutdown) : (leg.arrTime ? 'on '+t(leg.arrTime) : '&nbsp;');
+  var fuel = (has(leg.fp5lDep) || has(leg.fp5lArr))
+    ? (has(leg.fp5lDep) ? num(leg.fp5lDep,0) : '—') + ' <small>&rarr;</small> ' + (has(leg.fp5lArr) ? num(leg.fp5lArr,0) : '—') + ' <small>L</small>'
+    : '—';
+  var burn = leg.refuelInLeg && !(leg.burn > 0) ? '<small>refuel in the leg</small>'
+    : has(leg.burn) ? num(leg.burn,1)+' <small>L</small>'
+    : leg.litres > 0 ? num(leg.litres,1)+' <small>L</small>' : '—';
+  var tach = (has(leg.tachStart) || has(leg.tachStop))
+    ? (has(leg.tachStart) ? (+leg.tachStart).toFixed(2) : '—') + ' <small>&rarr;</small> ' + (has(leg.tachStop) ? (+leg.tachStop).toFixed(2) : '—')
+    : '—';
+  return '<div class="route">'+
+      '<div><div class="lbl">D&eacute;part</div><div class="ap">'+esc(leg.from)+'</div><div class="apt">'+depSub+'</div></div>'+
+      '<div class="arrow" aria-hidden="true">&rarr;</div>'+
+      '<div class="r"><div class="lbl">Arriv&eacute;e</div><div class="ap">'+esc(leg.to)+'</div><div class="apt">'+arrSub+'</div></div>'+
+    '</div>'+
+    '<div class="egrid">'+
+      eCell('Take-off', leg.airStart ? '<small>air start</small>' : t(leg.takeOff || (auto ? '' : leg.depTime)))+
+      eCell('Last landing', t(leg.landing || (auto ? '' : leg.arrTime)))+
+      eCell('Dur&eacute;e (en vol)', hhmm(leg.hours))+
+      eCell('Bloc <small>not totalled</small>', has(leg.block) ? hhmm(leg.block) : '—')+
+      eCell('Carburant (FP-5L)', fuel)+
+      eCell('Burn', burn)+
+      eCell('Atterrissages', has(leg.landings) ? esc(leg.landings) : '—')+
+      eCell('Touchdown', has(leg.rate) ? esc(leg.rate)+' <small>fpm</small>' : '—')+
+      eCell('Tacho', tach, true)+
+    '</div>';
+}
+
+/* The rest of what the record carries, below the figures: a box for an ICAO the record did
+   not have, and the notes, folded away so the entry reads clean. */
 function recordedBlock(leg){
   if(leg.src !== 'aircraft') return '';
-  var row = function(k, v){ return '<dt>'+k+'</dt><dd>'+v+'</dd>'; };
-  var html = '<hr class="rule">'+
-    '<p class="tiny" style="letter-spacing:.09em; text-transform:uppercase; color:var(--ink-2); margin:0 0 6px">'+
-      '<span class="stamp" style="font-size:12px; padding:1px 7px; transform:rotate(-3deg)">AUTO</span>'+
-      ' &nbsp;as F-BVNK recorded it</p>'+
-    '<dl class="rec">'+
-      row('D&eacute;part',   esc(leg.from) + ' &nbsp; ' + lbZ(leg.engineStart)) +
-      row('Arriv&eacute;e',  esc(leg.to)   + ' &nbsp; ' + lbZ(leg.shutdown)) +
-      row('D&eacute;collage', lbZ(leg.takeOff)) +
-      row('Atterrissage',    lbZ(leg.landing)) +
-      row('En vol',          lbDur(leg.airborne)) +
-      row('Bloc',            lbDur(leg.block)) +
-      row('Carburant',       lbFix(leg.fp5lDep,0) + ' &rarr; ' + lbFix(leg.fp5lArr,0) + ' L') +
-      row('Consomm&eacute;', leg.refuelInLeg ? 'refuel in leg' : lbFix(leg.burn,1) + ' L') +
-      row('Atterrissages',   (leg.landings === null || leg.landings === undefined) ? '&mdash;' : leg.landings) +
-      row('Touch&eacute;',   lbFix(leg.rate,0) + ' fpm') +
-      row('Tacho',           lbFix(leg.tachStart,2) + ' &rarr; ' + lbFix(leg.tachStop,2)) +
-      row('R&eacute;f.',     '<span class="tiny">'+esc(leg.legId||'')+'</span>') +
-    '</dl>';
-
-  /* An ICAO the record did not carry is the one thing on this page he can put right, and
-     it is one box. */
+  var html = '';
   ['from','to'].forEach(function(end){
     if(leg[end] !== '----') return;
-    html += '<div class="field" style="margin-top:8px"><label for="type-'+end+'">'+
+    html += '<div class="selrow" style="margin-top:8px"><label for="type-'+end+'">'+
       (end==='from'?'D&eacute;part':'Arriv&eacute;e')+' &mdash; no ICAO in the record</label>'+
-      '<input type="text" id="type-'+end+'" maxlength="4" placeholder="type the ICAO, e.g. LFBT" '+
+      '<input type="text" id="type-'+end+'" maxlength="4" placeholder="type it, e.g. LFBT" '+
         'style="text-transform:uppercase" autocapitalize="characters" autocomplete="off"></div>';
   });
-
-  if(leg.srcNotes && leg.srcNotes.length)
-    html += '<p class="tiny" style="margin-top:8px; color:var(--ink-2)">'+
-      '<span style="letter-spacing:.09em; text-transform:uppercase">Du convertisseur</span><br>'+
-      leg.srcNotes.map(esc).join('<br>')+'</p>';
   var shown = (leg.notes || []).filter(function(n){
     return !(leg.pending !== false && assumedNote(n));
   });
-  if(shown.length)
-    html += '<p class="tiny muted" style="margin-top:8px">'+shown.map(esc).join('<br>')+'</p>';
-  html += '<p class="tiny muted" style="margin-top:8px">'+LEG_RULE+'</p>';
+  var lines = [];
+  if(leg.fuelSrc) lines.push('Fuel: '+num(leg.litres,1)+' L — '+leg.fuelSrc+'.');
+  if(leg.srcNotes && leg.srcNotes.length) lines = lines.concat(leg.srcNotes.map(function(s){ return 'Converter: '+s; }));
+  lines = lines.concat(shown);
+  lines.push(LEG_RULE);
+  if(leg.legId) lines.push('Ref. '+leg.legId);
+  html += '<details class="fallback"><summary>What the book noticed on this record ('+lines.length+')</summary>'+
+    '<p class="tiny muted" style="margin-top:0">'+lines.map(esc).join('<br>')+'</p></details>';
   return html;
 }
 
@@ -1886,16 +1934,20 @@ function recordedBlock(leg){
    is what the book already picks, so a page signed untouched posts exactly what it posted
    before any of this existed - which is the only way a change like this is safe.
 
-   Four of them move money, and they are marked. They are also exactly the four the page
-   used to print as "assumption:" lines, so turning them into choices removes three of
-   those lines rather than adding new ways to be wrong.
+   FIVE of them move money, and they are marked. Nuits, Handling and the litre price bill
+   this leg; how she flew and the surface bill later, through wear. Three of the five are
+   exactly the "assumption:" lines the page used to print, so turning them into choices
+   removes those lines rather than adding new ways to be wrong.
 
    Two of them - the landings by day and night, and the night and IFR time - are EASA
    pilot-logbook columns (AMC1 FCL.050 cols 8 and 9, via Records' R18). They are captured
    here and kept OFF the carnet rows, because Claus's document is a Carnet de Route, an
    aircraft journey record, and those are a pilot's columns. Proposed that way in R5 and
-   ordered that way. */
-var SEL_NATURE = ['P1','P1 (\u00e9cole)','P2','double commande','essai','convoyage'];
+   ordered that way.
+
+   PM 16 Sep 22:4x: the lists are one-tap presets now instead of drop-downs, per Claus's
+   "obvious pre options available". Each group writes the hidden sel-* field it replaces. */
+var SEL_NATURE = ['P1','P1 (école)','P2','double commande','essai','convoyage'];
 var SEL_FONC   = ['PIC','co-pilot','dual','instructor'];
 var SEL_STYLE  = [['gentle','gentle'],['normal','by the book'],['pressed','pressed on']];
 var SEL_SURF   = [['asphalt','asphalt'],['grass','grass'],['gravel','gravel']];
@@ -1905,11 +1957,16 @@ function selRow(label, control, money){
     (money ? ' <span class="eur" title="this one changes what the leg costs">&euro;</span>' : '')+
     '</label>'+control+'</div>';
 }
-function selOpts(list, cur){
-  return list.map(function(o){
-    var v = o instanceof Array ? o[0] : o, t = o instanceof Array ? o[1] : o;
-    return '<option value="'+esc(v)+'"'+(v===cur?' selected':'')+'>'+esc(t)+'</option>';
-  }).join('');
+function chipSel(id, list, cur){
+  var opts = list.slice();
+  if(!opts.some(function(o){ return String(o instanceof Array ? o[0] : o) === String(cur); }))
+    opts.push([cur, String(cur)]);
+  return '<span class="chips" role="group" data-for="'+id+'">'+
+    opts.map(function(o){
+      var v = o instanceof Array ? o[0] : o, t = o instanceof Array ? o[1] : o;
+      return '<button type="button" class="chip" data-val="'+esc(v)+'" aria-pressed="'+(String(v) === String(cur))+'">'+esc(t)+'</button>';
+    }).join('')+
+    '</span><input type="hidden" id="'+id+'" value="'+esc(cur)+'">';
 }
 function hoursBox(id, v){
   return '<input type="number" id="'+id+'" min="0" step="0.1" value="'+(+v||0)+'">';
@@ -1922,20 +1979,19 @@ function selectionsBlock(leg){
       '&mdash; change nothing and it posts exactly as she filed it. <span class="eur">&euro;</span> marks the five that cost: '+
       'the last three bill this leg, the first two spend her instead and bill later, through wear.</span></p>'+
     '<div class="sels">'+
-      selRow('Nature du Vol', '<select id="sel-nature">'+selOpts(SEL_NATURE, leg.natureVol||'P1')+'</select>') +
-      selRow('Fonctions', '<select id="sel-fonc">'+selOpts(SEL_FONC, leg.fonctions||'PIC')+'</select>') +
-      selRow('\u00c9quipage &mdash; Noms', '<input type="text" id="sel-crew" placeholder="'+esc(leg.signedBy||'Claus Thanner')+'" value="'+esc(leg.crew||'')+'">') +
+      selRow('Nature du Vol', chipSel('sel-nature', SEL_NATURE, leg.natureVol||'P1')) +
+      selRow('Fonctions', chipSel('sel-fonc', SEL_FONC, leg.fonctions||'PIC')) +
+      selRow('Équipage &mdash; Noms', '<input type="text" id="sel-crew" placeholder="'+esc(leg.signedBy||'Claus Thanner')+'" value="'+esc(leg.crew||'')+'">') +
       selRow('Atterrissages &mdash; jour / nuit',
         '<span class="pair"><input type="number" id="sel-ldgd" min="0" step="1" value="'+(+leg.ldgDay||0)+'">'+
         '<input type="number" id="sel-ldgn" min="0" step="1" value="'+(+leg.ldgNight||0)+'"></span>') +
       selRow('Nuit / IFR &mdash; heures',
         '<span class="pair">'+hoursBox('sel-night', leg.nightH)+hoursBox('sel-ifr', leg.ifrH)+'</span>') +
       selRow('Incidents &middot; Observations', '<input type="text" id="sel-note" maxlength="160" placeholder="NIL" value="'+esc(leg.note||'')+'">') +
-      selRow('Comment elle a vol&eacute;', '<select id="sel-style">'+selOpts(SEL_STYLE, leg.style||'normal')+'</select>', true) +
-      selRow('Surface', '<select id="sel-surf">'+selOpts(SEL_SURF, leg.surface||'asphalt')+'</select>', true) +
-      selRow('Nuits stationn&eacute;es', '<input type="number" id="sel-nights" min="0" step="1" value="'+(+leg.nights||0)+'">', true) +
-      selRow('Handling', '<select id="sel-hand"><option value="0"'+(leg.handling?'':' selected')+'>no</option>'+
-        '<option value="95"'+(leg.handling?' selected':'')+'>yes &mdash; '+eur(95)+'</option></select>', true) +
+      selRow('Comment elle a vol&eacute;', chipSel('sel-style', SEL_STYLE, leg.style||'normal'), true) +
+      selRow('Surface', chipSel('sel-surf', SEL_SURF, leg.surface||'asphalt'), true) +
+      selRow('Nuits stationn&eacute;es', chipSel('sel-nights', [0,1,2,3], +leg.nights||0), true) +
+      selRow('Handling', chipSel('sel-hand', [['0','no'],['95','yes · '+eur(95)]], leg.handling ? '95' : '0'), true) +
       selRow('&euro; par litre', '<input type="number" id="sel-price" min="0" step="0.01" value="'+(+leg.price||fd.fuel||0).toFixed(2)+'">', true) +
     '</div>';
 }
@@ -1982,28 +2038,23 @@ function applySelections(leg){
   if(Math.abs(leg.price - assumedPrice) > 0.0001) dropAssumption(leg, SEL_ASSUMED.price);
 }
 
+function clearEntry(){
+  var el = $('entryCard'); if(!el) return;
+  el.innerHTML = ''; el.hidden = true;
+}
+
 function renderSignCard(leg, res){
+  var el = $('entryCard'); if(!el) return;
   var auto = leg.src === 'aircraft';
-  var from = (FIELDS[leg.from] ? leg.from+' '+FIELDS[leg.from].name : leg.from) + (leg.depTime?' &middot; off '+leg.depTime:'');
-  var to   = (FIELDS[leg.to]   ? leg.to+' '+FIELDS[leg.to].name   : leg.to)   + (leg.arrTime?' &middot; on '+leg.arrTime:'');
-  var nature = leg.from===leg.to ? 'Local' : 'Navigation';
   var pending = leg.pending !== false;
-  $('lastPosting').innerHTML =
-    '<div class="signcard">'+
+  el.innerHTML =
+    '<div class="signcard entry">'+
       SIM_LABEL_HTML +
-      '<div class="eyebrow">Carnet de route &middot; '+(auto?'filed by the aeroplane &middot; read it and sign':'review before you sign')+'</div>'+
-      '<div class="hwline" style="font-size:23px; margin-top:2px">'+from+' &rarr; '+to+'</div>'+
-      '<dl>'+
-        '<dt>Date</dt><dd>'+esc(leg.date)+'</dd>'+
-        /* Claus flies his book on airborne time and said so, and EASA's own flight time is
-           a different thing - first movement for take-off to coming to rest. So the label
-           says which one this is rather than leaving it to be guessed. */
-        '<dt>Dur&eacute;e (en vol)</dt><dd>'+hhmm(leg.hours)+
-          (leg.block ? ' <span class="tiny muted">&middot; '+hhmm(leg.block)+' bloc, not totalled</span>' : '')+'</dd>'+
-        '<dt>Nature</dt><dd>'+nature+'</dd>'+
-        (leg.fuelSrc?'<dt>Carburant</dt><dd style="font-size:16px">'+num(leg.litres,1)+' L &mdash; '+esc(leg.fuelSrc)+'</dd>':'')+
-        (!pending && leg.note?'<dt>Observations</dt><dd style="font-size:16px">'+esc(leg.note)+'</dd>':'')+
-      '</dl>'+
+      '<div class="etop">'+
+        '<div class="eyebrow">Carnet de route &middot; '+(auto?'filed by the aeroplane &middot; check it and sign':'review before you sign')+'</div>'+
+        '<div class="eyebrow">'+(leg.legNo !== null && leg.legNo !== undefined ? 'Leg '+esc(leg.legNo)+' &middot; ' : '')+dmy(leg.date)+'</div>'+
+      '</div>'+
+      entryFigures(leg)+
       recordedBlock(leg)+
       (pending ? selectionsBlock(leg) : '')+
       '<hr class="rule">'+
@@ -2011,18 +2062,28 @@ function renderSignCard(leg, res){
       '<div class="btnrow"><button class="btn" id="btn-sign">Sign &amp; reveal cost</button></div>'+
       '<p class="tiny muted" style="margin-top:6px">Nothing is billed until you sign. The invoices, the wear and the tech log are written at the signature, from the page as it stands.</p>'+
     '</div>';
+  el.hidden = false;
+
+  el.firstChild.addEventListener('click', function(e){
+    var chip = e.target.closest('.chip'); if(!chip) return;
+    var group = chip.parentNode;
+    group.querySelectorAll('.chip').forEach(function(c){ c.setAttribute('aria-pressed', String(c === chip)); });
+    var field = $(group.getAttribute('data-for'));
+    if(field) field.value = chip.getAttribute('data-val');
+  });
+
   ['from','to'].forEach(function(end){
     var box = $('type-'+end); if(!box) return;
     box.addEventListener('change', function(){
       var code = String(this.value||'').trim().toUpperCase();
       if(!code) return;
-      if(!/^[A-Z]{4}$/.test(code)){ toast('An ICAO code is four letters \u2014 ' + code + ' is not one.'); return; }
+      if(!/^[A-Z]{4}$/.test(code)){ toast('An ICAO code is four letters — ' + code + ' is not one.'); return; }
       if(leg[end] === code) return;
       leg[end] = code;
       applySelections(leg);
       save();
       setTimeout(function(){ render(); renderSignCard(leg); }, 0);
-      toast((end==='from'?'D\u00e9part':'Arriv\u00e9e')+' set to '+code+'.');
+      toast((end==='from'?'Départ':'Arrivée')+' set to '+code+'.');
     });
   });
 
@@ -2035,10 +2096,108 @@ function renderSignCard(leg, res){
     leg.signedAt = new Date().toISOString();
     var out = fileLeg(leg);
     save();
+    clearEntry();
     renderChit(leg, out);
     render();
-    if(out.raised.length) toast(out.raised.length+' new squawk'+(out.raised.length===1?'':'s')+' in the tech log.');
+    var next = S.legs.filter(function(l){ return !l.signedBy; });
+    if(next.length) renderSignCard(next[0]);
+    else { var lp = $('lastPosting'); if(lp && lp.scrollIntoView) lp.scrollIntoView(); }
+    toast('Signed.' + (out.raised.length ? ' '+out.raised.length+' new squawk'+(out.raised.length===1?'':'s')+' in the tech log.' : ''));
   });
+}
+
+/* ---------------- Dropbox pickup ----------------
+   The laptop writes each leg into Dropbox /MSFS 2024 Screenshots/FBVNK_LEGS when the battery
+   master goes off (nk_autofile runs nk_legs), and opens this book. The book looks in that
+   folder when it opens, every 30 seconds while it is on screen, and whenever it comes back on
+   screen. A leg file it has not read before comes up as the entry at the top of the Ramp tab.
+   Reading a file twice can never enter a leg twice: the legId dedupe in ingestRecord stops it. */
+var DBX = { server:'Dropbox', path:'/MSFS 2024 Screenshots/FBVNK_LEGS', mcp:null, busy:false, stopped:false, fails:{} };
+var DBX_STOP = ['needs_reauth','server_not_connected','selection_required','server_not_found','not_in_manifest',
+  'consent_required','blocked_by_policy','approval_required','not_granted','capability_disabled','capability_removed','user_changed'];
+function dbxSay(msg, bad, live){
+  var el = $('dbxHint'); if(el){ el.textContent = msg; el.style.color = bad ? 'var(--bad)' : ''; }
+  var d = $('dbxDot'); if(d) d.className = 'dot' + (live ? ' live' : '');
+}
+function dbxErrText(e){
+  var c = e && e.code;
+  if(c === 'needs_reauth') return 'Dropbox needs reconnecting (claude.ai Settings → Connectors). Until then, drop the leg file in.';
+  if(c === 'server_not_connected' || c === 'selection_required' || c === 'server_not_found')
+    return 'Dropbox is not connected for this book (claude.ai Settings → Connectors). Until then, drop the leg file in.';
+  if(c === 'not_in_manifest' || c === 'consent_required') return 'Dropbox is switched off for this book, so legs do not come in by themselves. Press Check Dropbox now to allow it, or drop the file in.';
+  if(c === 'blocked_by_policy' || c === 'approval_required') return 'Reading Dropbox is blocked for this book. Drop the leg file in instead.';
+  if(c === 'not_granted' || c === 'capability_disabled' || c === 'capability_removed') return 'This view cannot read Dropbox. Drop the leg file in instead.';
+  if(c === 'user_changed') return 'Signed in as someone else now. Reload the book.';
+  if(c === 'tool_error' && /not.?found/i.test(String(e.message || '')))
+    return 'Watching Dropbox FBVNK_LEGS — the folder is not there yet. It appears with the first leg the laptop files.';
+  return 'Dropbox did not answer (' + (c || 'error') + '). Trying again in 30 s.';
+}
+function dbxTick(byHand){
+  if(!DBX.mcp || DBX.busy) return;
+  if(DBX.stopped && !byHand) return;
+  if(!byHand && document.visibilityState === 'hidden') return;
+  S.dbxSeen = S.dbxSeen || [];
+  DBX.busy = true; DBX.stopped = false;
+  DBX.mcp.callTool(DBX.server, 'list_folder', {path: DBX.path, recursive: false, object_types: ['file'], max_results: 600}, {cache: false})
+    .then(function(r){
+      var p = r && r.payload;
+      var entries = (p && Array.isArray(p.entries)) ? p.entries : [];
+      var fresh = entries.filter(function(e){
+        var n = String((e && e.name) || '');
+        return /^\d{4}-\d{2}-\d{2}_\d{6}(_\d+)?\.json$/.test(n) && S.dbxSeen.indexOf(n) < 0;
+      }).sort(function(a, b){ return a.name < b.name ? -1 : a.name > b.name ? 1 : 0; });
+      if(!fresh.length){
+        dbxSay('Watching Dropbox FBVNK_LEGS · nothing new · looked at ' + localHM(new Date().toISOString()), false, true);
+        return;
+      }
+      var got = 0;
+      return fresh.reduce(function(chain, e){
+        return chain.then(function(){
+          if(S.dbxSeen.indexOf(e.name) > -1) return;
+          return DBX.mcp.callTool(DBX.server, 'fetch', {id: e.path || (DBX.path + '/' + e.name)}, {cache: false})
+            .then(function(fr){
+              var fp = fr && fr.payload;
+              var txt = (fp && typeof fp.text === 'string') ? fp.text : (typeof fp === 'string' ? fp : '');
+              var obj = null;
+              try{ obj = JSON.parse(txt); }catch(err){ obj = null; }
+              if(S.dbxSeen.indexOf(e.name) > -1) return;
+              S.dbxSeen.push(e.name); save();
+              got++;
+              if(obj) ingestRecord(obj);
+              else ingestSay('Dropbox ' + e.name + ' is not a leg record this book can read. Skipped.', true);
+            }, function(err){
+              if(DBX_STOP.indexOf(err && err.code) > -1) throw err;
+              DBX.fails[e.name] = (DBX.fails[e.name] || 0) + 1;
+              if(DBX.fails[e.name] >= 3){
+                S.dbxSeen.push(e.name); save();
+                ingestSay('Dropbox ' + e.name + ' could not be read three times over. Skipped — drop it in by hand.', true);
+              }
+            });
+        });
+      }, Promise.resolve()).then(function(){
+        dbxSay('Watching Dropbox FBVNK_LEGS · ' + got + ' new leg file' + (got === 1 ? '' : 's') + ' read · ' + localHM(new Date().toISOString()), false, true);
+      });
+    })
+    .catch(function(e){
+      if(DBX_STOP.indexOf(e && e.code) > -1) DBX.stopped = true;
+      dbxSay(dbxErrText(e), DBX.stopped, false);
+    })
+    .then(function(){ DBX.busy = false; });
+}
+function dbxStart(){
+  var cl = window.claude;
+  if(!cl || typeof cl.use !== 'function'){
+    dbxSay('Dropbox pickup works when the book is open in claude.ai. Here, drop the leg file in.', false, false);
+    return;
+  }
+  cl.use('mcp').then(function(m){
+    if(!m){ dbxSay('Dropbox pickup is not available in this view. Drop the leg file in instead.', false, false); return; }
+    DBX.mcp = m;
+    dbxSay('Looking in Dropbox FBVNK_LEGS…', false, true);
+    dbxTick(false);
+    setInterval(function(){ dbxTick(false); }, 30000);
+    document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') dbxTick(false); });
+  }, function(){ dbxSay('Dropbox pickup is not available in this view. Drop the leg file in instead.', false, false); });
 }
 
 function renderHealth(){
@@ -2503,6 +2662,22 @@ function boot(){
   renderLastPosting(LAST_RES);
   $('f-hint').textContent = grounded() ? 'Clear the broken item in the tech log first.' : '';
 
+  /* The entry comes up by itself: the Dropbox pickup. And the laptop opens a new window of
+     the book for every leg it files, so a window left open from an earlier leg reloads the
+     book whenever another one writes it, instead of saving its old copy over the new one. */
+  dbxStart();
+  $('btn-dbx').addEventListener('click', function(){
+    if(DBX.mcp){ dbxSay('Looking in Dropbox FBVNK_LEGS…', false, true); dbxTick(true); }
+    else dbxSay('Dropbox pickup works when the book is open in claude.ai. Here, drop the leg file in.', false, false);
+  });
+  window.addEventListener('storage', function(e){
+    if(e.key !== KEY || !e.newValue) return;
+    try{ var o = JSON.parse(e.newValue); if(!o || o.v !== 1) return; }catch(err){ return; }
+    S = load(); render();
+    var open = S.legs.filter(function(l){ return !l.signedBy; });
+    if(open.length) renderSignCard(open[0]); else clearEntry();
+  });
+
   $('tabs').addEventListener('click', function(e){
     var b = e.target.closest('.tab'); if(!b) return; switchPane(b.dataset.pane);
   });
@@ -2601,7 +2776,7 @@ function boot(){
     var sgn = e.target.closest('[data-sign]');
     if(sgn){
       var lg = S.legs[+sgn.dataset.sign];
-      if(lg){ renderSignCard(lg); switchPane('ramp'); }
+      if(lg){ renderSignCard(lg); switchPane('ramp'); $('entryCard').scrollIntoView(); }
       return;
     }
   });
@@ -2640,8 +2815,8 @@ function boot(){
     var rows = logRows();
     var head = 'Date,Noms,Fonctions,Lieu depart,Lieu arrivee,Heure depart,Heure arrivee,Heures de vol,Nature du vol,Carburant depart,Carburant arrivee,Huile depart,Huile arrivee,Incidents - Observations,Tacho,Signature du Commandant de bord,Visa\n';
     var body = rows.map(function(r, i){
-      return [dayMonth(r.date), (i===0 ? String(r.name).toUpperCase() : '— " —'), 'PIC',
-              r.from, r.to, r.depT, r.arrT, hplus(r.dur), 'P1 '+hplus(r.run),
+      return [dayMonth(r.date), (i===0 ? String(r.name).toUpperCase() : '— " —'), r.fonc,
+              r.from, r.to, r.depT, r.arrT, hplus(r.dur), r.nature+' '+hplus(r.run),
               (r.fuelDep===null?'':num(r.fuelDep,0)), (r.fuelArr===null?'':num(r.fuelArr,0)),
               '', '',
               ([r.note].concat(r.auto).filter(Boolean).join('; ') || 'NIL'),
@@ -2660,19 +2835,19 @@ function boot(){
     try{
       var o = JSON.parse(io.value);
       if(!o || o.v!==1) throw new Error('bad');
-      S = o; save(); render(); io.hidden=true; toast('Book loaded.');
+      clearEntry(); S = o; save(); render(); io.hidden=true; toast('Book loaded.');
     }catch(err){ toast('That is not a F-BVNK book.'); }
   });
   $('btn-seed').addEventListener('click', function(){
     if(!confirm('Clear the three example legs and every posting, and start your own season from zero hours?')) return;
     S = blankState(false); S.seasonStart = today().slice(0,8)+'01'; S.lastDate = today();
-    save(); render(); $('lastPosting').innerHTML='<p class="small muted">Fresh book. File your first leg.</p>';
+    clearEntry(); save(); render(); $('lastPosting').innerHTML='<p class="small muted">Fresh book. File your first leg.</p>';
     toast('New season open.');
   });
   $('btn-reset').addEventListener('click', function(){
     if(!confirm('Wipe the book completely and go back to the seeded examples?')) return;
     try{ localStorage.removeItem(KEY); }catch(e){}
-    S = seedExamples(blankState(true)); save(); render(); toast('Back to the examples.');
+    clearEntry(); S = seedExamples(blankState(true)); save(); render(); toast('Back to the examples.');
   });
 }
 
@@ -2689,3 +2864,5 @@ function fallbackCopy(text, msg){
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
 else boot();
 </script>
+
+</body></html>
