@@ -482,6 +482,7 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
       </div>
       <hr class="rule">
       <div class="tw carnet" style="max-height:620px; overflow-y:auto"><table id="logTbl"></table></div>
+      <p id="logNote" style="margin-top:8px"></p>
       <p class="tiny muted" style="margin-top:8px">Written the way the book is written: dates day-month with the year once at the head of the column, aerodromes as bare ICAO, times four digits, flight time h:mm, the running total carried forward in <em>Report</em> and closed at the foot under a red rule. The <strong>Huile</strong> column is split D&eacute;part/Arriv&eacute;e and holds what you write there in the real book: the FP-5L total on engine start and again at shutdown. Type both on the Ramp tab and they land here. <strong>Visa</strong> stays empty &mdash; nothing in the sim signs for customs. Totals are sim hours only; they never join or overwrite NK's real total time.</p>
     </div>
   </section>
@@ -1126,16 +1127,36 @@ function normaliseLeg(rec){
   }
 
   /* Sign convention, fixed by the contract: positive is descent, so 150 means 150 fpm
-     down. The converter negates the sim's own negative vertical speed. Math.abs here is
-     belt and braces for a converter that forgets. */
+     down, and the converter negates the sim's own negative vertical speed.
+     Clamp at 0, per the PM's V274 note: a float or a very soft arrival can sample 0 or a
+     positive V/S, and that is not a hard landing by any reading. A NEGATIVE value is
+     worth shouting about rather than quietly flipping - it means either a converter that
+     forgot to negate, in which case every landing would come through soft and the
+     hard-landing check would silently never fire again, or a touchdown with no descent
+     at all. Either way it is clamped to 0 and said out loud. */
   var rate = numOrNull(rec.touchdownFpm);
   if(rate === null){
     rate = 150;
     notes.push('assumption: touchdown taken as 150 fpm — the record carried no rate, so no hard-landing check was made on this leg.');
-  } else rate = Math.abs(Math.round(rate));
+  } else if(rate < 0){
+    notes.push('The record sent a touchdown rate of ' + Math.round(rate) + ' fpm. Under FBVNK_LEG/2 positive means descent, so this is either a converter that did not negate the sim\u2019s own sign, or an arrival with no descent at all. Taken as 0 and no hard-landing check made \u2014 worth checking the converter, because a converter that forgot would make every landing look soft.');
+    rate = 0;
+  } else {
+    rate = Math.round(rate);
+    if(rate === 0) notes.push('Touchdown rate 0 fpm \u2014 a float, or a very soft arrival. No hard-landing check made on this leg.');
+  }
 
   /* V274 keeps a landing count and the last landing's time only, so the carnet's Heure
      Arrivee is the last one. A leg with several landings says so. */
+  /* V274 flags. An engine run that never got airborne is not a flight, so it does not go
+     in the carnet - Claus's book is a record of flights. It still cost fuel and it still
+     ran the engine, so it is filed and it posts; the Logbook tab says how many are being
+     left out and the Ledger tab has them in full. */
+  var noFlight = rec.noTakeOff === true;
+  var stopInAir = rec.stopInAir === true;
+  if(noFlight) notes.push('No take-off on this record. Filed for its costs, but kept out of the carnet \u2014 an engine run is not a flight.');
+  if(stopInAir) notes.push('The record says the engine stopped in flight. Flagged here and written into the carnet\u2019s Observations; nothing is billed for it, per the standing rule.');
+
   var landings = numOrNull(rec.landings);
   landings = (landings === null) ? null : Math.max(0, Math.round(landings));
   if(landings !== null && landings > 1)
@@ -1188,7 +1209,7 @@ function normaliseLeg(rec){
     litres:litres, fuelSrc:fuelSrc, burnSource:burnSource, refuelInLeg:refuelInLeg, price:price,
     tachStart:tachStart, tachStop:tachStop,
     depLat:depLat, depLon:depLon, arrLat:arrLat, arrLon:arrLon,
-    landings:landings,
+    landings:landings, noFlight:noFlight, stopInAir:stopInAir,
     rate:rate, nights:nights, handling: rec.handling ? 95 : 0,
     style:style, surface:surface,
     note:String(rec.note || '').slice(0,160),
@@ -1753,8 +1774,12 @@ function surname(name){
   var parts = String(name||'').trim().split(/\s+/);
   return parts.length ? parts[parts.length-1].toUpperCase() : '';
 }
+function groundRuns(){ return S.legs.filter(function(l){ return l.noFlight; }).length; }
 function logRows(){
-  var legs = S.legs.slice().sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
+  /* Engine runs that never got airborne stay out: the carnet de route is a flight record.
+     They are filed, they post, and the count is shown under the page. */
+  var legs = S.legs.filter(function(l){ return !l.noFlight; })
+                   .sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
   var run = 0;
   return legs.map(function(l){
     var prev = run; run += l.hours;
@@ -1767,7 +1792,8 @@ function logRows(){
       fuelDep: (l.fp5lDep===0 || l.fp5lDep) ? l.fp5lDep : null,
       fuelArr: (l.fp5lArr===0 || l.fp5lArr) ? l.fp5lArr : null,
       tach: (l.tachStop===0 || l.tachStop) ? l.tachStop : null,
-      note: l.note || '', auto: legSummary(l),
+      note: [l.note, l.stopInAir ? 'Arr\u00eat moteur en vol' : ''].filter(Boolean).join(' \u00b7 '),
+      auto: legSummary(l),
       name: l.signedBy || 'CLAUS THANNER',
       signed: l.signedBy || '', signedAt: l.signedAt || ''
     };
@@ -1859,6 +1885,12 @@ function renderLogbook(){
     : '';
 
   $('logTbl').innerHTML = head+'<tbody>'+body+'</tbody>'+foot;
+  var gr = groundRuns(), n = $('logNote');
+  if(n) n.innerHTML = gr
+    ? '<span class="tiny muted">'+gr+' engine run'+(gr===1?'':'s')+' with no take-off '+(gr===1?'is':'are')+
+      ' not on this page \u2014 a ground run is not a flight. '+(gr===1?'It is':'They are')+' in the Ledger, and '+
+      (gr===1?'its':'their')+' fuel and fees posted as usual.</span>'
+    : '';
 }
 
 /* The signature on his pages is initials, not the name written out. */
