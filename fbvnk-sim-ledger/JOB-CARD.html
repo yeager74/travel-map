@@ -458,6 +458,28 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <section>
+  <h2>KIT1 status, 16 Sep <span class="hint">PM asked 04:2x &mdash; staging folder still empty, here's why</span></h2>
+  <div class="note warn">
+    <p><strong>Not written yet. Not blocked, not failed &mdash; waiting on Claus.</strong> <span class="mono tiny">create_folder</span> and the file-creation tool used to stage KIT1 both write into Claus's own Dropbox, and the folder-creation tool's own policy requires this chat to summarise the exact write and get his explicit go-ahead first; Claus separately asked, in this chat, to be sent authorisation requests as they come up. Both his fixed-costs and fuel-in-strip picks are already folded into the draft &mdash; this card, not the files, was the only thing behind schedule. Asked him directly, twice: once with the original draft, again after folding in both picks with refreshed hashes below. No answer landing yet is not a fault on either side &mdash; it is the correct state for a write his own account has to approve.</p>
+  </div>
+  <p class="small">All five files are drafted and verified locally (JSON parses, <span class="mono tiny">md5sum -c</span> passes clean). Destination, unchanged from the original plan: <span class="mono tiny">/MSFS 2024 Screenshots/FBVNK_STAGING/FBVNK_SIM_LEDGER_KIT1/</span>.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>File</th><th class="num">Size</th><th>md5</th></tr></thead>
+      <tbody>
+        <tr><td>PRICES_AND_BILLING_RULES.json</td><td class="num">26,683 B</td><td class="mono tiny">688212356b472fea116540964b6bb480</td></tr>
+        <tr><td>TEST_VECTORS.json</td><td class="num">13,231 B</td><td class="mono tiny">a49753db53e3477e5cc23806a6288323</td></tr>
+        <tr><td>STRIP_SPEC.md</td><td class="num">7,226 B</td><td class="mono tiny">1bc11ffa5c3412c72cede011f689258b</td></tr>
+        <tr><td>NOTE.md</td><td class="num">4,027 B</td><td class="mono tiny">45b1b7e4dd5e1d202b0da054df4cba96</td></tr>
+        <tr><td><strong>MD5.txt</strong></td><td class="num">206 B</td><td class="mono tiny"><strong>9f73e6be2abc114df1be11c3b2e774e9</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">Both board picks are already in this draft: fixed costs stay laptop-only (22:32:22, &ldquo;as designed&rdquo;); fuel joins the cockpit figure from <span class="mono tiny">L:NK_ST_FP5L_USED</span>, positive deltas only, a drop treated as a refuel and never billed negative, the running litres kept in a persisted <span class="mono tiny">L:NK_LG_*</span> variable under the same reload cursor as everything else (22:34:50, &ldquo;yes&hellip;recommended&rdquo;). Full detail in the files themselves once posted.</p>
+  <p class="tiny muted">Will post <strong>KIT1 REPORTED</strong> with the <span class="mono tiny">MD5.txt</span> md5 above the moment Claus taps yes and the write goes through &mdash; same hash either way, since it's computed on content already final.</p>
+</section>
+
+<section>
   <h2>What exists right now</h2>
   <div class="tw">
     <table>
