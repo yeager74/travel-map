@@ -458,7 +458,44 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <section>
-  <h2>KIT1 REPORTED <span class="hint">written 16 Sep 05:02&ndash;05:05 &middot; md5s verified on the laptop bytes &middot; in review as K7</span></h2>
+  <h2>K7 answered &mdash; KIT1 revision 2 ready to stage <span class="hint">PASS WITH NOTES closed out; one decision goes back to a human</span></h2>
+  <div class="note warn">
+    <p><strong>Both gaps closed, three lower-priority notes closed, and one thing found that this session will not decide on its own.</strong> Revision 2 is built and verified locally, in a <em>new</em> folder &mdash; <span class="mono tiny">FBVNK_SIM_LEDGER_KIT1/</span> stays frozen exactly as Records reviewed it, so the md5s K7 verified still point at the bytes K7 saw. Not yet written to Dropbox: that is a fresh write to a new path and needs Claus's go-ahead, same as last time.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>K7 note</th><th>Closed by</th></tr></thead>
+      <tbody>
+        <tr><td>No overhaul vector &mdash; the only event drawing the engine reserve, and the largest posting</td><td><strong>V14.</strong> Pins the underfunded case: a &euro;30,000.00 fund against a &euro;35,000.00 overhaul leaves the fund at 0, never negative, and the full &euro;35,000.00 still posts. Also pins the discriminator against Reset &mdash; <span class="mono tiny">ENG_HRS</span> 0 is an overhaul, 300 with the seed set is a Reset.</td></tr>
+        <tr><td>Nothing prices a loss at a definite R of 100 or 1000</td><td><strong>V15.</strong> Cylinders at R=1000. You were right that nothing exercised it: V1 is R=1 (divisor 1, a no-op), V6 is R=0 (short-circuits), V5 is flagged rather than priced.</td></tr>
+        <tr><td>Starter cap; unflagged scaled-by-R service; VAT at 21&nbsp;%</td><td><strong>V16</strong> (brakes at R=100 &mdash; covers the scaled-by-R group, a second dividing R, and the only 21&nbsp;% line in the table, the one vector that would catch a hard-coded 23) and <strong>V17</strong> (starter <span class="mono tiny">min(R,100)</span>, landing on no-price-on-file).</td></tr>
+        <tr><td>Provenance: 9 called real, only 4 with an invoice id; reserves cite nothing; insp50 is a 2026 number</td><td>Three buckets now: <strong>invoiced</strong> 6 (<span class="mono tiny">invoice_id_cited</span> says which 4 quote an id), <strong>calculator</strong> 3, <strong>assumption</strong> 16. Reserves cite the calculator. <span class="mono tiny">FAC 26/6</span> is labelled a 2026 series number, not implied to be a 2025 invoice.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note warn">
+    <p><strong>Found while writing V15: the kit contradicted itself, and a human has to settle it.</strong> <span class="mono tiny">wear_rate_normalisation</span> says divide the observed loss by R and bill &ldquo;the same wear as at REAL&rdquo;. <span class="mono tiny">events.service</span> says post the full catalogue price. Those are two different models. Every vector written before this revision used the full price &mdash; so K7 recomputed the arithmetic of one reading while the stated rule described the other, and both passed because nothing until V15 made them disagree.</p>
+    <p class="small">On the same magneto service: <strong>&euro;885.60</strong> full-price against <strong>&euro;513.65</strong> pro rata. On V15's cylinder at x1000: <strong>&euro;2,767.50</strong> against <strong>&euro;1.38</strong> &mdash; a factor of 2000 on identical sim events. Full-price billing means running at x1000 fires services ~1000&times; more often and inflates the book by about the same, which is the thing pick&nbsp;2 was tapped to prevent.</p>
+    <p class="small"><strong>This session has not picked one.</strong> Both figures sit side by side in every affected vector; the readings, their consequences and a recommendation (pro rata) are written up in <span class="mono tiny">PRICES_AND_BILLING_RULES.json &rarr; wear_rate_normalisation.OPEN_how_a_normalised_loss_becomes_euro</span>. It is a money decision, so it is Claus's or the PM's. One line back and the next revision collapses to a single reading. Either way there is a data gap: a pro-rata posting needs the condition <em>before</em> the service and nothing captured it &mdash; V1 is restated with it.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Revision 2 file</th><th class="num">Size</th><th>md5</th></tr></thead>
+      <tbody>
+        <tr><td>PRICES_AND_BILLING_RULES.json</td><td class="num">34,300 B</td><td class="mono tiny">defe09de20d697a2dbdc79e18fc1514b</td></tr>
+        <tr><td>TEST_VECTORS.json <span class="tiny muted">18 vectors</span></td><td class="num">24,322 B</td><td class="mono tiny">1c00cc8f9dd301a52e016d1f23b2f25e</td></tr>
+        <tr><td>STRIP_SPEC.md</td><td class="num">8,076 B</td><td class="mono tiny">cef1dbdbac6e4bfe0245fc5a155685e5</td></tr>
+        <tr><td>NOTE.md</td><td class="num">8,247 B</td><td class="mono tiny">eb5d2e87e98bb5005e6a4f638dfc17be</td></tr>
+        <tr><td><strong>MD5.txt</strong></td><td class="num">206 B</td><td class="mono tiny"><strong>a9d9e47be5966fadecd3f730192f1948</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">Every euro figure in the new vectors was recomputed independently from the price table before publishing: 11 of 11 match. <span class="mono tiny">md5sum -c</span> passes, both JSON files parse.</p>
+  <p class="small"><strong>Document list, item 2 is closed:</strong> the collision check is done &mdash; you verified none of the seven <span class="mono tiny">L:NK_LG_*</span> names exists in the package, and that <span class="mono tiny">NK_ST_FP5L_USED</span> is LocalVar 10, <span class="mono tiny">TACH</span> 11, <span class="mono tiny">MX_LOG</span> 61, <span class="mono tiny">WEAR</span> 58. Both facts are now recorded in <span class="mono tiny">STRIP_SPEC.md</span>. Items 1 and 3&ndash;6 are still open, and <span class="mono tiny">SPEC.md</span> remains the one that closes the rest of <span class="mono tiny">open_items</span>.</p>
+</section>
+
+<section>
+  <h2>KIT1 as reviewed <span class="hint">written 16 Sep 05:02&ndash;05:05 &middot; md5s verified on the laptop bytes &middot; K7 PASS WITH NOTES</span></h2>
   <div class="note">
     <p><strong>Delivered and verified both ends.</strong> Five files in <span class="mono tiny">/MSFS 2024 Screenshots/FBVNK_STAGING/FBVNK_SIM_LEDGER_KIT1/</span>. This session refetched each one after writing &mdash; byte sizes match the pre-upload numbers, content intact. The PM then checked every md5 against the laptop bytes and confirmed all five. <strong>MD5.txt md5: <span class="mono tiny">9f73e6be2abc114df1be11c3b2e774e9</span></strong>. Folder frozen; Records reviews the kit as <strong>K7</strong>.</p>
   </div>
