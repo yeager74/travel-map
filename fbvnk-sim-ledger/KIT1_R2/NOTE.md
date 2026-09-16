@@ -92,7 +92,7 @@ detected scheduled check stay as "no posting, raise the flag", per the PM.
 |---|---|
 | `PRICES_AND_BILLING_RULES.json` | The single price/rules source both the laptop ledger and the future HANGAR strip read. Prices transcribed verbatim from `FBVNK-LEDGER.html` commit `5e72853`. Wear-rate normalisation, posting-cursor and Reset-to-delivery rules transcribed from the reviewed Job Card (rounds 2-3, checked against `SPEC.md` md5 `c06f7305`) and this KIT1 review message. |
 | `TEST_VECTORS.json` | Eighteen sequences (IDs V1-V17, with V2 split into 2a/2b) of LocalVar reads → expected postings in euro, covering: a normal action, both shapes of reload/crash, Reset to delivery, new install/new machine, a rate change mid-leg (flagged, not guessed), Wear rate OFF, the laptop book's refuel read via FP-5L, a service event on a part with no price yet, one marked open pending a missing variable, and four covering the strip's own fuel accumulation (no refuel, a refuel mid-sequence, a reload freezing the fuel baseline, and a price change between legs). |
-| `STRIP_SPEC.md` | What the HANGAR strip shows, its scope, and this session's proposed `L:NK_LG_*` variables (none exist yet — proposal for Records/Builder to accept or adjust). No package code. |
+| `STRIP_SPEC.md` | What the HANGAR strip shows, its scope, what pro-rata pricing costs it in new persisted state, and this session's proposed `L:NK_LG_*` variables (none exist yet — proposal for Records/Builder to accept or adjust). No package code. |
 | `MD5.txt` | `md5sum -c` format, this note included. |
 
 ## Not in KIT1 (per the PM's message)
@@ -122,14 +122,15 @@ three plain-text/JSON/Markdown files and this note — nothing else touched.
 
 ## Open — needs a person, not a guess
 
-Five open technical items, listed in full under `PRICES_AND_BILLING_RULES.json` → `open_items`:
+Six open technical items, listed in full under `PRICES_AND_BILLING_RULES.json` → `open_items`:
 the `NK_ST_FAULTS` bit-to-component map, the exact hours-since-last-check variable, which hours
 source (`NK_ST_TACH` vs `NK_ST_ENG_HRS`) the reserve accrual should read, the battery-replacement
 detection signal, and five `PRICES` keys with no price yet (carburettor, starter, oil pump/lines,
-exterior lamps, oil top-up). None of these were guessed at to fill a gap — each is flagged instead.
+exterior lamps, oil top-up), and which of the two pre-service capture designs the Builder takes.
+None of these were guessed at to fill a gap — each is flagged instead.
 
 ## Verification
 
-`md5sum -c MD5.txt` from inside this folder should report all three content files OK. This session
+`md5sum -c MD5.txt` from inside this folder should report all four files OK. This session
 computed the same hashes locally before upload; PM checks them again on the laptop bytes per the
 usual practice, and the folder freezes once "KIT1 REPORTED" is posted on the Job Card.

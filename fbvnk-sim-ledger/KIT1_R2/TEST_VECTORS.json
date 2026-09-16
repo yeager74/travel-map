@@ -7,7 +7,7 @@
   "vectors": [
     {
       "id": "V1_normal_service_and_hours",
-      "covers": "ordinary single action + hourly reserves, both cursor halves moving independently | restated in R2: pre-service condition added, both readings costed",
+      "covers": "ordinary single action + hourly reserves, both cursor halves moving independently | restated in R2: pre-service condition added, and priced pro rata",
       "stored_cursor": {
         "MX_LOG": 40,
         "TACH": 1260.0
@@ -35,7 +35,7 @@
           "divisor": 1,
           "normalised_points": 58.0,
           "gross": 513.65,
-          "arithmetic": "885.6 × ((100 - 42) / 1) / 100 = 513.65"
+          "arithmetic": "885.60 × ((100 - 42) / 1) / 100 = 513.65"
         },
         {
           "type": "hourly_reserve_engine",
@@ -451,8 +451,8 @@
           "divisor": 1000,
           "normalised_points": 0.065,
           "gross": 1.8,
-          "arithmetic": "2767.5 × ((100 - 35) / 1000) / 100 = 1.8",
-          "note": "The vector the whole decision turns on: the same gauge movement at x1000 represents 1/1000th of real wear and costs 1/1000th. At R=1 this service would post 2767.50 × 0.65 = 1798.88."
+          "arithmetic": "2767.50 × ((100 - 35) / 1000) / 100 = 1.80",
+          "note": "The vector the whole decision turns on: the same gauge movement at x1000 represents 1/1000th of real wear and costs 1/1000th. At R=1 this service would post 2767.50 × 0.65 = 1,798.88."
         }
       ],
       "hours_elapsed_this_read": 0.1,
