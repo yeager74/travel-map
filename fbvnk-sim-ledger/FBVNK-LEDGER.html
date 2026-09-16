@@ -787,7 +787,7 @@ function blankState(seeded){
     /* The hour meter's own place in the book. cursor is the last real NK_ST_TACH reading
        the book has seen; carried is what has already been accrued since that reading from
        records that had no tacho, so the meter's progression is never counted twice. */
-    tach:{ cursor:null, carried:0 },
+    tach:{ cursor:null, carried:0, lastKey:'' },
     due:{ next25:25, next50:50, next100:100, caoYear:null, insYear:null },
     billedMonths:[],
     reserves:{ engine:0, prop:0 },
@@ -869,12 +869,50 @@ function gearWear(r){ return r<=200?0.20 : r<=400?0.50 : r<=500?1.4 : r<=600?3.5
    that does have a reading subtracts it from the measured gap, so the same hours are never
    billed twice. The eight seeded legs are all of this kind - they were hand-filed before
    the aeroplane began writing tacho - which is why the seeded reserves do not move. */
+/* Records' K7e found this rule FAIL, and the numbers were not small: one reading from
+   another machine, and the next real record accrued the whole difference between the two
+   meters - 328.09 h, EUR 7,267.19, on their sequence. A mistyped tachStart gave
+   EUR 26,957.43. Out-of-order filing, which the contract calls safe, double-accrued.
+
+   Their tested remedy, taken as it stands rather than redesigned:
+
+     (a) A forward gap more than TACH_MAX_EXTRA_H beyond the leg's own span is not a gap,
+         it is two different meters. Accrue the own span, say so, and resume from the new
+         reading. Extended here, consistently, to the own span itself: a span that exceeds
+         the leg's own flying by the same margin is not credible either, which is what a
+         mistyped tachStart looks like.
+     (b) A record that starts before the last one filed NEVER moves the cursor. Its hours
+         are already inside a measured gap, so it accrues nothing when its reading closes
+         below the cursor, and its own span when it does not. That is the late-dropped
+         dated file, and it is the case the contract wrongly called safe.
+     (c) A negative gap, or a reading that closes below the cursor, never moves the cursor
+         either. (K7e P3.)
+
+   Five hours is this session's figure, set where Records left it to be set: it is longer
+   than any ground running between two of Claus's legs and far shorter than the smallest
+   gap a second machine produces. */
+var TACH_MAX_EXTRA_H = 5;
+
 function tachHours(leg){
-  var T = S.tach || (S.tach = {cursor:null, carried:0});
+  var T = S.tach || (S.tach = {cursor:null, carried:0, lastKey:''});
   var r2 = function(v){ return Math.round(v*100)/100; };
   var start = numOrNull(leg.tachStart), stop = numOrNull(leg.tachStop);
   var air = leg.hours || 0;
+  var key = leg.chronoKey || (String(leg.date||'') + 'T' + String(leg.engineStart || '00:00'));
 
+  /* The leg's own reading, and whether it can be believed. */
+  var span = null, wild = false;
+  if(start !== null && stop !== null && stop > start){
+    span = r2(stop - start);
+    if(span - air > TACH_MAX_EXTRA_H){ wild = true; span = null; }
+  }
+  var own = function(){ return span === null ? air : span; };
+  var ownWhy = function(){
+    return wild ? ' Its own reading spans ' + num(r2(stop - start), 2) + ' h against ' + hhmm(air) +
+      ' flown, which is not one leg, so the flying time is accrued instead.' : '';
+  };
+
+  /* 1. No reading at all: the airborne time, carried against the next real one. */
   if(stop === null){
     T.carried = r2(T.carried + air);
     return {hours:air, basis:'airborne', note:
@@ -882,29 +920,53 @@ function tachHours(leg){
       '. The clock is the hour meter and airborne always runs short of it; the difference is carried and settled against the next record that does carry a reading.'};
   }
 
-  if(T.cursor !== null && start !== null && start < T.cursor - 0.005){
-    var own = stop > start ? r2(stop - start) : 0, was = T.cursor;
-    T.cursor = stop; T.carried = 0;
-    return {hours:own, basis:'own span', note:
-      'The hour meter went backwards: this record opens at '+tachoTxt(start)+' where the last one closed at '+
-      tachoTxt(was)+'. That is a reload or another machine, not flying, so nothing negative is posted. '+
-      'This leg accrues its own '+num(own,2)+' h and the book resumes from the new reading.'};
+  /* 2. Out of order. Never moves the cursor. */
+  if(T.lastKey && key < T.lastKey){
+    var inside = T.cursor !== null && stop <= T.cursor + 0.005;
+    return {hours: inside ? 0 : own(), basis: inside ? 'already measured' : 'own span', note:
+      'This record is older than the last one filed. The hour meter is not wound back for it: ' +
+      (inside ? 'its hours are already inside a gap the book has measured, so nothing is accrued twice.'
+              : 'its own ' + num(own(),2) + ' h is accrued and the cursor stays where it is.') + ownWhy()};
   }
+  T.lastKey = key;
 
+  /* 3. The first reading the book has seen. */
   if(T.cursor === null){
-    if(start === null || stop <= start){
-      T.cursor = stop; T.carried = 0;
-      return {hours:air, basis:'airborne', note:
-        'First hour-meter reading in the book, and the record gives no usable span for it, so this leg accrues its airborne time. The meter is picked up at '+tachoTxt(stop)+' and every record after it is measured against that.'};
-    }
-    var first = r2(stop - start);
     T.cursor = stop; T.carried = 0;
-    return {hours:first, basis:'own span', note:
-      'First hour-meter reading in the book: '+tachoTxt(start)+' to '+tachoTxt(stop)+', '+num(first,2)+
-      ' h. From here the book measures the meter\u2019s progression between records, which is what counts the ground running between them.'};
+    return {hours: own(), basis: span === null ? 'airborne' : 'own span', note:
+      'First hour-meter reading in the book. From here the book measures the meter\u2019s progression between records, which is what counts the ground running between them.' + ownWhy()};
   }
 
-  var gap = r2(stop - T.cursor), settled = Math.max(0, r2(gap - T.carried));
+  /* 4. The meter went backwards. Own span, and resume from the new reading. */
+  if(start !== null && start < T.cursor - 0.005){
+    var was = T.cursor;
+    T.cursor = stop; T.carried = 0;
+    return {hours: own(), basis: span === null ? 'airborne' : 'own span', note:
+      'The hour meter went backwards: this record opens at '+tachoTxt(start)+' where the last one closed at '+
+      tachoTxt(was)+'. That is a reload or another machine, not flying, so nothing negative is posted. ' +
+      'This leg accrues its own '+num(own(),2)+' h and the book resumes from the new reading.' + ownWhy()};
+  }
+
+  var gap = r2(stop - T.cursor);
+
+  /* 5. K7e P3. A reading that closes below the cursor moves nothing. */
+  if(gap < 0){
+    return {hours:0, basis:'no movement', note:
+      'This record closes at '+tachoTxt(stop)+', below the '+tachoTxt(T.cursor)+' the last one reached. '+
+      'Nothing is accrued and the meter is left where it is \u2014 a reading that goes down is not flying.'};
+  }
+
+  /* 6. K7e P1a. A gap this far beyond the leg is two meters, not one. */
+  if(gap - own() > TACH_MAX_EXTRA_H){
+    var before1 = T.cursor;
+    T.cursor = stop; T.carried = 0;
+    return {hours: own(), basis: span === null ? 'airborne' : 'own span', note:
+      'The meter reads '+num(gap,2)+' h since the last record closed at '+tachoTxt(before1)+
+      ', against '+num(own(),2)+' h on this leg. More than '+TACH_MAX_EXTRA_H+' h of that cannot be ground running between two legs, so it is taken as a different meter: only this leg\u2019s own time is accrued and the book resumes from the new reading.' + ownWhy()};
+  }
+
+  /* 7. The ordinary case: the meter's progression, less anything already accrued for it. */
+  var settled = Math.max(0, r2(gap - T.carried));
   var over = T.carried > gap + 0.005, before = T.cursor, carried = T.carried;
   T.cursor = stop; T.carried = 0;
 
@@ -915,9 +977,9 @@ function tachHours(leg){
         ' h were already accrued from records that carried no reading. Nothing more is posted here \u2014 the airborne fallback had already covered it.'
       : 'The hour meter has moved '+num(gap,2)+' h since '+tachoTxt(before)+', less the '+num(carried,2)+
         ' h already accrued from records with no reading: '+num(settled,2)+' h.';
-  else if(start !== null && gap > r2(stop - start) + 0.005)
+  else if(span !== null && gap > span + 0.005)
     note = 'The hour meter has moved '+num(gap,2)+' h since the last record closed at '+tachoTxt(before)+
-      ', against '+num(r2(stop - start),2)+' h on this leg itself. The difference ran on the ground between the two and is accrued, as the hour meter counts it.';
+      ', against '+num(span,2)+' h on this leg itself. The difference ran on the ground between the two and is accrued, as the hour meter counts it.';
 
   return {hours:settled, basis:'meter progression', note:note};
 }
@@ -1195,7 +1257,17 @@ function normaliseLeg(rec){
       : 'Zero airborne time, so the engine time for this record is its block time, ' + hhmm(block) + '. It posts on that; it does not go in the carnet.');
   }
   if(hours === null || hours <= 0) return {ok:false, why:'The record carries no time at all: no take-off and landing, no block time, no airborne figure.'};
+  /* K7e A5. V275 saves any continuous stretch of 10 s or more, so a hop can be 0.0028 h and
+     rounding to the minute leaves nothing at all. A leg that flew is never 0:00 in his
+     carnet, so the floor goes on AFTER the rounding and reads the figure from before it. */
+  var rawHours = hours;
   hours = toMinute(hours);
+  if(rawHours > 0 && hours <= 0) hours = 1/60;
+
+  /* Where this record sits in time, taken from the record itself. The ingest path pushes a
+     back-dated leg forward to the last filed date so the carnet stays in order; the cursor
+     rule needs to know the record's REAL place, so it is captured here, before that. */
+  var chronoKey = date + 'T' + (engineStart || takeOff || '00:00');
 
   var fp5lDep = numOrNull(rec.fp5lStart), fp5lArr = numOrNull(rec.fp5lShutdown);
   if(fp5lDep !== null) fp5lDep = Math.max(0, fp5lDep);
@@ -1385,7 +1457,7 @@ function normaliseLeg(rec){
   }
 
   return {ok:true, notes:notes, leg:{
-    legId:legId, legNo:legNo, src:'aircraft', schema:rec.schema || null, tz:'Z',
+    legId:legId, legNo:legNo, chronoKey:chronoKey, src:'aircraft', schema:rec.schema || null, tz:'Z',
     date:date, from:from, to:to,
     hours:hours, airborne:toMinute(airborne), block:toMinute(block),
     engineStart:engineStart, shutdown:shutdown, takeOff:takeOff, landing:landing,

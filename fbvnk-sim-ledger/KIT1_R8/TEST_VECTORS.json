@@ -1,0 +1,1446 @@
+{
+  "schema": "fbvnk-kit1-test-vectors",
+  "version": 1,
+  "job": "FBVNK_SIM_LEDGER_KIT1",
+  "purpose": "Sequences of NK_ LocalVar reads and the postings they must produce in euro, per PRICES_AND_BILLING_RULES.json. Every euro figure below is net×(1+vat/100), computed and rounded to 2dp, not estimated. Vectors needing an item still listed under PRICES_AND_BILLING_RULES.json.open_items are marked NEEDS_OPEN_ITEM and give expected behaviour only where it does not depend on the missing piece.",
+  "notation": "Each vector gives the stored cursor before the read, the new read, other relevant LocalVars, and the expected result. dt is elapsed sim seconds for that update where relevant to the continuous wear formula.",
+  "vectors": [
+    {
+      "id": "V1_normal_service_and_hours",
+      "covers": "ordinary single action + hourly reserves, both cursor halves moving independently | restated in R2: pre-service condition added, and priced pro rata",
+      "stored_cursor": {
+        "MX_LOG": 40,
+        "TACH": 1260.0
+      },
+      "read": {
+        "MX_LOG": 41,
+        "TACH": 1264.8,
+        "R": 1,
+        "changed_part": {
+          "NK_ST_C_MAG": 100
+        },
+        "condition_before_service": {
+          "NK_ST_C_MAG": 42
+        }
+      },
+      "hours_elapsed_this_read": 4.8,
+      "expected_postings": [
+        {
+          "type": "service",
+          "price_key": "mag",
+          "net": 720.0,
+          "vat_pct": 23,
+          "note": "Pro rata, the decided reading. R=1 here so the divisor is 1 and the only thing the rule does is charge for the 58 points of life the service restored, not the whole magneto.",
+          "condition_before_service": 42,
+          "divisor": 1,
+          "normalised_points": 58.0,
+          "gross": 513.65,
+          "arithmetic": "net half-up(720.0 x 58 / 100) = 417.60; VAT half-up(417.60 x 23 / 100) = 96.05; gross 513.65",
+          "net_line": 417.6,
+          "vat_amount": 96.05,
+          "C3": "R4: broken out net-first per K7c C3. The gross is unchanged at this point count."
+        },
+        {
+          "type": "hourly_reserve_engine",
+          "hours": 4.8,
+          "rate": 20.79,
+          "gross": 99.79
+        },
+        {
+          "type": "hourly_reserve_propeller",
+          "hours": 4.8,
+          "rate": 1.36,
+          "gross": 6.53
+        }
+      ],
+      "cursor_after": {
+        "MX_LOG": 41,
+        "TACH": 1264.8
+      }
+    },
+    {
+      "id": "V2a_reload_tach_only",
+      "covers": "reload/crash detection — the narrower shape the pre-round-2 rule already caught",
+      "stored_cursor": {
+        "MX_LOG": 41,
+        "TACH": 1264.8
+      },
+      "read": {
+        "MX_LOG": 41,
+        "TACH": 1259.1
+      },
+      "expected_postings": [],
+      "expected_behaviour": "TACH below stored, MX_LOG unchanged. Reload. Post nothing. Cursor NOT advanced.",
+      "cursor_after": {
+        "MX_LOG": 41,
+        "TACH": 1264.8
+      }
+    },
+    {
+      "id": "V2b_reload_both_drop",
+      "covers": "reload/crash detection — the shape round-2 fix 2 added: both numbers can drop together",
+      "stored_cursor": {
+        "MX_LOG": 41,
+        "TACH": 1264.8
+      },
+      "read": {
+        "MX_LOG": 39,
+        "TACH": 1258.4
+      },
+      "expected_postings": [],
+      "expected_behaviour": "Both MX_LOG and TACH below stored. Reload from before a crash. Post nothing. Never reverse the V1 postings already made. Book frozen until a read shows BOTH numbers at or above (41, 1264.80) again.",
+      "cursor_after": {
+        "MX_LOG": 41,
+        "TACH": 1264.8
+      }
+    },
+    {
+      "id": "V3_reset_to_delivery",
+      "covers": "Reset to delivery — logged, zero billing impact",
+      "stored_cursor": {
+        "MX_LOG": 41,
+        "TACH": 1264.8
+      },
+      "read": {
+        "MX_LOG": 42,
+        "TACH": 1264.8,
+        "seed_set": {
+          "NK_ST_C_CYL": 85,
+          "NK_ST_C_MAG": 85,
+          "NK_ST_C_CARB": 85,
+          "NK_ST_C_ALT": 85,
+          "NK_ST_C_STR": 85,
+          "NK_ST_C_VAC": 85,
+          "NK_ST_C_OIL": 85,
+          "NK_ST_C_TYR": 60,
+          "NK_ST_C_BRK": 70,
+          "NK_ST_C_LTS": 80,
+          "NK_ST_OIL_QT": 7,
+          "NK_ST_ENG_HRS": 300,
+          "WEAR": 1,
+          "FAILR": 1,
+          "NK_ST_FAULTS": 0
+        },
+        "not_touched_confirmed": {
+          "NK_ST_BAT_HEALTH": "unchanged",
+          "NK_ST_CB_bit14_GENE": "unchanged",
+          "NK_ST_TACH": "unchanged (1264.80)"
+        }
+      },
+      "expected_postings": [],
+      "expected_behaviour": "Full SPEC §2.2-2.4 seed set with MX_LOG = stored+1 (41→42). One tech-log entry: timestamp, MX_LOG 42, 'Reset to delivery — test action, not billed'. No invoice. Reserve funds untouched.",
+      "cursor_after": {
+        "MX_LOG": 42,
+        "TACH": 1264.8
+      }
+    },
+    {
+      "id": "V4_new_install_or_new_machine",
+      "covers": "new-install case — the correction in this KIT's PM review, distinguished from V3 by MX_LOG landing on 0 instead of stored+1",
+      "stored_cursor": {
+        "MX_LOG": 42,
+        "TACH": 1264.8
+      },
+      "read": {
+        "MX_LOG": 0,
+        "TACH": 0,
+        "then_seeded_to": {
+          "NK_ST_TACH": 1246.58
+        },
+        "seed_set": "same as V3's seed_set"
+      },
+      "expected_postings": [],
+      "expected_behaviour": "MX_LOG reads 0 together with the full seed set, and TACH (1246.58 once seeded) is below the stored pair. This is a new install or new machine, not a reload: log it as such, not billed. Cursor is NOT re-baselined automatically — stays at (42, 1264.80) until the pilot confirms the new baseline in the ledger UI. Until confirmed, further reads from this fresh install still evaluate against the OLD stored pair and will look like reloads (correct — that is the point of requiring confirmation).",
+      "cursor_after": "unchanged: (42, 1264.80) pending pilot confirmation"
+    },
+    {
+      "id": "V5_rate_change_mid_leg_flagged",
+      "covers": "R changing between two end-of-leg reads — flag, do not guess",
+      "stored_cursor": {
+        "MX_LOG": 42,
+        "TACH": 1264.8
+      },
+      "read": {
+        "MX_LOG": 44,
+        "TACH": 1266.1,
+        "WEAR_setting_changed": "REAL (1) -> x1000 (1000) somewhere in this leg, exact moment unknown from an end-of-leg read",
+        "changed_part": {
+          "NK_ST_C_TYR": 60
+        }
+      },
+      "hours_elapsed_this_read": 1.3,
+      "expected_postings": [
+        {
+          "type": "hourly_reserve_engine",
+          "hours": 1.3,
+          "rate": 20.79,
+          "gross": 27.03
+        },
+        {
+          "type": "hourly_reserve_propeller",
+          "hours": 1.3,
+          "rate": 1.36,
+          "gross": 1.77
+        }
+      ],
+      "expected_behaviour": "MX_LOG jumped by 2 (rate change + tyre service both landed in this step). Hours-based postings are unaffected (never scaled by R) and post normally. The tyre service's condition-loss normalisation cannot be attributed to a single R with confidence — flag this leg 'rate changed mid-leg' for a manual check instead of pricing it automatically. price_key 'tyres' (gross 381.30) is NOT auto-posted by this vector.",
+      "cursor_after": {
+        "MX_LOG": 44,
+        "TACH": 1266.1
+      }
+    },
+    {
+      "id": "V6_wear_off_r_zero",
+      "covers": "R = 0 — bill nothing for wear, never divide by zero, hours still accrue | R3: the F2 rounding case. 31.19, not 31.18.",
+      "stored_cursor": {
+        "MX_LOG": 44,
+        "TACH": 1266.1
+      },
+      "read": {
+        "MX_LOG": 44,
+        "TACH": 1267.6,
+        "R": 0
+      },
+      "hours_elapsed_this_read": 1.5,
+      "expected_postings": [
+        {
+          "type": "hourly_reserve_engine",
+          "hours": 1.5,
+          "rate": 20.79,
+          "gross": 31.19,
+          "arithmetic": "1.5 x 20.79 = 31.185 exactly -> half-up -> 31.19",
+          "why_this_vector_matters": "The only .xx5 case in the original set, and the one figure that moves with the rounding mode. A float gives 31.18 and so does toFixed(2); the decided rule gives 31.19. K7 recorded 31.18 without stating it had used float rounding. Keep this vector."
+        },
+        {
+          "type": "hourly_reserve_propeller",
+          "hours": 1.5,
+          "rate": 1.36,
+          "gross": 2.04
+        }
+      ],
+      "expected_behaviour": "MX_LOG unchanged (no maintenance action — consistent with Wear OFF producing no condition loss to service). TACH higher, so hourly reserves accrue as normal (never scaled by R). No wear_rate_normalisation formula is evaluated at all when R=0 — short-circuit before the divide, not a divide-by-zero caught after the fact.",
+      "cursor_after": {
+        "MX_LOG": 44,
+        "TACH": 1267.6
+      }
+    },
+    {
+      "id": "V7_refuel_fp5l_before_uplift",
+      "covers": "fuel billing source — read order matters",
+      "pre_uplift_read": {
+        "L:NK_ST_FP5L_USED": 38.4
+      },
+      "ramp_tab_typed_uplift_l": 40,
+      "field": "LPCS",
+      "fuel_per_litre": 2.3,
+      "expected_behaviour": "Billed litres = 38.4 (the FP5L_USED value read BEFORE the uplift resets it), not the typed 40 L uplift. Gross = 38.4 × 2.30 = 88.32. The typed Ramp uplift is the last fallback, after the logger burn, the aircraft burn and the tank totals — see LEG_CONTRACT.md and V19-V23. R3: the line that said nk_telemetry.py does not read FP5L_USED is retired; the B26 logger kit adds an fp5l_used datum at V274.",
+      "expected_postings": [
+        {
+          "type": "fuel",
+          "litres_billed": 38.4,
+          "price_per_litre": 2.3,
+          "gross": 88.32,
+          "note": "38.4 * 2.30 = 88.32, computed here, not estimated"
+        }
+      ],
+      "status": "R3: strip inclusion is no longer open — board item ledger_fuel_in_strip was answered YES on 15 Sep 22:34:50, and V10-V13 cover the strip side. This vector covers the laptop-book billing math."
+    },
+    {
+      "id": "V8_service_on_part_with_no_price_yet",
+      "covers": "a confirmed detection event hitting a part this file has no price for",
+      "stored_cursor": {
+        "MX_LOG": 44,
+        "TACH": 1267.6
+      },
+      "read": {
+        "MX_LOG": 45,
+        "TACH": 1267.6,
+        "changed_part": {
+          "NK_ST_C_CARB": 100
+        }
+      },
+      "expected_postings": [],
+      "expected_behaviour": "Detection is confirmed (SPEC §4: part at 100 = service). PRICES_AND_BILLING_RULES.json has no 'carburettor' key yet (prices_not_yet_defined). Do not invent a price and do not silently drop the event: log it as 'service, carburettor — no price on file' for the pilot to see, and leave it unposted until a price key is added and this file's md5 changes.",
+      "cursor_after": {
+        "MX_LOG": 45,
+        "TACH": 1267.6
+      }
+    },
+    {
+      "id": "V9_scheduled_check_25h",
+      "status": "NEEDS_OPEN_ITEM — see PRICES_AND_BILLING_RULES.json open_items: exact NK_ variable or derived counter for 'hours since last check' not yet confirmed",
+      "covers": "what the posting looks like once the detection variable is confirmed; do not implement the detection side from this vector alone",
+      "assumption": "hours-since-last-25h-check crosses 25.0",
+      "expected_postings_if_triggered": [
+        {
+          "type": "scheduled_check",
+          "price_key": "insp25",
+          "net": 168.0,
+          "vat_pct": 23,
+          "gross": 206.64
+        }
+      ]
+    },
+    {
+      "id": "V10_strip_fuel_no_refuel",
+      "covers": "strip fuel accumulation — a leg with no refuel, added per PM's second-round decision (board item ledger_fuel_in_strip: YES)",
+      "stored_fuel_state": {
+        "L:NK_LG_FUEL_BASELINE_L": 0.0,
+        "L:NK_LG_FUEL_L_TOTAL": 0.0
+      },
+      "read": {
+        "L:NK_ST_FP5L_USED": 18.6
+      },
+      "expected_behaviour": "delta = 18.6 - 0.0 = 18.6, > 0. Add 18.6 to the running total. Baseline advances to 18.6 (same value, since delta was positive).",
+      "fuel_state_after": {
+        "L:NK_LG_FUEL_BASELINE_L": 18.6,
+        "L:NK_LG_FUEL_L_TOTAL": 18.6
+      },
+      "strip_euro_contribution": {
+        "litres": 18.6,
+        "price": 2.3,
+        "gross": 42.78,
+        "note": "18.6 * 2.30 = 42.78, computed here"
+      }
+    },
+    {
+      "id": "V11_strip_fuel_refuel_mid_sequence",
+      "covers": "strip fuel accumulation — FP5L_USED climbs, then drops to near-zero at a refuel, within the same run of confirmed reads",
+      "stored_fuel_state": {
+        "L:NK_LG_FUEL_BASELINE_L": 18.6,
+        "L:NK_LG_FUEL_L_TOTAL": 18.6
+      },
+      "read_A_before_refuel": {
+        "L:NK_ST_FP5L_USED": 24.9
+      },
+      "expected_after_A": {
+        "delta": 6.3,
+        "behaviour": "6.3 > 0, add it.",
+        "fuel_state": {
+          "L:NK_LG_FUEL_BASELINE_L": 24.9,
+          "L:NK_LG_FUEL_L_TOTAL": 24.9
+        }
+      },
+      "read_B_after_refuel": {
+        "L:NK_ST_FP5L_USED": 3.2,
+        "note": "FP5L.js reset the counter because total sim fuel rose by more than 0.5 L in one update"
+      },
+      "expected_after_B": {
+        "delta": -21.7,
+        "behaviour": "delta <= 0, add NOTHING to the total (never post a negative cost) — but the baseline still advances to the current reading regardless. Skipping the baseline update here would leave it at 24.9, and the NEXT read's delta would be computed against that stale, too-high number and come out negative too, silently losing every litre burned after this refuel.",
+        "fuel_state": {
+          "L:NK_LG_FUEL_BASELINE_L": 3.2,
+          "L:NK_LG_FUEL_L_TOTAL": 24.9
+        }
+      }
+    },
+    {
+      "id": "V12_strip_fuel_reload_freezes_baseline",
+      "covers": "a reload (detected on the main (MX_LOG,TACH) cursor) must freeze the fuel baseline too, not just refuse to subtract — distinct from V11, where the main cursor was NOT reloading and the fuel baseline still advanced",
+      "stored_cursor": {
+        "MX_LOG": 44,
+        "TACH": 1267.6
+      },
+      "stored_fuel_state": {
+        "L:NK_LG_FUEL_BASELINE_L": 3.2,
+        "L:NK_LG_FUEL_L_TOTAL": 24.9
+      },
+      "read": {
+        "MX_LOG": 44,
+        "TACH": 1265.0,
+        "L:NK_ST_FP5L_USED": 1.0
+      },
+      "expected_behaviour": "TACH below stored -> this is a reload per posting_cursor.rule_reload_or_crash. Post nothing at all this read, fuel included. Unlike V11's non-positive-delta case, the fuel baseline does NOT advance to 1.0 here — reload_safety in PRICES_AND_BILLING_RULES.json freezes L:NK_LG_FUEL_BASELINE_L exactly like it freezes L:NK_LG_BASELINE_MXLOG/L:NK_LG_BASELINE_TACH. The book stops advancing (fuel included) until both cursor numbers pass (44, 1267.60) again.",
+      "cursor_after": {
+        "MX_LOG": 44,
+        "TACH": 1267.6
+      },
+      "fuel_state_after": {
+        "L:NK_LG_FUEL_BASELINE_L": 3.2,
+        "L:NK_LG_FUEL_L_TOTAL": 24.9,
+        "note": "unchanged from before this read"
+      }
+    },
+    {
+      "id": "V13_strip_fuel_price_change_between_legs",
+      "covers": "a kit rebuild changing the pinned default price must not rewrite accumulated litres — only the euro readout changes",
+      "before_rebuild": {
+        "L:NK_LG_FUEL_L_TOTAL": 50.0,
+        "price_eur_per_litre": 2.3,
+        "displayed_euro": 115.0,
+        "calc": "50.0 * 2.30 = 115.00"
+      },
+      "rebuild_event": "Ramp tab's live default fuel price changes (hypothetical future value used here: 2.35 EUR/L), PRICES_AND_BILLING_RULES.json is regenerated, kit is rebuilt, sim restarts.",
+      "after_rebuild": {
+        "L:NK_LG_FUEL_L_TOTAL": 50.0,
+        "price_eur_per_litre": 2.35,
+        "displayed_euro": 117.5,
+        "calc": "50.0 * 2.35 = 117.50"
+      },
+      "expected_behaviour": "L:NK_LG_FUEL_L_TOTAL is untouched by the rebuild (still 50.0 L) — this is exactly why litres, not euros, are the persisted figure. Only the multiplication at display time uses the new pinned price. No litre is re-priced retroactively as if it had always cost the new rate; the strip simply always shows current_total_litres * current_pinned_price, which is what naturally changes when the pin changes."
+    },
+    {
+      "id": "V14_overhaul_draws_the_engine_reserve",
+      "covers": "K7 gap 1. The only event that draws down the engine reserve, and the largest posting in the book. Standalone scenario, not part of the V1-V8 cursor chain.",
+      "stored_cursor": {
+        "MX_LOG": 61,
+        "TACH": 3260.4
+      },
+      "stored_reserves": {
+        "engine_eur": 30000.0,
+        "propeller_eur": 2720.0
+      },
+      "read": {
+        "MX_LOG": 62,
+        "TACH": 3260.4,
+        "NK_ST_ENG_HRS": 0,
+        "note": "ENG_HRS reads 0 = overhaul, SPEC section 4. TACH is NOT touched by an overhaul - it is airframe time. This is the case that makes ENG_HRS unusable as a cursor key and TACH usable. | R3, K7b F3: the overhaul action sets all seven engine parts to 100 and OIL_QT to 8 in this SAME step (HANGAR.js line 191). The plain detection table would read seven services plus a top-up plus the overhaul. This vector now carries the conditions so that reading is pinned as wrong.",
+        "conditions_before": {
+          "NK_ST_C_CYL": 85,
+          "NK_ST_C_MAG": 85,
+          "NK_ST_C_CARB": 85,
+          "NK_ST_C_OIL": 85,
+          "NK_ST_C_ALT": 85,
+          "NK_ST_C_STR": 85,
+          "NK_ST_C_VAC": 85
+        },
+        "conditions_after": {
+          "NK_ST_C_CYL": 100,
+          "NK_ST_C_MAG": 100,
+          "NK_ST_C_CARB": 100,
+          "NK_ST_C_OIL": 100,
+          "NK_ST_C_ALT": 100,
+          "NK_ST_C_STR": 100,
+          "NK_ST_C_VAC": 100
+        },
+        "NK_ST_OIL_QT": 8,
+        "R": 1
+      },
+      "expected_postings": [
+        {
+          "type": "overhaul",
+          "price_key": "engoh",
+          "net": 35000.0,
+          "vat_pct": 0,
+          "gross": 35000.0,
+          "note": "vat 0, so gross = net. Not pro rata: an overhaul is a whole-unit replacement priced at its catalogue figure, not a fraction of remaining life, so the wear-rate divisor never reaches it."
+        }
+      ],
+      "expected_reserve_effect": {
+        "engine_before": 30000.0,
+        "cost": 35000.0,
+        "engine_after": 0.0,
+        "shortfall_paid_outside_the_fund": 5000.0,
+        "rule": "The fund is drawn to 0 and clamped there - it must never go negative. The full 35,000.00 still posts as an invoice; the 5,000.00 the fund could not cover is simply money spent. Underfunded is the realistic case and is the one pinned here.",
+        "propeller_untouched": 2720.0
+      },
+      "also_pins": "Reset to delivery also sets ENG_HRS (to 300, not 0) and must NOT be read as an overhaul, and must not touch the reserve - see V3. The discriminator is the value: 0 = overhaul, 300 with the full seed set = Reset.",
+      "cursor_after": {
+        "MX_LOG": 62,
+        "TACH": 3260.4
+      },
+      "expected_postings_F3": {
+        "posts": "engoh 35,000.00 and nothing else.",
+        "does_not_post": "The seven parts reading 100 and OIL_QT reading 8 in this step post nothing. They are what an overhaul is, not nine separate jobs.",
+        "what_the_bug_would_have_cost": {
+          "cyl": 415.13,
+          "mag": 132.84,
+          "alt": 164.21,
+          "vac": 103.32,
+          "carb_str_oil": "no price on file, so they would have logged rather than posted",
+          "total_extra": 815.5,
+          "arithmetic": "each at (100 - 85)/1 = 15 points of REAL wear, so gross x 0.15: 2767.50 x 0.15 = 415.13, 885.60 x 0.15 = 132.84, 1094.70 x 0.15 = 164.21, 688.80 x 0.15 = 103.32. Sum 815.50.",
+          "why_not_K7b_s_815_49": "815.50 and 815.49 are the same money rounded in two different places. K7b summed the four exact products and rounded once at the end. The decided rule (F2) rounds ONCE PER POSTING LINE, and each of those four services would be its own line in the book, so the book would have shown 815.50. Two of the four are .xx5 cases in their own right - 415.125 and 164.205 - which makes this a third and fourth demonstration that the rounding mode is not cosmetic."
+        },
+        "rule": "PRICES_AND_BILLING_RULES.json -> posting_cursor.rule_overhaul_consumes_the_step."
+      }
+    },
+    {
+      "id": "V15_normalisation_divides_at_R_1000",
+      "covers": "K7 gap 2. The first vector where the normalisation actually divides. V1 is R=1 (divisor 1, a no-op), V6 is R=0 (short-circuits before the divide) and V5 is flagged rather than priced - so until this vector, nothing in the kit exercised the arithmetic that pick 2 is entirely about. | corrected in the pro-rata collapse: it said 50 observed points against a part that goes 35 to 100, which is 65. The figure only mattered once pro rata was chosen.",
+      "stored_cursor": {
+        "MX_LOG": 45,
+        "TACH": 1267.6
+      },
+      "read": {
+        "MX_LOG": 46,
+        "TACH": 1267.7,
+        "R": 1000,
+        "condition_before_service": {
+          "NK_ST_C_CYL": 35
+        },
+        "changed_part": {
+          "NK_ST_C_CYL": 100
+        },
+        "note": "R held at x1000 for the whole step - no rate change inside it, so rule_r_changes_mid_leg does not fire and this is priced rather than flagged."
+      },
+      "observed_loss_points": 65.0,
+      "normalisation": {
+        "group": "rule_scaled_continuous (NK_ST_C_CYL)",
+        "divisor": 1000,
+        "normalised_loss_points": 0.065,
+        "arithmetic": "(100 - 35) = 65.0 observed / 1000 = 0.065 points of REAL wear"
+      },
+      "expected_postings": [
+        {
+          "type": "service",
+          "price_key": "cyl",
+          "net": 2250.0,
+          "vat_pct": 23,
+          "condition_before_service": 35,
+          "divisor": 1000,
+          "normalised_points": 0.065,
+          "gross": 1.8,
+          "arithmetic": "net half-up(2250.0 x 0.065 / 100) = 1.46; VAT half-up(1.46 x 23 / 100) = 0.34; gross 1.80",
+          "note": "The vector the whole decision turns on: the same gauge movement at x1000 represents 1/1000th of real wear and costs 1/1000th. At R=1 this service would post 2767.50 × 0.65 = 1,798.88.",
+          "net_line": 1.46,
+          "vat_amount": 0.34,
+          "C3": "R4: broken out net-first per K7c C3. The gross is unchanged at this point count."
+        }
+      ],
+      "hours_elapsed_this_read": 0.1,
+      "expected_postings_hours": [
+        {
+          "type": "hourly_reserve_engine",
+          "hours": 0.1,
+          "rate": 20.79,
+          "gross": 2.08
+        },
+        {
+          "type": "hourly_reserve_propeller",
+          "hours": 0.1,
+          "rate": 1.36,
+          "gross": 0.14
+        }
+      ],
+      "note_on_hours": "Hours are never scaled by R, so the reserves accrue on the 0.10 h actually elapsed even at x1000. That asymmetry - money-per-hour real, money-per-wear normalised - is deliberate and is what keeps the two halves of the book consistent.",
+      "cursor_after": {
+        "MX_LOG": 46,
+        "TACH": 1267.7
+      }
+    },
+    {
+      "id": "V16_scaled_by_R_group_at_R_100",
+      "covers": "K7b F1 and the scaled-by-R group: the rule_scaled_by_r_only group priced rather than flagged, and a definite R that divides. It no longer carries the 21 % line - see V18, which does, on a real invoice. | R4: the id no longer says vat_21 - F1 made this line Portuguese and V18 carries the 21 % check.",
+      "stored_cursor": {
+        "MX_LOG": 46,
+        "TACH": 1267.7
+      },
+      "read": {
+        "MX_LOG": 47,
+        "TACH": 1268.0,
+        "R": 100,
+        "condition_before_service": {
+          "NK_ST_C_BRK": 70
+        },
+        "changed_part": {
+          "NK_ST_C_BRK": 100
+        }
+      },
+      "observed_loss_points": 30.0,
+      "normalisation": {
+        "group": "rule_scaled_by_r_only (NK_ST_C_BRK) - loss = base * R, so the divisor is R, same as the continuous group; the two groups differ in how the loss ACCRUES, not in how it is normalised",
+        "divisor": 100,
+        "normalised_loss_points": 0.3,
+        "arithmetic": "(100 - 70) = 30.0 observed / 100 = 0.3 points of REAL wear"
+      },
+      "expected_postings": [
+        {
+          "type": "service",
+          "price_key": "brakes",
+          "net": 1089.43,
+          "vat_pct": 23,
+          "condition_before_service": 70,
+          "divisor": 100,
+          "normalised_points": 0.3,
+          "gross": 4.02,
+          "arithmetic": "net half-up(1089.43 x 0.3 / 100) = 3.27; VAT half-up(3.27 x 23 / 100) = 0.75; gross 4.02",
+          "note": "R3: 4.02, not the 3.95 revision 2 stated. The old figure came from a gross of 1,318.21, which was the 1,089.43 net at 21 % - and that net had been derived at 23 %. The vector was never wrong about the arithmetic, only about the price it was given.",
+          "supplier_note": "F1. The brake entry is an assumption at IAC Coimbra on Portuguese VAT now, because Claus's 2025 accounts contain no brake invoice and no Spanish maintenance invoice at all. See PRICES_AND_BILLING_RULES.json -> prices.brakes.F1_what_changed.",
+          "net_line": 3.27,
+          "vat_amount": 0.75,
+          "C3": "R4: broken out net-first per K7c C3. The gross is unchanged at this point count."
+        }
+      ],
+      "cursor_after": {
+        "MX_LOG": 47,
+        "TACH": 1268.0
+      }
+    },
+    {
+      "id": "V17_starter_cap_at_R_1000",
+      "covers": "K7 lower-priority note: the min(R,100) cap. Also lands on the no-price-on-file behaviour, since the starter is one of the five parts with no price - so it pins the divisor choice and the flag together.",
+      "stored_cursor": {
+        "MX_LOG": 47,
+        "TACH": 1268.0
+      },
+      "read": {
+        "MX_LOG": 48,
+        "TACH": 1268.0,
+        "R": 1000,
+        "condition_before_service": {
+          "NK_ST_C_STR": 65
+        },
+        "changed_part": {
+          "NK_ST_C_STR": 100
+        }
+      },
+      "observed_loss_points": 35.0,
+      "normalisation": {
+        "group": "rule_starter_capped (NK_ST_C_STR)",
+        "divisor": 100,
+        "divisor_is_not": 1000,
+        "arithmetic": "min(R, 100) = min(1000, 100) = 100, so (100 - 65) = 35.0 / 100 = 0.35 points of REAL wear",
+        "if_the_cap_were_missed": "35.0 / 1000 = 0.035 - ten times too little. The wear model itself caps the starter at 100, so x100 and x1000 wear the starter identically; the billing divisor has to match or the two settings would not cost the same.",
+        "cross_check": "At R=100 the divisor is also 100 and the normalised loss is also 0.35 - identical cost at both settings, which is the cap working."
+      },
+      "expected_postings": [],
+      "expected_behaviour": "No posting either way. prices_not_yet_defined lists the starter as having no price on file, so per V8 this logs as \"service, starter - no price on file\" for the pilot and stays unposted. The normalisation above is still computed and recorded, so that when a starter price is added the divisor is already pinned and not re-derived.",
+      "cursor_after": {
+        "MX_LOG": 48,
+        "TACH": 1268.0
+      }
+    },
+    {
+      "id": "V18_real_spanish_invoice_21pct_and_a_half_case",
+      "covers": "Replaces what V16 used to carry. V16 was the only 21 % line in the kit and the only thing that would catch a hard-coded 23 - and F1 took it away by making the brakes Portuguese. This puts the 21 % check on a real invoice out of Claus's 2025 accounts instead of an assumed price, and it happens to be a .xx5 case too, so it pins the rounding rule a second time.",
+      "source": "F-BVNK_2025_Accounts_1.xlsx, row 2025-04-25, invoice 2002747740, BP Energia Espana, S.A.U., AVGAS. Printed on the invoice: net 382.50, VAT 80.33, gross 462.83.",
+      "read": {
+        "event": "fuel",
+        "field": "LEVD",
+        "note": "The invoice prints money only, so this vector carries no litres. Revision 3 stated 111.88 L at 3.42, which is 382.63 and not the 382.50 printed - K7c caught it. Dropped rather than back-solved: the point of the vector is the VAT rate and the rounding, and inventing a litre figure to fit would be the same mistake in the other direction. For reference only, 382.50 / 3.42 = 111.842 L."
+      },
+      "expected_posting": {
+        "type": "fuel",
+        "net": 382.5,
+        "vat_pct": 21,
+        "vat_amount": 80.33,
+        "gross": 462.83,
+        "arithmetic": "382.50 x 0.21 = 80.325 -> half-up -> 80.33. 382.50 + 80.33 = 462.83, which is the printed invoice total.",
+        "what_a_float_would_give": "Math.round(382.50 * 1.21 * 100) / 100 = 462.83 as it happens, but (382.50 * 0.21).toFixed(2) = 80.33 and (80.325).toFixed(2) = 80.33 or 80.32 depending on the intermediate. The rule removes the question.",
+        "would_catch": "A hard-coded 23 gives 470.48, off by 7.65 against a printed invoice."
+      },
+      "status": "The only vector in the kit checked against a figure printed on a real invoice rather than derived from the price table."
+    },
+    {
+      "id": "V19_burn_source_logger",
+      "covers": "Contract FBVNK_LEG/2 fuel chain, first rung. The laptop logger ran the whole leg, so burnL is the sum of the per-row fp5l_used increases and survives a refuel inside the leg.",
+      "record_fields": {
+        "burnL": 41.2,
+        "burnSource": "logger",
+        "refuelInLeg": true,
+        "fp5lStart": 200,
+        "fp5lShutdown": 120
+      },
+      "expected_burn_source": "logger",
+      "expected_litres_billed": 41.2,
+      "labelled_on_the_review_page": false,
+      "why": "The only source that is right when the tank went up mid-leg. 200 - 120 = 80 L would have been wrong by almost double, because the subtraction loses everything burnt before the uplift."
+    },
+    {
+      "id": "V20_burn_source_aircraft",
+      "covers": "Second rung. No logger run, but V274 saved the leg's own burn in its NK_LB_* logbook.",
+      "record_fields": {
+        "burnL": 39.5,
+        "burnSource": "aircraft"
+      },
+      "expected_burn_source": "aircraft",
+      "expected_litres_billed": 39.5,
+      "labelled_on_the_review_page": true,
+      "why": "Same figure, weaker provenance: the aeroplane keeps only the last closed leg. Labelled so the pilot knows it did not come from the logger rows."
+    },
+    {
+      "id": "V21_burn_source_rem_no_refuel",
+      "covers": "Third rung. No burn figure at all, but the record says there was no refuel, so the tank totals can give the burn.",
+      "record_fields": {
+        "fp5lStart": 200,
+        "fp5lShutdown": 158,
+        "refuelInLeg": false
+      },
+      "expected_burn_source": "rem",
+      "expected_litres_billed": 42.0,
+      "labelled_on_the_review_page": true,
+      "why": "Allowed only because refuelInLeg is false. This is the rung that must never fire when it is true."
+    },
+    {
+      "id": "V22_burn_source_uplift_after_a_refuel",
+      "covers": "Fourth rung, and the case the flag exists for. A refuel inside the leg and no burn figure: the tank totals are unusable, so the typed uplift is all that is left.",
+      "record_fields": {
+        "fp5lStart": 200,
+        "fp5lShutdown": 190,
+        "refuelInLeg": true,
+        "uplift": 60
+      },
+      "expected_burn_source": "uplift",
+      "expected_litres_billed": 60.0,
+      "labelled_on_the_review_page": true,
+      "why": "The rem rung MUST be skipped here. 200 - 190 = 10 L against a real burn of nearer 70: billing that would under-charge the leg by a factor of seven and nothing in the book would show it."
+    },
+    {
+      "id": "V23_burn_source_none",
+      "covers": "The floor. A refuel inside the leg, no burn figure and no uplift.",
+      "record_fields": {
+        "fp5lStart": 200,
+        "fp5lShutdown": 190,
+        "refuelInLeg": true
+      },
+      "expected_burn_source": null,
+      "expected_litres_billed": 0.0,
+      "labelled_on_the_review_page": true,
+      "why": "Nothing here can say what she used, so nothing is billed and the review page says exactly that. Guessing 10 L from the tank totals would be worse than billing nothing.",
+      "the_shape_the_converter_writes": {
+        "record_fields": {
+          "burnSource": null,
+          "fp5lStart": 200,
+          "fp5lShutdown": 190,
+          "refuelInLeg": true
+        },
+        "note": "The Builder's converter writes burnSource as JSON null with burnL absent, not the string \"none\". Verified in the running book through JSON.parse: null and the key being absent give the identical result here and on V21 and V22. See V28."
+      }
+    },
+    {
+      "id": "V24_aircraft_rung_is_barred_by_a_refuel",
+      "covers": "K7c C2. The aircraft rung reads L_FUEL_ARR - L_FUEL_DEP, which are FP-5L USED readings, and a refuel resets USED. So the subtraction is negative or tiny and V274 itself reports \"no leg burn\". Revision 3 let this rung fire anyway, which would have billed a leg that burnt ~70 L as if it burnt 9.",
+      "record_fields": {
+        "burnL": 9.0,
+        "burnSource": "aircraft",
+        "refuelInLeg": true,
+        "fp5lStart": 200,
+        "fp5lShutdown": 190,
+        "uplift": 65
+      },
+      "expected_burn_source": "uplift",
+      "expected_litres_billed": 65.0,
+      "labelled_on_the_review_page": true,
+      "rule": "The aircraft rung carries the same refuelInLeg guard as rem. With a refuel and no logger, fall to uplift; with no uplift either, bill nothing.",
+      "variant_no_uplift": {
+        "record_fields": {
+          "burnL": 9.0,
+          "burnSource": "aircraft",
+          "refuelInLeg": true,
+          "fp5lStart": 200,
+          "fp5lShutdown": 190
+        },
+        "expected_burn_source": null,
+        "expected_litres_billed": 0.0,
+        "why": "Nothing left that can say what she used. The 9 L is known-wrong and the 10 L from the endpoints is known-wrong for the same reason. Billing nothing is the only honest answer."
+      },
+      "must_not_regress": "The logger rung still fires across a refuel (V19) - it sums increases rather than subtracting endpoints, which is the whole reason it exists.",
+      "verified_in_the_book": "Yes, on the branch: aircraft+refuel+uplift -> uplift 65 L; aircraft+refuel+no uplift -> nothing billed; and logger, aircraft-without-refuel, rem and uplift all unmoved."
+    },
+    {
+      "id": "V25_pro_rata_net_first_one_point",
+      "covers": "K7c C3. Pins the rounding ORDER for a pro-rata service, which is the only thing that separates these two figures. 1 point of a brake overhaul.",
+      "read": {
+        "price_key": "brakes",
+        "price_net": 1089.43,
+        "vat_pct": 23,
+        "normalised_points": 1.0,
+        "R": 1,
+        "condition_before_service": 99
+      },
+      "expected_posting": {
+        "net_line": 10.89,
+        "vat_amount": 2.5,
+        "gross": 13.39,
+        "arithmetic": "net half-up(1089.43 x 1 / 100) = 10.89; VAT half-up(10.89 x 23 / 100) = 2.50; gross 13.39",
+        "gross_first_would_give": 13.4,
+        "why_it_differs": "Gross-first rounds the VAT into the 1,340.00 before the fraction is applied, so the fraction is taken of an already-rounded figure. One cent here, and one cent on every pro-rata service the book ever posts."
+      }
+    },
+    {
+      "id": "V26_pro_rata_net_first_fifteen_points",
+      "covers": "K7c C3. Pins the rounding ORDER for a pro-rata service, which is the only thing that separates these two figures. 15 points of a brake overhaul.",
+      "read": {
+        "price_key": "brakes",
+        "price_net": 1089.43,
+        "vat_pct": 23,
+        "normalised_points": 15.0,
+        "R": 1,
+        "condition_before_service": 85
+      },
+      "expected_posting": {
+        "net_line": 163.41,
+        "vat_amount": 37.58,
+        "gross": 200.99,
+        "arithmetic": "net half-up(1089.43 x 15 / 100) = 163.41; VAT half-up(163.41 x 23 / 100) = 37.58; gross 200.99",
+        "gross_first_would_give": 201.0,
+        "why_it_differs": "Gross-first rounds the VAT into the 1,340.00 before the fraction is applied, so the fraction is taken of an already-rounded figure. One cent here, and one cent on every pro-rata service the book ever posts."
+      }
+    },
+    {
+      "id": "V27_converter_notes_array",
+      "covers": "The notes[] field added in revision 4 on the PM's proposal of 16 Sep 18:2x. Before it, notes[] was accepted and silently discarded - no error, no trace on the page, and no way for the converter to know.",
+      "rule": "Strings only, in order. At most 12. At most 160 characters each, the 160th an ellipsis when truncated. Non-strings, empties and overflow are dropped AND counted in the book's own notes. A notes that is not an array keeps nothing and says so. Escaped on output. Shown on the review page under the heading 'Du convertisseur', above the book's own notes; never in the carnet.",
+      "cases": [
+        {
+          "sent": [
+            "fp5l gap 3 L at 09:41Z, not counted",
+            "logger ran end to end"
+          ],
+          "kept": 2,
+          "book_note_added": null,
+          "on_the_review_page": "both, in order, under Du convertisseur"
+        },
+        {
+          "sent": null,
+          "kept": 0,
+          "book_note_added": null,
+          "on_the_review_page": "nothing shown, nothing said",
+          "same_for": "field absent, or []"
+        },
+        {
+          "sent": "one string, not an array",
+          "kept": 0,
+          "book_note_added": "The record carries a \"notes\" field that is not an array. Ignored - the contract has notes[] as an array of strings.",
+          "on_the_review_page": "the book's note only"
+        },
+        {
+          "sent": [
+            1,
+            null,
+            {
+              "a": 1
+            },
+            "  real  ",
+            ""
+          ],
+          "kept": 1,
+          "kept_value": "real",
+          "book_note_added": "4 of the 5 notes on the record are not shown - not a string, empty, or past the twelfth.",
+          "why": "trimmed, and the three non-strings and the empty are dropped"
+        },
+        {
+          "sent": "15 strings",
+          "kept": 12,
+          "book_note_added": "3 of the 15 notes on the record are not shown - not a string, empty, or past the twelfth."
+        },
+        {
+          "sent": "one string of 200 characters",
+          "kept": 1,
+          "kept_length": 160,
+          "why": "truncated to 160 with the 160th an ellipsis; 160 exactly passes untouched, 161 truncates"
+        },
+        {
+          "sent": [
+            "<img src=x onerror=alert(1)>"
+          ],
+          "kept": 1,
+          "rendered_as": "text",
+          "elements_created": 0,
+          "why": "escaped on output; verified by counting img elements in the review card"
+        }
+      ],
+      "not_the_same_field_as": "note (singular, string) is the carnet's Incidents - Observations column and is truncated at 160. notes[] is review-page only. The adjacency of the two names is the trap; LEG_CONTRACT.md says so in both places.",
+      "verified_in_the_book": "Yes, on the branch, in a browser. A record whose note carried a unique marker was ingested and the whole rendered document searched for it: absent before the change, present on the review card after it. The caps, the drop-counting and the escaping were each checked separately."
+    },
+    {
+      "id": "V28_burn_source_null_equals_absent",
+      "covers": "The PM's second question of 16 Sep 18:2x. The converter writes burnSource as JSON null with burnL absent rather than the string \"none\", and this pins that the book treats null exactly as it treats the key not being there.",
+      "method": "Each record built as JSON text and put through JSON.parse before normaliseLeg, so the null is a real JSON null and not a JavaScript literal.",
+      "cases": [
+        {
+          "record_fields": {
+            "fp5lStart": 200,
+            "fp5lShutdown": 158,
+            "refuelInLeg": false
+          },
+          "with_burn_source_null": {
+            "burn_source": "rem",
+            "litres_billed": 42.0
+          },
+          "with_key_absent": {
+            "burn_source": "rem",
+            "litres_billed": 42.0
+          }
+        },
+        {
+          "record_fields": {
+            "fp5lStart": 200,
+            "fp5lShutdown": 190,
+            "refuelInLeg": true,
+            "uplift": 60
+          },
+          "with_burn_source_null": {
+            "burn_source": "uplift",
+            "litres_billed": 60.0
+          },
+          "with_key_absent": {
+            "burn_source": "uplift",
+            "litres_billed": 60.0
+          }
+        },
+        {
+          "record_fields": {
+            "fp5lStart": 200,
+            "fp5lShutdown": 190,
+            "refuelInLeg": true
+          },
+          "with_burn_source_null": {
+            "burn_source": null,
+            "litres_billed": 0.0
+          },
+          "with_key_absent": {
+            "burn_source": null,
+            "litres_billed": 0.0
+          },
+          "same_as": "V23"
+        }
+      ],
+      "burn_l_null": "burnL written out as JSON null behaves as absent: numOrNull returns null for both.",
+      "the_trap": "burnSource null WITH a burnL present is labelled 'logger'. With no rung named the book takes a present burnL as the logger's, because that is the only rung that can produce one without the aeroplane's own figures. A converter that ever derives burnL another way must name the rung, or the review page credits the logger for a number the logger never made.",
+      "the_string_none": "\"none\" is not a value. It is ignored as any unrecognised string is, so it behaves like null today for the wrong reason and would break silently if \"none\" ever became meaningful. JSON null is the value.",
+      "verdict": "The Builder's shape is accepted as it stands. No change to the converter.",
+      "verified_in_the_book": "Yes, on the branch, in a browser. All six runs above, and the three rungs that must not move (logger across a refuel, aircraft without a refuel, a named source winning) re-checked unmoved."
+    },
+    {
+      "id": "V29_carnet_entry_is_the_airborne_event",
+      "covers": "Claus's rule of 16 Sep 18:34. The carnet test is the AIRBORNE EVENT, not the noTakeOff flag. Revision 4 read the flag and kept an air start - spawned airborne, no take-off - out of the logbook, which is exactly backwards.",
+      "rule": "When the record carries an airborne figure, that figure decides. When it carries none, fall back to whether a take-off or a landing time exists. A run that is not a flight is still filed and still posts.",
+      "cases": [
+        {
+          "record_fields": {
+            "noTakeOff": true,
+            "airborneHours": 0,
+            "engineStart": "09:00",
+            "shutdown": "09:40"
+          },
+          "in_the_carnet": false,
+          "files_and_posts": true,
+          "hours_billed_on": "block time",
+          "why": "a ground run or taxi - no airborne event, so no logbook entry"
+        },
+        {
+          "record_fields": {
+            "noTakeOff": true,
+            "airborneHours": 0.85,
+            "landing": "09:35"
+          },
+          "in_the_carnet": true,
+          "files_and_posts": true,
+          "hours_billed_on": "airborne time",
+          "air_start": true,
+          "why": "AN AIR START. noTakeOff is true and it is still a flight. This is the case the flag reading got wrong."
+        },
+        {
+          "record_fields": {
+            "takeOff": "09:10",
+            "landing": "09:35"
+          },
+          "in_the_carnet": true,
+          "files_and_posts": true,
+          "hours_billed_on": "airborne time",
+          "air_start": false
+        },
+        {
+          "record_fields": {
+            "takeOff": "09:10",
+            "engineStart": "09:00",
+            "shutdown": "10:00"
+          },
+          "in_the_carnet": true,
+          "files_and_posts": true,
+          "hours_billed_on": "block time",
+          "why": "took off, no landing time: airborne cannot be computed, but the aeroplane was airborne"
+        },
+        {
+          "record_fields": {
+            "takeOff": "09:10",
+            "airborneHours": 0
+          },
+          "in_the_carnet": false,
+          "files_and_posts": true,
+          "why": "the record contradicts itself. The airborne figure is taken as the answer and the page says the converter is worth checking."
+        }
+      ],
+      "tacho_gap": "No tacho continuity check exists in the book and none ever did - there is nothing to remove. The line under the Logbook page states the gap a left-out run leaves is expected, not an error. Claus: 'just accept this.'",
+      "verified_in_the_book": "Yes, on the branch, in a browser. Ground run off the carnet with the count shown under the page; air start of 0.85 h on it with the page naming it an air start; the seeded eight and ordinary legs unmoved."
+    },
+    {
+      "id": "V30_zero_airborne_must_not_be_refused",
+      "covers": "A defect found by running the Builder's FIRST REAL READ through the book. A record stating airborneHours 0.0 was REFUSED outright - not filed, not posted, thrown away with its fuel and its engine time.",
+      "root_cause": "hours took the airborne figure, and the block-time fallback fired only when the airborne field was MISSING. Zero is not missing, so hours came out 0 and the record hit the 'no flight time' refusal.",
+      "the_real_record": {
+        "legId": "2026-09-16/16:14:01Z/1250.07",
+        "engineStart": "16:14:01Z",
+        "shutdown": "16:18:52Z",
+        "landings": 0,
+        "airborneHours": 0.0,
+        "blockHours": 0.081,
+        "depLat": 43.18525,
+        "depLon": -0.00178,
+        "arrLat": 43.19105,
+        "arrLon": -6e-05,
+        "tachStart": 1250.07,
+        "tachStop": 1250.1,
+        "fp5lStart": 231,
+        "fp5lShutdown": 234,
+        "refuelInLeg": true,
+        "noTakeOff": true,
+        "burnSource": null,
+        "source": "Builder's dry run off the aircraft's saved state, relayed by the PM 16 Sep 18:39. An engine run on the ground at Tarbes LFBT. Nothing was written."
+      },
+      "expected_now": {
+        "refused": false,
+        "in_the_carnet": false,
+        "files_and_posts": true,
+        "hours": "0:05 - the record's own 0.081 h rounded to the minute, as the book rounds every time",
+        "burn_source": null,
+        "litres_billed": 0.0,
+        "from": "????",
+        "to": "????",
+        "why_unresolved": "Tarbes LFBT is in neither the field table nor R17. Files as ????, prices at the default field, and says so."
+      },
+      "verified_in_the_book": "Yes, on the branch, in a browser, with the record above verbatim. It files, posts on 0:05 of block time, stays off the carnet, and the review page prints: 'Zero airborne time, so the engine time for this record is its block time, 0:05. It posts on that; it does not go in the carnet.'"
+    },
+    {
+      "id": "V31_real_clock_fields",
+      "covers": "realEngineStart / realShutdown, added optional in revision 5. The PC clock in UTC at the logger rows that opened and closed the leg.",
+      "rule": "The SIM clock stays what the carnet prints - the carnet is the aeroplane's book. The real pair is carried and shown on the review page only where the two differ. Logger legs only; a state.CFG leg has neither. Whether Claus would rather have the real clock has not been put to him, so nothing switches.",
+      "cases": [
+        {
+          "sent": {
+            "realEngineStart": "2026-10-08T09:00:00Z",
+            "realShutdown": "2026-10-08T10:00:00Z",
+            "engineStart": "09:00",
+            "shutdown": "10:00"
+          },
+          "carried": [
+            "09:00",
+            "10:00"
+          ],
+          "note_shown": false,
+          "why": "the clocks agree"
+        },
+        {
+          "sent": {
+            "realEngineStart": "2026-10-07T21:03:11Z",
+            "realShutdown": "2026-10-07T22:04:40Z",
+            "engineStart": "09:00",
+            "shutdown": "10:00"
+          },
+          "carried": [
+            "21:03",
+            "22:04"
+          ],
+          "note_shown": true,
+          "note": "The PC clock and the aeroplane's clock differ on this leg: she says 09:00 -> 10:00, the laptop says 21:03 -> 22:04. The carnet takes her clock."
+        },
+        {
+          "sent": "neither field",
+          "carried": [
+            null,
+            null
+          ],
+          "note_shown": false
+        },
+        {
+          "sent": {
+            "realEngineStart": "not a time"
+          },
+          "carried": [
+            null,
+            null
+          ],
+          "note_shown": false,
+          "why": "unparseable is dropped rather than half-read"
+        }
+      ],
+      "verified_in_the_book": "Yes, on the branch, in a browser. All four cases."
+    },
+    {
+      "id": "V32_the_accrual_clocks_DECIDED",
+      "covers": "NOT a test the book passes - a DISAGREEMENT between the two halves of this project, recorded here so it cannot be read past. The PM asked this session to confirm the reserve accrues on TACH. It does not, in the laptop book.",
+      "what_each_half_does": {
+        "cockpit_strip": "NK_ST_TACH deltas under the (MX_LOG, TACH) cursor it already has. UNCHANGED - the strip was always on the hour meter.",
+        "laptop_book": "CHANGED in R6. Was accruing on leg.hours (airborne). Now accrues on the hour meter's progression. Airborne time keeps the carnet's Heures de Vol and the airborne totals, and nothing else.",
+        "the_vectors": "UNCHANGED, and this is worth saying plainly: every hourly_reserve figure in V1, V5, V6 and V15 was already computed from a TACH cursor delta and every one is arithmetically correct. The vectors were never on the wrong clock. The book was."
+      },
+      "the_size_of_it": {
+        "measured_from": "page 86 of Claus's own Carnet de Route, the book's own figures, not an estimate",
+        "tacho_over_eight_legs": 7.92,
+        "flown_over_eight_legs": 6.6667,
+        "extra_tacho_per_leg": 0.1567,
+        "ratio": 1.18799,
+        "pct_more_tacho_than_flown": 18.8,
+        "reserve_rate_per_hour": {
+          "engine": 20.79,
+          "propeller": 1.36,
+          "total": 22.15
+        },
+        "over_page_86_eight_legs": {
+          "on_airborne": 147.67,
+          "on_tacho": 175.43,
+          "not_accrued": 27.76,
+          "per_leg": 3.47
+        },
+        "on_claus_2025_year": {
+          "flown_hours": 73.0,
+          "extra_tacho_hours": 13.72,
+          "reserve_not_accrued_eur": 303.98,
+          "engine": 285.31,
+          "propeller": 18.66
+        },
+        "inspection_counters": "100 flown hours is 118.80 tacho hours, so an inspection that should fall on tacho arrives 15.82 flown hours late on the book's basis.",
+        "arithmetic": "Python Decimal, ROUND_HALF_UP, from page 86's own tacho and flown totals and the kit's own rates. No figure here is estimated."
+      },
+      "status": "CLOSED, in two taps. 21:05:42 - \"Tacho time (the hour meter)\", for the reserves. 21:57:47 - \"NO, the inspection times, sorry if I said otherwise, are based on the journey log book airborne hours, NOT tacho.\" So there are TWO clocks and both are his.",
+      "what_moved_to_the_meter_in_the_book": [
+        "reserves.engine at 20.79 EUR/h",
+        "reserves.prop at 1.36 EUR/h",
+        "counters.engSMOH and counters.propSMOH with their 2000 h TBO postings",
+        "counters.meter, the meter's own running total"
+      ],
+      "what_did_not_move": "The wear coefficients (engine, prop, airframe, avionics, interior, paint per hour). Claus's pick named the two reserves and the inspection counters. Those coefficients were rated against airborne hours, so moving them would quietly re-rate every one by the 18.8 % the clocks differ by - a change nobody asked for - and the real wear model is the iPad's (HANGAR.js, NK_*), which is the PM's. THIS SESSION'S OWN CALL, flagged rather than left silent; say so and it moves.",
+      "what_did_not": [
+        "counters.hrs and the 25 / 50 / 100 h inspections it drives - AIRBORNE, Claus 21:57:47",
+        "counters.ttaf - airborne, consistent with his journey log totals",
+        "the wear coefficients - airborne, Claus 21:57:47 'Keep on airborne time (as rated)'. R6 flagged this as this session's own call; it is now his."
+      ]
+    },
+    {
+      "id": "V33_meter_progression_across_a_ground_run",
+      "covers": "The rule the PM set with Claus's pick: accrue on the hour meter's PROGRESSION between records, not on the leg's own tachStop - tachStart. Under V275 only airborne legs are records, so the ground running between them lives in the gap - and a real hour meter counts it.",
+      "why_it_matters": "Per-leg spans would lose every minute of taxi, run-up and ground running that falls between two records. That is precisely the engine time Claus chose the hour meter to capture.",
+      "sequence": [
+        {
+          "record": "T-1",
+          "tachStart": 1228.32,
+          "tachStop": 1229.34,
+          "airborneHours": 0.87,
+          "accrued_hours": 1.02,
+          "basis": "own span",
+          "why": "the first reading in the book: its own span is all the meter can tell us, and the cursor is picked up at 1229.34"
+        },
+        {
+          "record": "T-2",
+          "tachStart": 1230.0,
+          "tachStop": 1231.1,
+          "airborneHours": 0.9,
+          "own_span": 1.1,
+          "meter_gap": 1.76,
+          "accrued_hours": 1.76,
+          "basis": "meter progression",
+          "why": "1231.10 - 1229.34 = 1.76. The leg itself ran 1.10; the other 0.66 h ran on the ground between the two records and IS accrued.",
+          "note_shown": "The hour meter has moved 1.76 h since the last record closed at 1229,34, against 1.10 h on this leg itself. The difference ran on the ground between the two and is accrued, as the hour meter counts it."
+        }
+      ],
+      "expected_money": {
+        "hours": 6.03,
+        "engine_reserve_eur": 125.36,
+        "propeller_reserve_eur": 8.2,
+        "note": "over the full five-record sequence of V33 and V34 together; 6.03 x 20.79 = 125.36 and 6.03 x 1.36 = 8.20, half-up. The book's own float arithmetic gives the same to the cent."
+      },
+      "no_reading_at_all": {
+        "rule": "A record with no tachStop accrues its AIRBORNE time rather than losing the hours, says so, and the figure is CARRIED: the next record with a real reading subtracts it from the measured gap so nothing is billed twice.",
+        "worked": {
+          "record": "T-4",
+          "tach": null,
+          "airborneHours": 1.5,
+          "accrued_hours": 1.5,
+          "carried": 1.5,
+          "then": {
+            "record": "T-5",
+            "tachStart": 902.1,
+            "tachStop": 903.25,
+            "meter_gap": 2.0,
+            "less_carried": 1.5,
+            "accrued_hours": 0.5
+          }
+        },
+        "the_seeded_eight": "All eight seeded legs are of this kind - hand-filed before the aeroplane wrote tacho - so they accrue airborne and the seeded reserves do not move. 18.4 h, engine 382.54 EUR, propeller 25.02 EUR, exactly as before R6."
+      },
+      "verified_in_the_book": "Yes, on the branch, in a browser, as the five-record sequence above. Counters 18.40 -> 24.43 h and the engine reserve 382.54 -> 507.90 EUR, matching Python Decimal ROUND_HALF_UP to the cent."
+    },
+    {
+      "id": "V34_meter_backwards_no_negative_hours",
+      "covers": "The PM's guard: TACH never goes backwards in normal running - no reset touches it and it is seeded to 1246.58 only on a first install. A tachStart below the previous tachStop means a reload or another machine.",
+      "rule": "Flag it, post NO negative hours, accrue this leg's own span, and resume the cursor from the new reading.",
+      "case": {
+        "previous_cursor": 1231.1,
+        "tachStart": 900.0,
+        "tachStop": 901.25,
+        "accrued_hours": 1.25,
+        "basis": "own span",
+        "new_cursor": 901.25,
+        "note_shown": "The hour meter went backwards: this record opens at 900,00 where the last one closed at 1231,10. That is a reload or another machine, not flying, so nothing negative is posted. This leg accrues its own 1.25 h and the book resumes from the new reading."
+      },
+      "why_own_span_and_not_zero": "The leg really did run 1.25 h on the meter. Posting zero would under-accrue a real flight to punish a reload, which is the wrong way round.",
+      "mirrors": "V2a, V2b, V4 and V12 on the strip side, which handle the same drop from the LocalVar rather than from a record.",
+      "verified_in_the_book": "Yes, on the branch, in a browser."
+    },
+    {
+      "id": "V35_two_clocks_one_leg",
+      "covers": "Claus set both clocks, and one leg feeds them different numbers. Pins that the inspections and the reserves do NOT read the same hours.",
+      "sequence_from_V33": "The same five records. Airborne hours 0.87, 0.90, 1.10, 1.50, 0.95. Meter accrual 1.02, 1.76, 1.25, 1.50, 0.50.",
+      "expected": {
+        "counters_hrs_airborne_added": 5.317,
+        "counters_meter_added": 6.03,
+        "engine_reserve_added_eur": 125.36,
+        "propeller_reserve_added_eur": 8.2,
+        "note": "5.317 rather than 5.32 because the book rounds each leg's airborne time to the whole minute, as it does everywhere. The meter figure is not rounded that way - it is the meter's own two decimals."
+      },
+      "what_reads_which": {
+        "airborne": [
+          "the carnet's Heures de Vol",
+          "counters.hrs and the 25 / 50 / 100 h inspections",
+          "counters.ttaf",
+          "the wear coefficients"
+        ],
+        "hour_meter": [
+          "reserves.engine",
+          "reserves.prop",
+          "counters.engSMOH and propSMOH with the 2000 h TBO",
+          "counters.meter"
+        ]
+      },
+      "verified_in_the_book": "Yes, on the branch, in a browser, signing each of the five. Airborne +5.317 h, meter +6.03 h, engine reserve +125.36 EUR, matching Python Decimal ROUND_HALF_UP."
+    },
+    {
+      "id": "V36_review_selections_default_to_no_change",
+      "covers": "The eleven review-page rows. The only property that makes a change like this safe: a page signed UNTOUCHED must post exactly what the same record posted before the rows existed.",
+      "rows": [
+        "Nature du Vol",
+        "Fonctions",
+        "Equipage - Noms",
+        "Atterrissages jour / nuit",
+        "Nuit / IFR heures",
+        "Incidents - Observations",
+        "Comment elle a vole (money, via wear)",
+        "Surface (money, via wear)",
+        "Nuits stationnees (money)",
+        "Handling (money)",
+        "EUR par litre (money)"
+      ],
+      "five_not_four": "R5's prose said four rows move money. It is five. Three bill this leg - nights, handling, the litre price. Two bill later, through wear - how she flew and the surface. Corrected on the page and in the rules file.",
+      "untouched": {
+        "style": "normal",
+        "surface": "asphalt",
+        "nights": 0,
+        "handling": 0,
+        "price": "the destination field's standing price",
+        "natureVol": "P1",
+        "fonctions": "PIC",
+        "result": "identical postings to the pre-selection flow"
+      },
+      "every_row_changed": {
+        "set": {
+          "nature": "convoyage",
+          "fonctions": "instructor",
+          "crew": "C THANNER + M DUPONT",
+          "ldgDay": 1,
+          "ldgNight": 1,
+          "nightH": 0.4,
+          "ifrH": 0.6,
+          "note": "Night nav, IFR inbound",
+          "style": "pressed",
+          "surface": "gravel",
+          "nights": 2,
+          "handling": true,
+          "price": 3.1
+        },
+        "fuel_invoice": "AVGAS - 30 L @ 3.10 EUR/L, LPCO = 93.00 EUR gross",
+        "aerodrome_invoice": "Aterragem/Descolagem + Estacionamento 2 noites + Handling - LPCO = 139.00 EUR gross (20.00 + 2 x 12.00 + 95.00)",
+        "engine_wear": "1.39 points: 0.833 h x 1.15 x 1.45 for pressed",
+        "carnet": "Nature du Vol reads convoyage, Fonctions reads instructor, Noms reads the crew typed in",
+        "kept_off_the_carnet": "the landings by day/night and the night/IFR hours - EASA pilot-logbook columns, captured on the review page only"
+      },
+      "the_three_assumptions": {
+        "rule": "The book's own 'assumption:' lines for the fuel price, how she flew and the surface are NOT printed while the page is still his to change - it would be telling him what it guessed about something he is looking straight at. Signed untouched, all three come back, because then they really were assumptions. Overruled, they go for good, because then they never were.",
+        "verified": "Yes: none shown while pending; all three present after an untouched signature; none present after all three are overruled."
+      },
+      "verified_in_the_book": "Yes, on the branch, in a browser, both directions."
+    },
+    {
+      "id": "V37_cursor_is_bounded_K7e_P1_P2_P3",
+      "covers": "K7e FAILED revision 6's progression rule. Records' tested remedy, taken as it stands rather than redesigned.",
+      "what_was_wrong": {
+        "P1": "tachHours resumed the cursor from ANY reading below it and bounded no forward gap. One record from another machine, then one back on F-BVNK, accrued the difference between the two meters: 328.09 h = 7,267.19 EUR on Records' sequence. A mistyped tachStart gave 26,957.43 EUR.",
+        "P2": "Out-of-order filing double-accrued. A dated file dropped after newer legs read as 'the meter went backwards': its own span accrued again AND the cursor moved back, so the next record re-measured the gap. LEG_CONTRACT called this case safe.",
+        "P3": "A tachStop below the cursor with no tachStart took the normal branch: settled 0, but the cursor moved DOWN and the next record over-accrued the difference."
+      },
+      "the_rules_now": [
+        "a forward gap more than 5 h beyond the leg's own span: own span, flagged, cursor resumes (P1a)",
+        "an own span more than 5 h beyond the leg's own flying: airborne, flagged - that is a mistyped reading, not a leg (this session's extension of P1a, same constant, same idea)",
+        "a record older than the last one filed NEVER moves the cursor: 0 when its reading closes at or below the cursor, else its own span (P2)",
+        "a negative gap NEVER moves the cursor and accrues nothing (P3)"
+      ],
+      "the_five_hours": "This session's figure, set where Records left it to be set. Longer than any ground running between two of Claus's legs, far shorter than the smallest gap a second machine produces.",
+      "chronology_key": "date + engineStart, captured in normaliseLeg from the RECORD's own date - before the ingest path pushes a back-dated leg forward to keep the carnet in order. Without that the check would compare rewritten dates and never fire.",
+      "results": [
+        {
+          "case": "V33 + V34, the good sequence",
+          "before": 6.03,
+          "after": 6.03,
+          "true": 6.03
+        },
+        {
+          "case": "P1, another machine (A 1228.32-1229.34, B 900.00-901.25, C 1231.10-1232.00)",
+          "before": 332.99,
+          "after": 3.17,
+          "records_expected": 3.17
+        },
+        {
+          "case": "P1, tachStart mistyped 12.30 for 1230.30",
+          "before": 1220.72,
+          "after": 2.92,
+          "note": "the wild span is refused and the leg falls to its airborne time - under-accrues, the safe side"
+        },
+        {
+          "case": "P1, tachStop mistyped 123.10",
+          "before": "~1110",
+          "after": 3.68
+        },
+        {
+          "case": "P2, filed A, C, B, D",
+          "before": 5.8,
+          "after": 4.0,
+          "true": 4.0
+        },
+        {
+          "case": "P3, tachStop below the cursor with no tachStart",
+          "after": 1.78,
+          "note": "B accrues nothing and the cursor stays sound, so C measures from the right place. Records' own remedy still over-accrued 0.90 here."
+        },
+        {
+          "case": "a legitimate 3 h ground run between two records",
+          "after": 5.0,
+          "true": 5.0,
+          "note": "the bound does not touch the real case, which is the point of it"
+        }
+      ],
+      "verified_in_the_book": "Yes, on the branch, in a browser, every sequence above signed through the real flow."
+    },
+    {
+      "id": "V38_a_leg_that_flew_is_never_zero",
+      "covers": "K7e A5. V275 saves any continuous airborne stretch of 10 s or more, so a hop can be 0.0028 h. Rounding to the minute left 0:00 in the carnet's Heures de Vol for a leg that genuinely flew.",
+      "rule": "The floor goes on after the rounding and reads the figure from before it: a leg with any airborne time at all shows at least 0:01.",
+      "case": {
+        "airborneHours": 0.00556,
+        "was": "0:00",
+        "now": "0:01"
+      },
+      "money": "Unaffected - the reserves run on the meter, and the inspections on the airborne figure itself rather than its printed form.",
+      "verified_in_the_book": "Yes, a 20 s hop: hours 0.01667, shown 0:01."
+    }
+  ],
+  "r2_changes": {
+    "reason": "K7 review, PASS WITH NOTES (REVIEW.md 8d3943e6). Two gaps to close before the strip is built, plus three lower-priority notes and a provenance tightening.",
+    "added": [
+      "V14 overhaul and the engine-reserve drawdown",
+      "V15 normalisation dividing at a definite R=1000",
+      "V16 scaled-by-R group at R=100, and the only 21 percent VAT line",
+      "V17 starter cap min(R,100), landing on no-price-on-file"
+    ],
+    "restated": [
+      "V1 - pre-service condition added. It asserted a price but never recorded the condition it was serviced at, and pro rata is not computable without it."
+    ],
+    "still_no_posting_by_design": "oil top-up, fault repair, battery replacement, propeller overhaul and the detected scheduled check stay as \"no posting, raise the flag\" per the PM.",
+    "decided": "Pro rata. Claus, Annunciator board, 16 Sep 2026 14:47:46 local, relayed by the PM: \"Pro rata - bill only the wear that would have happened at REAL\". Every vector now states one gross, computed that way. The full-price figures are gone.",
+    "corrected_by_the_decision": "V15 stated 50 observed loss points for a cylinder going from 35 to 100, which is 65. Under the full-price reading the figure changed nothing, so it survived; under pro rata it is the posting, so it is fixed. 1.80, not the 1.38 the side-by-side listed.",
+    "capture_requirement": "Named in full in PRICES_AND_BILLING_RULES.json → wear_rate_normalisation.capture_requirement: the eleven variables to read, and two designs for persisting them, with the count of new LocalVars each costs.",
+    "how_the_contradiction_ended": "Revision 1 of this kit contradicted itself on how a normalised loss becomes euro: the normalisation rule described one model and every vector computed the other. It was put to Claus rather than settled here. He answered pro rata on 16 Sep 2026 at 14:47:46 local and this revision carries that one reading only."
+  },
+  "rounding": "Round half-up on the exact decimal value, to the cent, once per posting line, NET FIRST: the normalised fraction applies to the net, the net is rounded, VAT is computed off the rounded net and rounded, and gross is the sum. Never toFixed, never Math.round on a float, never price_gross x fraction. Stated in full in PRICES_AND_BILLING_RULES.json -> rounding. Every figure below is computed that way, in Python Decimal, not float.",
+  "r3_changes": {
+    "reason": "K7b review of revision 2, PASS WITH NOTES (REVIEW.md md5 1124762f). Three must-fix findings, four smaller ones, and eight changes to contract FBVNK_LEG/1.",
+    "F1": "The brakes price. Not the fix K7b offered - see the note below.",
+    "F2": "Rounding stated. V6 is 31.19, not 31.18.",
+    "F3": "An overhaul consumes the seven part resets and the top-up in its own MX_LOG step. V14 extended.",
+    "F1_is_bigger_than_it_looked": "K7b offered two fixes, net 1,107.44 at 21 % or vat_pct 23. Neither is right. This session read Claus's own 2025 accounts and there is no Nicolau invoice in them and no brake overhaul at all: 42 invoices, four suppliers, no Spanish maintenance shop. The entry could not stay \"invoiced\" whatever its VAT rate. It is an assumption at IAC Coimbra on 23 % now, which makes net and gross agree for the first time, and V16 posts 4.02 - the figure K7b predicted for its 23 % branch.",
+    "the_21pct_line_had_to_move": "F1 took the only 21 % line out of the kit. V18 puts it back on a real invoice instead of an assumed price: BP Energia Espana 2002747740, net 382.50, VAT 80.33, gross 462.83 as printed. It is a .xx5 case as well, so it pins the rounding rule a second time.",
+    "added": [
+      "V18 the real Spanish invoice, 21 % and a half-up case",
+      "V19-V23 the burn_source fallback chain in order, including the two cases a refuel breaks"
+    ],
+    "open_items_closed_by_SPEC": "The FAULTS bit map, the hours source for the reserves, and the battery signal. SPEC.md arrived this round. The battery one carries a finding: the ammeter pad is not a page action, so a battery replacement never moves MX_LOG and a cursor gated on it alone would never see one."
+  },
+  "r4_changes": {
+    "reason": "K7c review of revision 3, PASS WITH NOTES (REVIEW.md md5 7adcb685). Two must-fix, one leader decision, seven smaller items.",
+    "C1": "The touchdown clamp. THE BOOK'S CODE WAS ALREADY RIGHT - LEG_CONTRACT.md had the rule inverted in prose. See NOTE.md; the text is fixed and the code is unchanged, because it did not need changing.",
+    "C2": "The aircraft burn rung now carries the refuelInLeg guard. Fixed in the book and pinned by V24.",
+    "C3": "Pro rata rounds net-first, the same order as every other posting. V25 and V26 pin it; none of the three existing services moves, which is why it went unnoticed.",
+    "also": [
+      "provenance counts corrected to 4 / 1 / 3 / 17",
+      "V16 id no longer says vat_21",
+      "V18 litres dropped - 111.88 x 3.42 is 382.63, not the printed 382.50",
+      "the sim-rate note corrected: TACH is unclamped, so the reserves do not under-bill",
+      "STRIP_SPEC line numbers moved to the installed V274: act() 186, set 192, MX_LOG 202",
+      "LEG_CONTRACT carries the installed NK_LB_* names, the burnL derivation and the logger rung",
+      "the year wrap rule for a dep on day 365/366",
+      "notes[] added to FBVNK_LEG/2 - the converter's notes, shown on the review page, pinned by V27",
+      "burnSource JSON null pinned as identical to the key being absent, by V28; V23 now carries the shape the converter actually writes",
+      "what the converter leaves on disk, and which of those files may be given to the book, recorded in LEG_CONTRACT.md with the legId format",
+      "R18 folded into the review-page proposal: Fonctions corrected to the four AMC1 col 10 names, day/night landings and night/IFR offered, and the non-qualified-home-simulator labelling proposed"
+    ],
+    "pm_questions_16_sep_18_2x": {
+      "notes_array": "Accepted before this revision, and silently dropped. Now read, capped, drop-counted, escaped and shown on the review page under Du convertisseur. Added to LEG_CONTRACT.md as optional. V27.",
+      "burn_source_null": "Accepted as it stands, identical to the key being absent on all three V23-family shapes. No change to the converter. V28."
+    }
+  },
+  "r5_changes": {
+    "reason": "Claus's carnet rule of 16 Sep 18:34, relayed by the PM, and the two money questions the PM put with it. The converter nk_legs.py was installed at 18:3x.",
+    "A1": "The carnet test is the AIRBORNE EVENT, not the noTakeOff flag. An air start was being kept out of the logbook. Fixed in the book; V29.",
+    "A2": "A record stating airborneHours 0.0 was refused outright. The Builder's first real read is exactly that shape. Fixed in the book; V30.",
+    "A3": "No tacho continuity check exists and none ever did. Nothing removed. The Logbook page now says the gap is expected.",
+    "A4": "The reserve accrual basis: the kit says TACH, the book does airborne. 18.80 % apart, 303.98 EUR a year on Claus's 2025 flying. OPEN, for the board; V32.",
+    "also": [
+      "realEngineStart / realShutdown added optional; the sim clock stays what the carnet prints; V31",
+      "the review page's aerodrome picker now takes any four-letter code typed in, so an aerodrome the book has never heard of can be named - Tarbes LFBT on the first real record could not have been. This session's own initiative, not an instruction.",
+      "two defects found building that and fixed: naming a field fired twice and landed the note twice, and re-rendering the card from inside a handler on an element inside it threw",
+      "LFBT still needs its ARP from the French AIP and its landing, parking and fuel figures. Neither is invented here."
+    ]
+  },
+  "r6_changes": {
+    "reason": "Claus answered ledger_accrual_clock on the Annunciator, 16 Sep 2026 at 21:05:42 local: \"Tacho time (the hour meter)\".",
+    "the_book_moved_to_the_meter": "reserves, counters.hrs and the 25/50/100 h inspections, ttaf, engSMOH and propSMOH. Airborne time keeps the carnet's Heures de Vol and the airborne totals only.",
+    "progression_not_per_leg": "Accrual is the meter's progression between records, so ground running between legs is counted. V33.",
+    "backwards_guard": "A reading below the cursor is flagged, posts nothing negative, accrues its own span and resets the cursor. V34.",
+    "no_reading_fallback": "Airborne, said out loud, and carried so the next real reading nets it off. V33.",
+    "no_vector_needed_recomputing": "Every hourly_reserve figure in V1, V5, V6 and V15 was already a TACH cursor delta and every one is arithmetically correct - checked again in R6. The vectors were never on the wrong clock; the laptop book was.",
+    "wear_left_on_airborne": "This session's own call, flagged. See V32.what_did_not_move.",
+    "also": [
+      "the V275 logbook layout on the review page - the iPad panel reproduced line for line; see LEG_CONTRACT and NOTE",
+      "legNo added as an optional field so the panel's first line can read Leg 12 as the iPad does",
+      "V275's save rule and its known limit written into the contract"
+    ]
+  },
+  "r7_changes": {
+    "reason": "Claus, 21:54: \"update the cost sheet artisfact to look like the latest proposal. Why I need to ask for this\" - the go for everything the Job Card had as proposed and waiting on him. And 21:57:47, correcting the inspection clock.",
+    "built": [
+      "the eleven review-page rows before the signature, V36",
+      "posting moved from arrival to the signature, which is what makes the money rows possible at all",
+      "Duree (en vol) as the label, every total airborne",
+      "the home-simulator label at the head of the Logbook tab and on every review card",
+      "the neutral engine-time-between-legs line under the carnet",
+      "LFBT from Records' R19, fees still the default's and labelled"
+    ],
+    "corrected": [
+      "the inspections and the wear rates are on AIRBORNE hours, not the meter - Claus 21:57:47. V32, V35.",
+      "five rows move money, not four as R5's prose said"
+    ]
+  },
+  "r8_changes": {
+    "reason": "K7e FAIL on the reserve progression rule. REVIEW.md 0e159a94, Records and Checks, 16 Sep 22:05.",
+    "fixed": [
+      "P1 and P2, high, with Records' tested remedy - V37",
+      "P3, the negative gap - V37",
+      "A5, a leg that flew showing 0:00 - V38",
+      "L1, LEG_CONTRACT's stale noTakeOff row",
+      "L2, the REJECTED_ wording: exit 4 holds the rejected legs of a run whose valid legs WERE written; exit 3 writes no file"
+    ],
+    "closed": [
+      "F1 - positions are gone from the book and the kit, so the fields table has no coordinates to label. Claus, 22:0x: \"over engineered BS.\""
+    ],
+    "noted_not_changed": [
+      "P4, carry larger than the next measured gap: the excess is dropped, not carried. Records call it bounded and small, and the page says what it did. Left as is.",
+      "reserves_per_flown_hour keeps its key name although the reserves run on the meter. Renaming it would break the strip's reader for a label; the block says which clock it is on."
+    ],
+    "clocks_final": {
+      "reserves": "tacho",
+      "inspections_and_wear": "journey-log airborne hours, Claus 21:57:47",
+      "ttaf_and_SMOH_TBO": "the meter, so they match the TT and ENG lines the iPad shows. The PM's pick; one word changes it."
+    },
+    "why_r8_and_not_r7": "The PM's list named R7, but R7 was already reported and frozen with its checksums published twenty minutes earlier. Amending reported bytes would break the checksum contract, so this is R8. R7 stands as reported."
+  }
+}
