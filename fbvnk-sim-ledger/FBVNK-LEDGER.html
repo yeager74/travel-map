@@ -631,14 +631,30 @@ var FIELDS = {
      Landing/parking here are still the invoiced 2025 figures; only the fuel default moved
      forward to today's price. The 2025 historical average (2.29, blended across every 2025
      fill-up, several fields) lives in the Year Book comparison and in README.md, untouched. */
-  LPCS:{name:'Cascais',       land:22.24, park:16.68, fuel:2.30, vat:VAT_PT, coastal:true,  sup:'Cascais Dinâmica E.M., S.A.', fsup:'BP Portugal Combustíveis, S.A.', src:'real'},
-  LPCO:{name:'Coimbra',       land:20.00, park:12.00, fuel:2.35, vat:VAT_PT, coastal:false, sup:'Aeródromo de Coimbra',        fsup:'BP Portugal Combustíveis, S.A.', src:'assume'},
-  LPVL:{name:'Vilar da Luz',  land:23.00, park: 0.00, fuel:0,    vat:VAT_PT, coastal:false, sup:'Vilar da Luz',                fsup:'', src:'real'},
-  LEVD:{name:'Valladolid',    land:122.00,park: 0.00, fuel:3.42, vat:VAT_ES, coastal:false, sup:'Aeropuerto de Valladolid',    fsup:'BP Energía España, S.A.U.', src:'real'},
-  LEAP:{name:'Teruel',        land:12.00, park: 0.00, fuel:2.36, vat:VAT_ES, coastal:false, sup:'Aeropuerto de Teruel',        fsup:'BP Energía España, S.A.U.', src:'real'},
-  LEST:{name:'Santiago',      land:32.00, park: 0.00, fuel:0,    vat:VAT_ES, coastal:true,  sup:'Aeropuerto de Santiago',      fsup:'', src:'real'},
-  LEBG:{name:'Burgos',        land:45.00, park: 0.00, fuel:3.19, vat:VAT_ES, coastal:false, sup:'Aeropuerto de Burgos',        fsup:'BP Energía España, S.A.U.', src:'assume'},
-  LEMP:{name:'Empuriabrava',  land:108.00,park: 0.00, fuel:3.52, vat:VAT_ES, coastal:true,  sup:'Aeroclub Empuriabrava',       fsup:'BP Energía España, S.A.U.', src:'real'},
+  LPCS:{name:'Cascais',       land:22.24, park:16.68, fuel:2.30, vat:VAT_PT, coastal:true,  sup:'Cascais Dinâmica E.M., S.A.', fsup:'BP Portugal Combustíveis, S.A.', src:'real',
+        lat:38.725556, lon:-9.355278, arp:'NAV Portugal eAIP AD 2.LPCS, confirmed'},
+  LPCO:{name:'Coimbra',       land:20.00, park:12.00, fuel:2.35, vat:VAT_PT, coastal:false, sup:'Aeródromo de Coimbra',        fsup:'BP Portugal Combustíveis, S.A.', src:'assume',
+        lat:40.156111, lon:-8.469167, arp:'NAV Portugal eVFR AD 2.LPCO, single read'},
+  LPVL:{name:'Vilar da Luz',  land:23.00, park: 0.00, fuel:0,    vat:VAT_PT, coastal:false, sup:'Vilar da Luz',                fsup:'', src:'real',
+        lat:41.279167, lon:-8.517222, arp:'NAV Portugal eVFR AD 2.LPVL, single read'},
+  LEVD:{name:'Valladolid',    land:122.00,park: 0.00, fuel:3.42, vat:VAT_ES, coastal:false, sup:'Aeropuerto de Valladolid',    fsup:'BP Energía España, S.A.U.', src:'real',
+        lat:41.706111, lon:-4.851944, arp:'ENAIRE AIP AD 2-LEVD, confirmed'},
+  /* Two codes were swapped from the first build until 16 Sep 2026, and an invoice of Claus's
+     settled it rather than a web page: BP Energía España 2002864264 prints "Location of
+     Delivery: TEV - LETL - TERUEL" and bills F-BVNK for 155.000 L on 24 OCT 25, at
+     366.14 / 155 = 2.3622 EUR/L against the 2.36 this row has always carried. So Teruel is
+     LETL, not LEAP. LEAP is Ampuriabrava — Empuriabrava, which had been filed under LEMP.
+     LEMP is Los Martínez del Puerto in Murcia and nothing of Claus's uses it, so it is gone.
+     That makes his LPCS-LETL then LETL-LEAP planning of 24 Oct 2025 read straight:
+     Cascais, Teruel, Ampuriabrava. */
+  LETL:{name:'Teruel',        land:12.00, park: 0.00, fuel:2.36, vat:VAT_ES, coastal:false, sup:'Aeropuerto de Teruel',        fsup:'BP Energía España, S.A.U.', src:'real',
+        lat:40.411944, lon:-1.217500, arp:'ENAIRE AIP AD 2-LETL, confirmed'},
+  LEAP:{name:'Empuriabrava',  land:108.00,park: 0.00, fuel:3.52, vat:VAT_ES, coastal:true,  sup:'Aeroclub Empuriabrava',       fsup:'BP Energía España, S.A.U.', src:'real',
+        lat:42.260000, lon:3.109722, arp:'ENAIRE AIP AD 1.3 index, single read'},
+  LEST:{name:'Santiago',      land:32.00, park: 0.00, fuel:0,    vat:VAT_ES, coastal:true,  sup:'Aeropuerto de Santiago',      fsup:'', src:'real',
+        lat:42.896389, lon:-8.415278, arp:'ENAIRE AIP AD 2-LEST, single read'},
+  LEBG:{name:'Burgos',        land:45.00, park: 0.00, fuel:3.19, vat:VAT_ES, coastal:false, sup:'Aeropuerto de Burgos',        fsup:'BP Energía España, S.A.U.', src:'assume',
+        lat:42.357500, lon:-3.613611, arp:'ENAIRE AIP AD 2-LEBG, single read'},
   ZZZZ:{name:'Other field',   land:25.00, park:12.00, fuel:2.60, vat:VAT_PT, coastal:false, sup:'Aerodrome operator',          fsup:'Fuel supplier', src:'assume'}
 };
 
@@ -980,7 +996,8 @@ var RESOLVE_RADIUS_NM = 8;
 function fieldPos(code){
   if(S && S.fieldPos && S.fieldPos[code]) return S.fieldPos[code];
   var f = FIELDS[code];
-  return (f && typeof f.lat === 'number' && typeof f.lon === 'number') ? {lat:f.lat, lon:f.lon} : null;
+  return (f && typeof f.lat === 'number' && typeof f.lon === 'number')
+    ? {lat:f.lat, lon:f.lon, src:f.arp || 'in the field table'} : null;
 }
 function nmBetween(a, b){
   var R = 3440.065, toRad = Math.PI/180;
@@ -1120,26 +1137,40 @@ function normaliseLeg(rec){
   var rem = (fp5lDep !== null && fp5lArr !== null) ? Math.max(0, fp5lDep - fp5lArr) : null;
 
   var litres = 0, fuelSrc = '', burnSource = null, burn = null;
-  if(burnL !== null && burnL > 0){
+  /* K7c C2. The logger rung survives a refuel because it SUMS the USED increases. The
+     aircraft rung does not: V274 saves L_FUEL_DEP and L_FUEL_ARR as FP-5L USED readings,
+     and a refuel resets USED, so arr minus dep comes out negative or tiny and V274 itself
+     reports "no leg burn". So the aircraft rung carries the same refuel guard as rem.
+     With a refuel and no logger there is no burn figure to be had, and the book drops to
+     the uplift rather than billing a number it knows is wrong. */
+  var aircraftUsable = declared !== 'aircraft' || !refuelInLeg;
+  if(burnL !== null && burnL > 0 && aircraftUsable){
     burnSource = declared === 'aircraft' ? 'aircraft' : (declared || 'logger');
     litres = Math.round(burnL*10)/10; burn = litres;
     fuelSrc = (burnSource === 'logger' ? 'FP-5L used, summed from the logger rows' : 'FP-5L used, the leg’s own burn off the aeroplane')
             + ': '+num(litres,1)+' L';
     if(burnSource !== 'logger')
       notes.push('Fuel billed from the ' + burnSource + ' burn, not the logger rows. The logger did not run this leg end to end.');
-  } else if(rem !== null && rem > 0 && !refuelInLeg){
+  } else if(burnL !== null && burnL > 0 && !aircraftUsable){
+    notes.push('The record carries an aircraft burn of '+num(burnL,1)+' L and a refuel inside the leg. That figure is L_FUEL_ARR less L_FUEL_DEP, and a refuel resets the FP-5L USED counter those come from, so it cannot be right. Not used.');
+    if(rem !== null && rem > 0)
+      notes.push('The tank totals are out for the same reason \u2014 the refuel raised them mid-leg.');
+  }
+  if(burnSource === null && rem !== null && rem > 0 && !refuelInLeg){
     burnSource = 'rem'; litres = Math.round(rem*10)/10; burn = litres;
     fuelSrc = 'FP-5L tank total: '+num(fp5lDep,0)+' at start less '+num(fp5lArr,0)+' at shutdown';
     notes.push('Fuel billed from the tank totals, not a burn figure. Sound here only because the record says there was no refuel in the leg.');
-  } else if(uplift !== null && uplift > 0){
+  }
+  if(burnSource === null && uplift !== null && uplift > 0){
     burnSource = 'uplift'; litres = uplift;
     fuelSrc = 'uplift as recorded';
     notes.push(refuelInLeg
       ? 'Refuel inside the leg and no burn figure, so the tank totals cannot give the burn. Fuel billed off the uplift instead.'
       : 'Fuel billed off the uplift — the record gave no burn and no usable tank pair.');
-  } else {
+  }
+  if(burnSource === null){
     notes.push(refuelInLeg
-      ? 'No fuel billed: there was a refuel inside the leg, and the record carries neither a burn figure nor an uplift, so nothing here can say what she used.'
+      ? 'No fuel billed: there was a refuel inside the leg, and the record carries no usable burn figure and no uplift, so nothing here can say what she used.'
       : 'No fuel billed: the record carries neither an FP-5L pair nor an uplift.');
   }
 
