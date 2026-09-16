@@ -1519,7 +1519,10 @@ function ingestRecord(obj){
 
   enterLeg(leg);
   S.ingested.push(leg.legId);
-  save(); render(); renderSignCard(leg);
+  save(); render();
+  /* K24 F2: the oldest unsigned leg first, the order they must be signed in for the hour meter. */
+  var waiting = S.legs.filter(function(l){ return !l.signedBy; });
+  renderSignCard(waiting.length ? waiting[0] : leg);
   switchPane('ramp');
   var ec = $('entryCard'); if(ec && ec.scrollIntoView) ec.scrollIntoView();
   ingestSay('Filed from the aeroplane · '+leg.from+'–'+leg.to+' · '+hhmm(leg.hours)+' · '+leg.legId, false);
@@ -1990,7 +1993,8 @@ function selectionsBlock(leg){
       selRow('Incidents &middot; Observations', '<input type="text" id="sel-note" maxlength="160" placeholder="NIL" value="'+esc(leg.note||'')+'">') +
       selRow('Comment elle a vol&eacute;', chipSel('sel-style', SEL_STYLE, leg.style||'normal'), true) +
       selRow('Surface', chipSel('sel-surf', SEL_SURF, leg.surface||'asphalt'), true) +
-      selRow('Nuits stationn&eacute;es', chipSel('sel-nights', [0,1,2,3], +leg.nights||0), true) +
+      selRow('Nuits stationn&eacute;es', '<span class="pair">'+chipSel('sel-nights', [0,1,2,3], +leg.nights||0)+
+        '<input type="number" id="sel-nights-more" min="0" step="1" placeholder="4+" aria-label="Nights parked, more than 3" value="'+((+leg.nights||0) > 3 ? (+leg.nights) : '')+'"></span>', true) +
       selRow('Handling', chipSel('sel-hand', [['0','no'],['95','yes · '+eur(95)]], leg.handling ? '95' : '0'), true) +
       selRow('&euro; par litre', '<input type="number" id="sel-price" min="0" step="0.01" value="'+(+leg.price||fd.fuel||0).toFixed(2)+'">', true) +
     '</div>';
@@ -2040,13 +2044,27 @@ function applySelections(leg){
 
 function clearEntry(){
   var el = $('entryCard'); if(!el) return;
-  el.innerHTML = ''; el.hidden = true;
+  el.innerHTML = ''; el.hidden = true; el.dataset.legKey = '';
+}
+/* K24 F4: what the pilot has pressed or typed on the card survives a re-render of the SAME leg (another window saved
+   the book, or a new leg arrived), instead of snapping back to the defaults before he signs. */
+var PICK_IDS = ['sel-nature','sel-fonc','sel-crew','sel-ldgd','sel-ldgn','sel-night','sel-ifr','sel-note','sel-style','sel-surf','sel-nights','sel-nights-more','sel-hand','sel-price','sign-name'];
+function legKey(leg){ return leg.legId || [leg.date, leg.from, leg.to, leg.depTime, leg.hours].join('|'); }
+function cardPicks(){ var o = {}; PICK_IDS.forEach(function(id){ var x = $(id); if(x) o[id] = x.value; }); return o; }
+function restorePicks(o){
+  Object.keys(o).forEach(function(id){
+    var x = $(id); if(!x) return;
+    x.value = o[id];
+    var g = document.querySelector('.chips[data-for="'+id+'"]');
+    if(g) g.querySelectorAll('.chip').forEach(function(c){ c.setAttribute('aria-pressed', String(c.getAttribute('data-val') === o[id])); });
+  });
 }
 
 function renderSignCard(leg, res){
   var el = $('entryCard'); if(!el) return;
   var auto = leg.src === 'aircraft';
   var pending = leg.pending !== false;
+  var keep = (!el.hidden && el.dataset.legKey && el.dataset.legKey === legKey(leg)) ? cardPicks() : null;
   el.innerHTML =
     '<div class="signcard entry">'+
       SIM_LABEL_HTML +
@@ -2063,6 +2081,8 @@ function renderSignCard(leg, res){
       '<p class="tiny muted" style="margin-top:6px">Nothing is billed until you sign. The invoices, the wear and the tech log are written at the signature, from the page as it stands.</p>'+
     '</div>';
   el.hidden = false;
+  el.dataset.legKey = legKey(leg);
+  if(keep) restorePicks(keep);
 
   el.firstChild.addEventListener('click', function(e){
     var chip = e.target.closest('.chip'); if(!chip) return;
@@ -2070,6 +2090,14 @@ function renderSignCard(leg, res){
     group.querySelectorAll('.chip').forEach(function(c){ c.setAttribute('aria-pressed', String(c === chip)); });
     var field = $(group.getAttribute('data-for'));
     if(field) field.value = chip.getAttribute('data-val');
+    if(group.getAttribute('data-for') === 'sel-nights'){ var more = $('sel-nights-more'); if(more) more.value = ''; }
+  });
+  var moreBox = $('sel-nights-more');
+  if(moreBox) moreBox.addEventListener('input', function(){
+    var v = Math.round(+this.value);
+    if(this.value === '' || !isFinite(v) || v < 0) return;
+    $('sel-nights').value = String(v);
+    document.querySelectorAll('.chips[data-for="sel-nights"] .chip').forEach(function(c){ c.setAttribute('aria-pressed', String(c.getAttribute('data-val') === String(v))); });
   });
 
   ['from','to'].forEach(function(end){
@@ -2138,10 +2166,22 @@ function dbxTick(byHand){
   if(!byHand && document.visibilityState === 'hidden') return;
   S.dbxSeen = S.dbxSeen || [];
   DBX.busy = true; DBX.stopped = false;
-  DBX.mcp.callTool(DBX.server, 'list_folder', {path: DBX.path, recursive: false, object_types: ['file'], max_results: 600}, {cache: false})
-    .then(function(r){
-      var p = r && r.payload;
-      var entries = (p && Array.isArray(p.entries)) ? p.entries : [];
+  /* K24 N3: follow the listing's further pages instead of reading only the first 600 entries. */
+  var listAll = function(){
+    var all = [], pages = 0;
+    var step = function(input){
+      return DBX.mcp.callTool(DBX.server, 'list_folder', input, {cache: false}).then(function(r){
+        var p = r && r.payload;
+        if(p && Array.isArray(p.entries)) all = all.concat(p.entries);
+        pages++;
+        if(p && p.has_more && p.cursor && pages < 10) return step({cursor: p.cursor});
+        return all;
+      });
+    };
+    return step({path: DBX.path, recursive: false, object_types: ['file'], max_results: 600});
+  };
+  listAll()
+    .then(function(entries){
       var fresh = entries.filter(function(e){
         var n = String((e && e.name) || '');
         return /^\d{4}-\d{2}-\d{2}_\d{6}(_\d+)?\.json$/.test(n) && S.dbxSeen.indexOf(n) < 0;
@@ -2161,6 +2201,8 @@ function dbxTick(byHand){
               var obj = null;
               try{ obj = JSON.parse(txt); }catch(err){ obj = null; }
               if(S.dbxSeen.indexOf(e.name) > -1) return;
+              /* K24 F1: grounded, the book would refuse the leg - so it is not marked read and comes in once the tech log is clear. */
+              if(obj && grounded()){ ingestSay('A leg is waiting in Dropbox (' + e.name + '). She is grounded: clear the tech log and it comes in by itself.', true); return; }
               S.dbxSeen.push(e.name); save();
               got++;
               if(obj) ingestRecord(obj);
@@ -2675,7 +2717,8 @@ function boot(){
     try{ var o = JSON.parse(e.newValue); if(!o || o.v !== 1) return; }catch(err){ return; }
     S = load(); render();
     var open = S.legs.filter(function(l){ return !l.signedBy; });
-    if(open.length) renderSignCard(open[0]); else clearEntry();
+    if(!open.length) clearEntry();
+    renderLastPosting();
   });
 
   $('tabs').addEventListener('click', function(e){
