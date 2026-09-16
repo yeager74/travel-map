@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 16</dd>
+      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 17</dd>
     </dl>
   </div>
 </header>
@@ -495,6 +495,31 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <p class="small"><strong>The EASA side is now in, as R18.</strong> It moved one row, added two and left <em>Nature du Vol</em> alone &mdash; the section below has it.</p>
   </div>
   <p class="small"><strong>The P1 figure is closed, and not by me.</strong> Claus, 18:04:32: &ldquo;good bloody question&hellip; ha ha, I should know, but I just carried it over from the previous owners. Keep it the same&rdquo;. The Logbook tab no longer calls it an assumption of this session&rsquo;s &mdash; it quotes him, and the figure stays exactly as his pages carry it.</p>
+</section>
+
+<section>
+  <h2>R9 &mdash; the ICAO rows against V277 <span class="hint">contract text and vectors only &middot; no code change &middot; commit <span class="mono">cad942f</span></span></h2>
+  <div class="note">
+    <p><strong>The book already behaves the way B33 describes, and that was checked rather than assumed.</strong> The aircraft decodes the nearest airport within <strong>3 NM</strong> at engine start and at the flown close and stores the code; an airport it could not decode arrives as <span class="mono tiny">----</span>, not <span class="mono tiny">????</span>; the four position fields are no longer written.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Record</th><th>Leg</th></tr></thead>
+      <tbody>
+        <tr><td class="mono tiny">from "LPCS", to "LPCO"</td><td>taken as sent</td></tr>
+        <tr><td class="mono tiny">from "lfbt"</td><td><span class="mono tiny">LFBT</span> &mdash; upper-cased, four letters checked</td></tr>
+        <tr><td>neither field</td><td><span class="mono tiny">----</span>, both boxes offered; typing <span class="mono tiny">lfbt</span> sets the d&eacute;part</td></tr>
+        <tr><td class="mono tiny">from "LP", to "LPCO1"</td><td><span class="mono tiny">----</span> &mdash; not four letters, so not a code</td></tr>
+        <tr><td>an old record still carrying the four positions</td><td><span class="mono tiny">----</span>, and <strong>the positions are ignored entirely</strong> &mdash; the leg does not even carry them</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">No <span class="mono tiny">????</span> is produced anywhere &mdash; that was the old resolver's marker and the resolver is gone. <strong>The Sim Ledger is not republished</strong>; it stands at version 20.</p>
+  <div class="note">
+    <p><strong>Kit changes.</strong> The <span class="mono tiny">from</span>/<span class="mono tiny">to</span> row states the aircraft's 3&nbsp;NM decode; <span class="mono tiny">----</span> is named in place of <span class="mono tiny">????</span>; <strong>V30's expected result is corrected</strong>, because it still described <span class="mono tiny">????</span> and the position fields; <strong>V39</strong> added for the ICAO path; and the Tarbes open item rewritten &mdash; its ARP is not needed at all now, only its fees.</p>
+    <p class="small"><strong>K7e L1 was already fixed in R8</strong> and is not re-done here.</p>
+  </div>
+  <p class="tiny muted">Commit <span class="mono">cad942f808d4b4c3c9bff0232dc65b3e9853e307</span>, <span class="mono">fbvnk-sim-ledger/KIT1_R9/</span>. PRICES <span class="mono tiny">a9847eed</span> &middot; VECTORS <span class="mono tiny">7c3fcf2b</span> &middot; LEG_CONTRACT <span class="mono tiny">e36b1cdf</span> &middot; STRIP_SPEC <span class="mono tiny">dddf2faa</span> &middot; NOTE <span class="mono tiny">6faf184c</span>. Forty vectors.</p>
 </section>
 
 <section>
