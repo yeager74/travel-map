@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>15 Sep 2026 &middot; rev 5</dd>
+      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 8</dd>
     </dl>
   </div>
 </header>
@@ -189,8 +189,10 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
       <span class="d">Hybrid, chosen with his own note &ldquo;operate with varible costs only.&rdquo; Bill x100/x1000 as REAL. Reset to delivery not billed. Quoted in full above.</span></div>
     <div class="step ok"><span class="n">&#10003;</span><span class="t">Design addendum on the three picks</span><span class="s">Posted</span>
       <span class="d">The variable/fixed cost split for the cockpit strip, the x1000 normalisation rule, and how a Reset is logged without being billed &mdash; below. No option changed; the PM reviews after the V263 run and, if it holds, moves straight to the kit.</span></div>
-    <div class="step todo"><span class="n">7</span><span class="t">Build the kit, review, install</span><span class="s">Not started</span>
-      <span class="d">Generated price + billing-logic file, the HANGAR strip, the <code>L:NK_LG_*</code> LocalVars, the laptop route, a DRY verifier, staged with MD5.txt and NOTE.md. Records reviews it; the PM installs and tests it in a sim run.</span></div>
+    <div class="step ok"><span class="n">&#10003;</span><span class="t">Step 7 &mdash; the kit, three revisions, all staged and reviewed</span><span class="s">R3 reported 16 Sep 15:04</span>
+      <span class="d">KIT1 reviewed as <strong>K7 PASS WITH NOTES</strong>, revision 2 as <strong>K7b PASS WITH NOTES</strong>, revision 3 staged in <span class="mono tiny">FBVNK_SIM_LEDGER_KIT1_R3/</span> and with Records now as <strong>K7c</strong>. Six files, every size verified on the Dropbox side against the local bytes. The first two folders stay frozen exactly as reviewed. What is still ahead: the HANGAR strip and its <code>L:NK_LG_*</code> LocalVars (Builder kit, PM installs), and the laptop converter that writes <span class="mono tiny">LEG.json</span>.</span></div>
+    <div class="step ok"><span class="n">&#10003;</span><span class="t">The sim half &mdash; V274, the automatic logbook</span><span class="s">Installed 16 Sep 16:44:49</span>
+      <span class="d">The PM installed it after re-review K17b, with the laptop logger update. She now records dep and arr Zulu times, take-off, every landing with a count, touchdown V/S, airborne and block, dep/arr positions, FP-5L REM at both ends with the burn and a refuel flag, and the tacho at both ends. That is the aeroplane's side of <span class="mono">FBVNK_LEG/2</span>.</span></div>
   </div>
 </section>
 
@@ -458,8 +460,66 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <section>
-  <h2>Contract <span class="mono">FBVNK_LEG/1</span> <span class="hint">proposed &mdash; the Builder accepts it or adjusts it; nothing is built against it yet on the sim side</span></h2>
-  <p class="small">Claus's order, relayed 16 Sep 14:42: &ldquo;all these numbers shall not require pilot input, they shall be entered automatically &hellip; Airborne times, take off and landing, fuel from the FP5L at engine start (dep) and engine shutdown (arr), simulator integration should show up on either the EFB (automatically) or the cockpit iPad, either way.&rdquo; The laptop book's half is done: it takes automatic legs as its primary input and the hand form is demoted to a collapsed fallback. This is the shape of the record it reads, published for the Builder to accept or change.</p>
+  <h2>KIT1 revision 3 &mdash; STAGED <span class="hint">K7b closed &middot; <span class="mono">FBVNK_SIM_LEDGER_KIT1_R3/</span> &middot; 16 Sep 15:04 &middot; Records reviews it as K7c</span></h2>
+  <div class="note">
+    <p><strong>Six files, every size listed back by Dropbox at the byte count it has locally.</strong> The first two folders stay frozen exactly as K7 and K7b saw them. The same bytes are committed at <span class="mono tiny">fbvnk-sim-ledger/KIT1_R3/</span> on the branch, so the folder is checkable against a durable copy.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>File</th><th class="num">Size</th><th>md5</th></tr></thead>
+      <tbody>
+        <tr><td>PRICES_AND_BILLING_RULES.json</td><td class="num">53,446 B</td><td class="mono tiny">dedd122ae4f70185244145d48a836b3b</td></tr>
+        <tr><td>TEST_VECTORS.json <span class="tiny muted">24 vectors, V1&ndash;V23</span></td><td class="num">35,061 B</td><td class="mono tiny">b02a3db9227f50e08ef66f28da31ed7a</td></tr>
+        <tr><td>NOTE.md</td><td class="num">14,306 B</td><td class="mono tiny">954d5a395ddd048d4e71ac66b16a8352</td></tr>
+        <tr><td>STRIP_SPEC.md</td><td class="num">11,349 B</td><td class="mono tiny">807431ae3bdb117618a884eb85d62401</td></tr>
+        <tr><td><strong>LEG_CONTRACT.md</strong> <span class="tiny muted">new</span></td><td class="num">8,960 B</td><td class="mono tiny">90020d89396d65d2da41fb7f59c8784f</td></tr>
+        <tr><td>MD5.txt</td><td class="num">256 B</td><td class="mono tiny">&mdash; lists the five above</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note warn">
+    <p><strong>F1 &mdash; neither fix K7b offered is the right one, and this is the finding that matters most.</strong> K7b was right that the brake entry is inconsistent: the net 1,089.43 is 1,340.00 / 1.23 while the entry stored <span class="mono tiny">vat_pct</span> 21. It offered net 1,107.44 at 21&nbsp;%, or <span class="mono tiny">vat_pct</span> 23. Both assume the invoice exists.</p>
+    <p class="small"><strong>It does not.</strong> This session read Claus's own 2025 accounts &mdash; <span class="mono tiny">F-BVNK_2025_Accounts_1.xlsx</span>, 42 invoices de-duplicated from a 106-page PDF &mdash; and there is <strong>no Nicolau invoice in them, and no brake overhaul at all</strong>. The suppliers are BP Portugal Combust&iacute;veis, BP Energ&iacute;a Espa&ntilde;a, Sevenair Group and IAC Coimbra, plus Cascais Din&acirc;mica for aerodrome fees. No Spanish maintenance shop. So the entry could not stay <span class="mono tiny">invoiced</span> whatever its VAT rate. It is an <strong>assumption</strong> now, at IAC Coimbra on 23&nbsp;%, which makes its net and its gross agree for the first time. V16 posts <strong>&euro;4.02</strong> &mdash; the figure K7b predicted for its 23&nbsp;% branch.</p>
+    <p class="small"><strong>Everything else in the price table was checked against those accounts while the file was open, and matches to the cent:</strong> hangar &euro;1,230.00 across all 13 Sevenair invoices, <span class="mono tiny">FAC 25/135</span> &euro;885.60, <span class="mono tiny">FAC 25/64</span> &euro;206.64, <span class="mono tiny">FAC 25/100</span> &euro;2,995.04, <span class="mono tiny">FAC 26/6</span> &euro;967.86 and a 2026 invoice as labelled. LPCS landing &euro;22.24 is printed alone on three Cascais invoices, and &euro;22.24 + &euro;16.68 = &euro;38.92 is the printed total on the 28 Oct 2025 one &mdash; so the parking figure checks out too.</p>
+    <p class="small">F1 took the only 21&nbsp;% line out of the kit, and that was the one thing that would catch a hard-coded 23. <strong>V18</strong> puts it back on a <em>real</em> invoice instead of an assumed price: BP Energ&iacute;a Espa&ntilde;a <span class="mono tiny">2002747740</span>, net 382.50, VAT 80.33, gross 462.83 exactly as printed. It is a <span class="mono tiny">.xx5</span> case as well, so it pins the rounding rule a second time, and it is the only vector in the kit checked against a figure printed on an invoice.</p>
+  </div>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>K7b finding</th><th>Closed by</th></tr></thead>
+      <tbody>
+        <tr><td><strong>F2</strong> no rounding mode stated, and V6 depends on it</td><td><span class="mono tiny">rounding</span> in the rules file: half-up on the exact decimal value, to the cent, <strong>once per posting line</strong>, never <span class="mono tiny">toFixed</span> and never <span class="mono tiny">Math.round</span> on a float. Within a posting: net first, VAT off the rounded net, gross as the sum, so the invoice adds up to its own printed lines. V6 is <strong>31.19</strong>. The laptop book implements it as <span class="mono tiny">eur2()</span> and 23 of 23 cases pass.</td></tr>
+        <tr><td><strong>F3</strong> an overhaul would also bill seven pro-rata services</td><td><span class="mono tiny">posting_cursor.rule_overhaul_consumes_the_step</span>, and V14 now carries the seven conditions before and after. <strong>One correction back:</strong> the bug is worth <strong>&euro;815.50</strong>, not 815.49. Same money &mdash; you summed the four exact products and rounded once at the end; F2 rounds once per posting line and each service is its own line. Two of the four are <span class="mono tiny">.xx5</span> cases in their own right, 415.125 and 164.205, so V14 is a third and fourth demonstration that the rounding mode is not cosmetic.</td></tr>
+        <tr><td>the <span class="mono tiny">fields</span> table still uses real/assume</td><td>Documented rather than rewritten. Moving a figure of Claus's into &ldquo;assumption&rdquo; because this session cannot find its invoice would be its own inaccuracy &mdash; the same reason the calculator figures were not moved in R2. The two LPCS figures that <em>are</em> verifiable say so; the rest say plainly that they are not verifiable here.</td></tr>
+        <tr><td>stale text (V7 status, the <span class="mono tiny">nk_telemetry.py</span> line)</td><td>Both gone. Reading each file back before uploading it caught <strong>five more</strong> the scripted edits had left behind &mdash; all cross-references to numbers that had moved earlier in the same round. Listed in the commit; the worst was the V16 worked example still showing the pre-F1 gross.</td></tr>
+        <tr><td><span class="mono tiny">OIL_QT</span> is quarts, not condition points</td><td>Rule written before a price exists: <span class="mono tiny">quarts_restored / R</span>, posting = <span class="mono tiny">price_per_quart &times;</span> that. Never over 100 &mdash; the sump is 8 qt, and dividing a quart figure by 100 would under-bill a full top-up eight to one. Dormant until a price is set.</td></tr>
+        <tr><td>the three FP-5L edge cases</td><td>All in <span class="mono tiny">fuel_source.fp5l_edge_cases</span>, and named as inherited by <span class="mono tiny">burnL</span> whatever its source &mdash; which is why the record carries <span class="mono tiny">burnSource</span> and the book labels anything but the logger.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <p><strong><span class="mono tiny">SPEC.md</span> closed three open items, and one of them bites.</strong> The <span class="mono tiny">NK_ST_FAULTS</span> bit map is in (bits 0-7: static port, pitot, COM wiring, NAV wiring, landing light, taxi light, left magneto, right magneto &mdash; and 6 and 7 together are an engine failure, not just two faults). The reserves accrue on <span class="mono tiny">NK_ST_TACH</span>, never <span class="mono tiny">ENG_HRS</span>, because an overhaul sets it to 0 and a Reset to 300. And <span class="mono tiny">NK_ST_AF_HRS</span> is airborne time that nothing in the package reads &mdash; worth knowing, because airborne time is exactly what Claus's carnet totals.</p>
+    <p class="small"><strong>The one that bites:</strong> a battery replacement is the 3-click ammeter pad, and the pad is <em>not</em> an iPad page action. <span class="mono tiny">MX_LOG</span> is bumped only by page actions. So <strong>a battery replacement never moves the posting cursor</strong>, and a reader gated on <span class="mono tiny">MX_LOG</span> alone would never see one. <span class="mono tiny">NK_ST_BAT_HEALTH</span> has to be watched independently. That is the reason the item was worth closing rather than guessing at.</p>
+    <p class="small">A fourth is closed differently from how it was asked: there is <strong>no hours-since-last-check variable at all</strong>. The package has three hours variables and none of them tracks inspection intervals, so the reader keeps its own counter off TACH &mdash; which the laptop book already does. Closed as &ldquo;no such variable exists&rdquo;, not as &ldquo;not yet found&rdquo;.</p>
+  </div>
+
+  <div class="note warn">
+    <p><strong>Five open, and three of them are things only you or Claus can supply.</strong></p>
+    <p class="small"><strong>1. Aerodrome coordinates, eight pairs</strong> &mdash; LPCS, LPCO, LPVL, LEVD, LEAP, LEST, LEBG, LEMP. <span class="mono">FBVNK_LEG/2</span> has her sending positions, so the book resolves them, but no coordinate is on file and <strong>this session will not put a position on a real aerodrome from recall</strong>. Until they arrive every position resolves to <span class="mono tiny">????</span>, priced at the default field and labelled; the pilot naming it once on the review page teaches the book that position for good, so the book bootstraps itself if you would rather not chase them.</p>
+    <p class="small"><strong>2. <span class="mono tiny">LEAP</span> / Teruel.</strong> The field table calls <span class="mono tiny">LEAP</span> &ldquo;Teruel&rdquo;, but Claus's own flight-planning folder has both <span class="mono tiny">LPCS - LETL</span> and <span class="mono tiny">LETL - LEAP</span> for 24 Oct 2025 &mdash; two different aerodromes. At least one name is wrong. Flagged, not corrected.</p>
+    <p class="small"><strong>3. UTC or local in the carnet</strong> &mdash; on the board. The book has a control, UTC by default, so either tap works with no rebuild.</p>
+    <p class="small"><strong>4. Nine prices with no figure</strong> &mdash; the five <span class="mono tiny">PRICES</span> keys and four of the eight fault components. <strong>5. Which capture route</strong> &mdash; accumulator, snapshot, or your capture at the SERVICE action. That third one is the best of the three and it is yours: it sees the exact value at the service where both polling designs see only the last confirmed read. It replaces the snapshot, not the accumulator, because a mixed-R life still needs per-read division. Recommended: the action capture combined with accumulation. Not chosen here.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Contract <span class="mono">FBVNK_LEG/2</span> <span class="hint">revised after K7b and V274 &middot; full text in <span class="mono tiny">KIT1_R3/LEG_CONTRACT.md</span> &middot; the sim half is installed</span></h2>
+  <p class="small">Claus's order, relayed 16 Sep 14:42: &ldquo;all these numbers shall not require pilot input, they shall be entered automatically &hellip; Airborne times, take off and landing, fuel from the FP5L at engine start (dep) and engine shutdown (arr), simulator integration should show up on either the EFB (automatically) or the cockpit iPad, either way.&rdquo; Both halves now exist: <strong>V274 installed 16:44:49</strong> records the leg, and the laptop book takes automatic legs as its primary input with the hand form demoted to a collapsed fallback. The table below is revision&nbsp;1 of the contract, kept for the record; <strong>revision&nbsp;2 is what the converter is built to</strong> and it is written out in full in <span class="mono tiny">KIT1_R3/LEG_CONTRACT.md</span>.</p>
+  <div class="note">
+    <p><strong>What changed in revision 2, all of it implemented and tested in the book.</strong> Positions instead of ICAO codes, with the book resolving them and labelling what it cannot. Zulu times, with a UTC/local control on the carnet. A landing count, the arrival time being the last one. <span class="mono tiny">touchdownFpm</span> positive for descent, clamped at 0 &mdash; and a <em>negative</em> value said out loud rather than quietly flipped, because it means either a converter that forgot to negate, in which case every landing comes through soft and the hard-landing check silently never fires again, or an arrival with no descent. Two fuel numbers, REM for the carnet columns and a separate burn with a <span class="mono tiny">burnSource</span> chain, because a refuel inside the leg makes start-minus-shutdown wrong by a factor of seven on a 200&nbsp;&rarr;&nbsp;190 leg. And V274's <span class="mono tiny">noTakeOff</span> and <span class="mono tiny">stopInAir</span>: an engine run that never got airborne is filed and posts but stays <strong>out of the carnet</strong>, because a ground run is not a flight, and the Logbook page says how many are being left out.</p>
+  </div>
   <div class="note">
     <p><strong>One record per flight, written at shutdown.</strong> Only <span class="mono tiny">from</span> and <span class="mono tiny">to</span> are required. Everything else missing is derived where it can be and printed on the pilot's review page where it cannot, each line labelled <span class="mono tiny">assumption:</span> where it is one. Nothing is filled in silently.</p>
   </div>
