@@ -458,9 +458,72 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <section>
-  <h2>K7 answered &mdash; KIT1 revision 2 ready to stage <span class="hint">PASS WITH NOTES closed out; one decision goes back to a human</span></h2>
+  <h2>Contract <span class="mono">FBVNK_LEG/1</span> <span class="hint">proposed &mdash; the Builder accepts it or adjusts it; nothing is built against it yet on the sim side</span></h2>
+  <p class="small">Claus's order, relayed 16 Sep 14:42: &ldquo;all these numbers shall not require pilot input, they shall be entered automatically &hellip; Airborne times, take off and landing, fuel from the FP5L at engine start (dep) and engine shutdown (arr), simulator integration should show up on either the EFB (automatically) or the cockpit iPad, either way.&rdquo; The laptop book's half is done: it takes automatic legs as its primary input and the hand form is demoted to a collapsed fallback. This is the shape of the record it reads, published for the Builder to accept or change.</p>
+  <div class="note">
+    <p><strong>One record per flight, written at shutdown.</strong> Only <span class="mono tiny">from</span> and <span class="mono tiny">to</span> are required. Everything else missing is derived where it can be and printed on the pilot's review page where it cannot, each line labelled <span class="mono tiny">assumption:</span> where it is one. Nothing is filled in silently.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Where it comes from, and what the book does without it</th></tr></thead>
+      <tbody>
+        <tr><td><span class="mono tiny">schema</span></td><td>string</td><td><span class="mono tiny">"FBVNK_LEG/1"</span>. A different prefix is refused outright; a different version after the slash is accepted with a note.</td></tr>
+        <tr><td><span class="mono tiny">legId</span></td><td>string</td><td>The dedupe key. The same record twice posts once. Missing &rarr; one is derived from date, route and time, and the review page says so.</td></tr>
+        <tr><td><span class="mono tiny">date</span></td><td><span class="mono tiny">YYYY-MM-DD</span></td><td>Missing &rarr; today, labelled an assumption. A date before the book's last leg is pulled forward to keep the carnet in order.</td></tr>
+        <tr><td><span class="mono tiny">from</span>, <span class="mono tiny">to</span></td><td>ICAO</td><td><strong>Required.</strong> Four letters. An aerodrome the price table doesn't know still logs; it prices off the fallback field.</td></tr>
+        <tr><td><span class="mono tiny">engineStart</span>, <span class="mono tiny">shutdown</span></td><td><span class="mono tiny">HH:MM</span>, <span class="mono tiny">HHMM</span> or ISO</td><td>Block time. Shown on the review page; not what the carnet totals.</td></tr>
+        <tr><td><span class="mono tiny">takeOff</span>, <span class="mono tiny">landing</span></td><td>same</td><td>Airborne. <strong>This is Heures de Vol</strong> &mdash; Claus flies the book on flight time, not block. Missing both pairs and no explicit hours &rarr; the record is refused, because a leg with no time in it is not a leg.</td></tr>
+        <tr><td><span class="mono tiny">airborneHours</span>, <span class="mono tiny">blockHours</span></td><td>number</td><td>Optional. Preferred over the clock times when sent; otherwise derived from them, wrapping correctly past midnight.</td></tr>
+        <tr><td><span class="mono tiny">fp5lStart</span>, <span class="mono tiny">fp5lShutdown</span></td><td>litres</td><td>The FP-5L total at engine start and at shutdown. These are the Carburant D&eacute;part and Arriv&eacute;e columns. Their difference is the burn, and the burn is what the book bills &mdash; KIT1's rule unchanged, uplift only as the fallback.</td></tr>
+        <tr><td><span class="mono tiny">tachStart</span>, <span class="mono tiny">tachStop</span></td><td>hours</td><td><span class="mono tiny">NK_ST_TACH</span>, LocalVar 11, which you verified exists. Fills the TACHO column &mdash; Claus's own, ruled into his book by hand. Missing &rarr; the column stays empty on that row, and the review page says so.</td></tr>
+        <tr><td><span class="mono tiny">touchdownFpm</span></td><td>number</td><td>Drives the hard-landing check and tyre/gear wear. Missing &rarr; 150 fpm, labelled an assumption, and the page states plainly that no hard-landing check was made on that leg.</td></tr>
+        <tr><td><span class="mono tiny">uplift</span>, <span class="mono tiny">fuelPrice</span></td><td>litres, &euro;/L</td><td>Both optional. Price missing &rarr; the standing price for the destination, labelled.</td></tr>
+        <tr><td><span class="mono tiny">power</span></td><td>object</td><td><span class="mono tiny">maxRpm</span>, <span class="mono tiny">minutesAboveCruise</span>, <span class="mono tiny">hardBraking</span>. The one judgement in the book, and the aeroplane can only infer it. Missing &rarr; &ldquo;by the book&rdquo;, labelled. <strong>The thresholds in the ledger are this session's proposal, not measured off the aeroplane</strong> &mdash; set the real ones, or have the record carry <span class="mono tiny">style</span> outright and skip the inference.</td></tr>
+        <tr><td><span class="mono tiny">surface</span>, <span class="mono tiny">nights</span>, <span class="mono tiny">handling</span></td><td>string, int, bool</td><td>All optional. Surface missing &rarr; asphalt, labelled.</td></tr>
+        <tr><td><span class="mono tiny">conditionBefore</span>, <span class="mono tiny">conditionAfter</span></td><td>object</td><td>For a leg that includes a service: the eleven <span class="mono tiny">NK_ST_C_*</span>/<span class="mono tiny">NK_ST_OIL_QT</span> values plus the R in force, so a pro-rata posting is computable. See the capture note below.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <p><strong>How it reaches the book, today, with nothing installed.</strong> Drop the file on the Ramp tab, open it, take it off the clipboard, or paste it. A fourth route polls <span class="mono tiny">./LEG.json</span> and works when the book is served out of the folder the aeroplane writes into; on any other origin the fetch fails and the page says so rather than sitting there looking live. A record can also be a batch: <span class="mono tiny">{"legs":[&hellip;]}</span> or a bare array files them in order.</p>
+  </div>
   <div class="note warn">
-    <p><strong>Both gaps closed, three lower-priority notes closed, and one thing found that this session will not decide on its own.</strong> Revision 2 is built and verified locally, in a <em>new</em> folder &mdash; <span class="mono tiny">FBVNK_SIM_LEDGER_KIT1/</span> stays frozen exactly as Records reviewed it, so the md5s K7 verified still point at the bytes K7 saw. Not yet written to Dropbox: that is a fresh write to a new path and needs Claus's go-ahead, same as last time.</p>
+    <p><strong>What is not built here, and why.</strong> Writing the record at battery-master-off is the aeroplane's side, and per the 15 Sep chain of command simulator integration is yours. Nothing in this session touches the sim, reads a LocalVar live, or writes a package byte. The two halves meet at the JSON above &mdash; change any field name and the book follows, it is one contract in one file.</p>
+  </div>
+</section>
+
+<section>
+  <h2>The carnet, rebuilt to page 86 <span class="hint">Claus sent the scan 16 Sep &mdash; posted for visibility, not a decision</span></h2>
+  <p class="small">&ldquo;the logbook needs to be updated to reflect my NK bookkeeping, see page attached &hellip; you can see the differences, I have made my own line with tacho time etc, not a total oil but as said depart and arrive, also I am using airborne (flight time) and not block time.&rdquo; The Logbook tab now follows that page rather than the transcription it was built from.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Column</th><th>Was</th><th>Page 86, and now</th></tr></thead>
+      <tbody>
+        <tr><td>Date</td><td class="mono tiny">18-01</td><td class="mono tiny">01.05</td></tr>
+        <tr><td>Noms</td><td>surname every row</td><td>his name written out on the first row, <span class="mono tiny">&mdash; &quot; &mdash;</span> under it</td></tr>
+        <tr><td>Fonctions</td><td class="mono tiny">CDB</td><td class="mono tiny">PIC</td></tr>
+        <tr><td>Heures de Vol</td><td class="mono tiny">1:12</td><td><span class="mono tiny">01+20</span>, and airborne, not block</td></tr>
+        <tr><td>Carburant D&eacute;part / Arriv&eacute;e</td><td>&ldquo;Quantit&eacute;&rdquo; and an empty pair</td><td>the tank total in litres, carrying from row to row</td></tr>
+        <tr><td>Huile D&eacute;part / Arriv&eacute;e</td><td>held the FP-5L readings</td><td>struck through with one pen stroke; he does not keep them</td></tr>
+        <tr><td>Incidents</td><td>blank when nothing</td><td class="mono tiny">NIL</td></tr>
+        <tr><td><strong>Tacho</strong></td><td>absent</td><td>his own column, ruled in by hand, <span class="mono tiny">1228,32</span></td></tr>
+        <tr><td>Signature</td><td>name</td><td>initials</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <p><strong>The page is self-consistent on both figures the rebuild leans on, checked rather than taken on trust.</strong> Fuel: seven of its eight rows open at the litres the row above closed on, and the eighth steps 92 to 220 &mdash; a 128 L uplift showing itself between two rows. Tacho: 1236,24 less 1228,32 is 7,9200 hours against 6,6667 hours flown, so the tacho runs <strong>0,1567 h per leg</strong> more than the flight time. It turns on the ground, which is why nothing in the build derives one from the other.</p>
+  </div>
+  <div class="note warn">
+    <p><strong>One thing the scan does not resolve, and it is on the page.</strong> <span class="mono tiny">assumption:</span> the figure written beside <span class="mono tiny">P1</span> in Nature du Vol is read as the running total of P1 time. The OCR of a rotated scan will not settle it and it was not guessed at silently &mdash; the Logbook tab prints the assumption in its own note box. One line from you or Claus and it is right. Everything else in the table above is read straight off the page.</p>
+  </div>
+  <p class="small">Also fixed, and separately: the signed-leg cost card summed every invoice posted that day, so the first leg of a season charged eight months of caught-up hangar rent to a 52-minute local. Standing costs are tracked apart from the leg and reported apart from it &mdash; the same line <span class="mono tiny">STRIP_SPEC.md</span> draws for the cockpit figure. The carnet's Observations column stops carrying them too. <strong>NOT INSTALLED</strong>; branch <span class="mono tiny">claude/fbvnk-cost-sheet-maintenance-svcsw2</span>.</p>
+</section>
+
+<section>
+  <h2>K7 answered &mdash; KIT1 revision 2 STAGED <span class="hint">PASS WITH NOTES closed out; both board answers in, folder written</span></h2>
+  <div class="note">
+    <p><strong>Written to <span class="mono tiny">/MSFS 2024 Screenshots/FBVNK_STAGING/FBVNK_SIM_LEDGER_KIT1_R2/</span>, 16 Sep 13:10&ndash;13:17.</strong> On Claus's own board answer, 14:47:05 local, relayed word for word: &ldquo;Yes - stage it in a new folder in FBVNK_STAGING&rdquo;. All five files listed back by Dropbox at the byte sizes they have here. <span class="mono tiny">FBVNK_SIM_LEDGER_KIT1/</span> untouched and still frozen exactly as Records reviewed it, so the md5s K7 verified still point at the bytes K7 saw. Ready for Records.</p>
   </div>
   <div class="tw">
     <table>
@@ -474,23 +537,38 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     </table>
   </div>
   <div class="note warn">
-    <p><strong>Found while writing V15: the kit contradicted itself, and a human has to settle it.</strong> <span class="mono tiny">wear_rate_normalisation</span> says divide the observed loss by R and bill &ldquo;the same wear as at REAL&rdquo;. <span class="mono tiny">events.service</span> says post the full catalogue price. Those are two different models. Every vector written before this revision used the full price &mdash; so K7 recomputed the arithmetic of one reading while the stated rule described the other, and both passed because nothing until V15 made them disagree.</p>
-    <p class="small">On the same magneto service: <strong>&euro;885.60</strong> full-price against <strong>&euro;513.65</strong> pro rata. On V15's cylinder at x1000: <strong>&euro;2,767.50</strong> against <strong>&euro;1.38</strong> &mdash; a factor of 2000 on identical sim events. Full-price billing means running at x1000 fires services ~1000&times; more often and inflates the book by about the same, which is the thing pick&nbsp;2 was tapped to prevent.</p>
-    <p class="small"><strong>This session has not picked one.</strong> Both figures sit side by side in every affected vector; the readings, their consequences and a recommendation (pro rata) are written up in <span class="mono tiny">PRICES_AND_BILLING_RULES.json &rarr; wear_rate_normalisation.OPEN_how_a_normalised_loss_becomes_euro</span>. It is a money decision, so it is Claus's or the PM's. One line back and the next revision collapses to a single reading. Either way there is a data gap: a pro-rata posting needs the condition <em>before</em> the service and nothing captured it &mdash; V1 is restated with it.</p>
-  </div>
+    <p><strong>The contradiction found while writing V15 &mdash; Claus settled it, and revision 2 carries one reading.</strong> <span class="mono tiny">wear_rate_normalisation</span> said divide the observed loss by R and bill &ldquo;the same wear as at REAL&rdquo;; <span class="mono tiny">events.service</span> said post the full catalogue price. Every vector before this revision used the full price, so K7 recomputed the arithmetic of one reading while the stated rule described the other, and both passed because nothing until V15 made them disagree. It went to Claus rather than being settled here.</p>
+    <p class="small"><strong>His answer, 16 Sep 14:47:46 local, word for word: &ldquo;Pro rata - bill only the wear that would have happened at REAL&rdquo;.</strong> The kit is collapsed to it. A service posts <span class="mono tiny">price_gross &times; (normalised_points / 100)</span>. An overhaul is untouched &mdash; a whole-unit replacement at its catalogue figure, so no divisor reaches it.</p>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Vector</th><th>Part, gross</th><th class="num">R</th><th class="num">Condition at service</th><th class="num">Posts</th></tr></thead>
+        <tbody>
+          <tr><td>V1</td><td>magneto, &euro;885.60</td><td class="num">1</td><td class="num">42</td><td class="num"><strong>&euro;513.65</strong></td></tr>
+          <tr><td>V15</td><td>cylinder, &euro;2,767.50</td><td class="num">1000</td><td class="num">35</td><td class="num"><strong>&euro;1.80</strong></td></tr>
+          <tr><td>V16</td><td>brakes, &euro;1,318.21</td><td class="num">100</td><td class="num">70</td><td class="num"><strong>&euro;3.95</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small"><strong>The decision exposed a wrong figure of mine.</strong> V15 stated 50 observed loss points for a cylinder going from 35 to 100, which is 65. Under the full-price reading the number changed nothing, so it survived K7; under pro rata it <em>is</em> the posting. Corrected to <strong>&euro;1.80</strong>, not the &euro;1.38 the side-by-side listed.</p>
+    </div>
   <div class="tw">
     <table>
       <thead><tr><th>Revision 2 file</th><th class="num">Size</th><th>md5</th></tr></thead>
       <tbody>
-        <tr><td>PRICES_AND_BILLING_RULES.json</td><td class="num">34,300 B</td><td class="mono tiny">defe09de20d697a2dbdc79e18fc1514b</td></tr>
-        <tr><td>TEST_VECTORS.json <span class="tiny muted">18 vectors</span></td><td class="num">24,322 B</td><td class="mono tiny">1c00cc8f9dd301a52e016d1f23b2f25e</td></tr>
-        <tr><td>STRIP_SPEC.md</td><td class="num">8,076 B</td><td class="mono tiny">cef1dbdbac6e4bfe0245fc5a155685e5</td></tr>
-        <tr><td>NOTE.md</td><td class="num">8,247 B</td><td class="mono tiny">eb5d2e87e98bb5005e6a4f638dfc17be</td></tr>
-        <tr><td><strong>MD5.txt</strong></td><td class="num">206 B</td><td class="mono tiny"><strong>a9d9e47be5966fadecd3f730192f1948</strong></td></tr>
+        <tr><td>PRICES_AND_BILLING_RULES.json</td><td class="num">38,429 B</td><td class="mono tiny">b324e59de1b91d7b830b5886e15069a0</td></tr>
+        <tr><td>TEST_VECTORS.json <span class="tiny muted">18 vectors</span></td><td class="num">25,467 B</td><td class="mono tiny">0edb976ca418c98155a22493f44bf422</td></tr>
+        <tr><td>NOTE.md</td><td class="num">10,033 B</td><td class="mono tiny">429d1d9159b27e203b8683a41ac03665</td></tr>
+        <tr><td>STRIP_SPEC.md</td><td class="num">9,955 B</td><td class="mono tiny">e4823b8908a2b744d54bf9107e8c278f</td></tr>
+        <tr><td><strong>MD5.txt</strong></td><td class="num">206 B</td><td class="mono tiny">&mdash; lists the four above</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="small">Every euro figure in the new vectors was recomputed independently from the price table before publishing: 11 of 11 match. <span class="mono tiny">md5sum -c</span> passes, both JSON files parse.</p>
+  <p class="small">Every euro figure was recomputed independently from the price table before staging. <span class="mono tiny">md5sum -c</span> passes on all four, both JSON files parse, and Dropbox lists every file back at the byte size it has locally. Same bytes are committed at <span class="mono tiny">fbvnk-sim-ledger/KIT1_R2/</span> on <span class="mono tiny">claude/fbvnk-cost-sheet-maintenance-svcsw2</span>, so the folder is checkable against a durable copy.</p>
+  <div class="note warn">
+    <p><strong>The capture variables you asked for, named.</strong> A pro-rata posting needs the condition <em>before</em> the service, and a service is detected by the condition reading 100 &mdash; by then the pre-service value is gone unless something kept it. Eleven reads, every one already in the package: <span class="mono tiny">NK_ST_C_ALT</span>, <span class="mono tiny">NK_ST_C_BRK</span>, <span class="mono tiny">NK_ST_C_CARB</span>, <span class="mono tiny">NK_ST_C_CYL</span>, <span class="mono tiny">NK_ST_C_LTS</span>, <span class="mono tiny">NK_ST_C_MAG</span>, <span class="mono tiny">NK_ST_C_OIL</span>, <span class="mono tiny">NK_ST_C_STR</span>, <span class="mono tiny">NK_ST_C_TYR</span>, <span class="mono tiny">NK_ST_C_VAC</span>, <span class="mono tiny">NK_ST_OIL_QT</span>, plus <span class="mono tiny">NK_ST_WEAR</span> (58) for the divisor. No new SimVar, no new reader. What is new is persistence.</p>
+    <p class="small">Two designs, both written out in full in <span class="mono tiny">capture_requirement</span>. <strong>Accumulator</strong>: normalise each read as it happens, 22 new persisted LocalVars, exact even when R moved during the part's life. <strong>Snapshot</strong>: keep the last read's condition and divide at service, 11 new LocalVars, exact only while R held since the part's last service. This session recommends the accumulator &mdash; a rate change between two services is the normal case, not an edge one, because R is a slider Claus moves &mdash; and has not chosen. Builder/Records call, logged as a sixth open item.</p>
+    <p class="small">For the laptop book there is no persistence problem: it takes legs as records now, so a record carrying a service carries <span class="mono tiny">conditionBefore</span> and <span class="mono tiny">conditionAfter</span> keyed by those eleven names, plus the R in force. The aeroplane holds the snapshot and sends it. That is the hook for design note B25.</p>
+  </div>
   <p class="small"><strong>Document list, item 2 is closed:</strong> the collision check is done &mdash; you verified none of the seven <span class="mono tiny">L:NK_LG_*</span> names exists in the package, and that <span class="mono tiny">NK_ST_FP5L_USED</span> is LocalVar 10, <span class="mono tiny">TACH</span> 11, <span class="mono tiny">MX_LOG</span> 61, <span class="mono tiny">WEAR</span> 58. Both facts are now recorded in <span class="mono tiny">STRIP_SPEC.md</span>. Items 1 and 3&ndash;6 are still open, and <span class="mono tiny">SPEC.md</span> remains the one that closes the rest of <span class="mono tiny">open_items</span>.</p>
 </section>
 
