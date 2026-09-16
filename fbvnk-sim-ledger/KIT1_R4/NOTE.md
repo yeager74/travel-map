@@ -189,6 +189,76 @@ the PM's and Records', cited to them.
     else. `PRICES_AND_BILLING_RULES.json` → `fuel_source.strip_accumulation_rule`, `STRIP_SPEC.md`
     → "Fuel", `TEST_VECTORS.json` → V10-V13.
 
+## Review after each flight — what the page does today, and what it does not
+
+Claus, 16 Sep 18:04:32, alongside his P1 answer: *"I assume it is possible to always after the
+flight is ended (batt master off) to see the prefilled (auto by you) information, and if needed be
+make other selections, so we'll need to figure out what those selections/choices should be … also
+perhaps the pilot wants to enter manual remark, etc. Maybe u already set this up, I haven't checked
+yet."*
+
+**Design proposal only. Nothing below is built.**
+
+### What is already there
+
+He has not looked yet, so here is the page exactly as it stands with an automatic leg, read off
+the running book rather than described from the source:
+
+- It opens by itself the moment a record arrives, headed *"Carnet de route · filed by the aeroplane
+  · read it and sign"*.
+- It shows, prefilled: route with off/on times, **Date**, **Durée**, **Nature**, **Carburant**
+  (litres and which rung produced them), and an **AUTO — as F-BVNK recorded it** block with
+  **Moteur**, **En vol**, **FP-5L**, **Touché**, **Tacho** and the record's **Réf.**
+- It lists every `assumption:` it had to make, in plain words.
+- It lists **Entered this leg** — every invoice and tech-log line the leg posted.
+- It has a signature line, and **Sign & reveal cost**, which is when the money appears.
+- Where a position did not resolve it offers a picker, and naming the aerodrome teaches the book.
+
+### What is missing, and it is exactly what he asked for
+
+**The only thing on that page he can change is his own name.** Everything else is read-only. There
+is **no free-text remark box** and **no selections at all**.
+
+And the page is already telling us what the selections should be: the three `assumption:` lines it
+prints on a typical leg are the fuel price, how she was flown, and the surface — each one a thing
+the aeroplane cannot know and the pilot can. The design writes itself: **turn each stated
+assumption into a choice, and add the remark.**
+
+### Proposed selection set
+
+Labels follow his carnet columns. Defaults are what the book already picks, so signing without
+touching anything gives exactly today's behaviour.
+
+| Label, as in his carnet | Options | Default the book pre-selects | Money? |
+|---|---|---|---|
+| **Nature du Vol** | P1 · P1 (école) · P2 · double commande · essai · convoyage | `P1` — every page 86 row is P1 | no |
+| **Fonctions** | PIC · PICUS · dual · SPIC | `PIC` — as page 86 | no |
+| **Équipage — Noms** | him alone, or a second name typed in | his name, ditto after the first row | no |
+| **Incidents · Observations** | **free text**, his words, into the carnet column | `NIL`, or whatever the record carried | no |
+| **Comment elle a volé** | gentle · by the book · pressed on | from `power` if sent, else *by the book*, **labelled** | **yes** — wear |
+| **Surface** | asphalt · grass · gravel | asphalt, **labelled** | **yes** — tyre and prop wear |
+| **Nuits stationnées** | 0, 1, 2 … | from the record, else 0 | **yes** — parking fee |
+| **Handling** | no · yes | no | **yes** — €95.00 |
+| **€ par litre** | the standing price for the field, or typed | the field's price, **labelled** | **yes** — fuel bill |
+
+Three notes on that table. The four money rows are the only ones that can change what the leg
+costs, and they are exactly the four the page currently prints as assumptions — so the change
+removes three `assumption:` lines rather than adding new ways to be wrong. The remark is the one
+Claus asked for by name and is free text, not a menu. And `Visa` stays empty: it is the customs and
+authorities column, and nothing in a sim fills it.
+
+**The EASA side is not in this table on purpose.** He suggested looking up the EASA logbook entry
+options and adapting them. Records is doing that as R18 from the official AMC1 FCL.050 pages, and
+this session will not put EASA entry categories in from recall. The options above are read off his
+own page 86 and the book's existing fields. When R18 lands, the *Nature du Vol* and *Fonctions*
+rows are the two that may need widening.
+
+### Ordering, if this is built
+
+The selections must sit **before** the signature and before the cost is revealed, because four of
+them change the cost. The flow stays: record arrives → page opens prefilled → he adjusts what the
+aeroplane could not know → signs → cost. That is the order he described.
+
 ## Open — needs a person, not a guess
 
 Five, listed in full under `PRICES_AND_BILLING_RULES.json` → `open_items`. Three of revision 2's

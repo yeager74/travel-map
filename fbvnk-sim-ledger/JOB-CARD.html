@@ -460,6 +460,40 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <section>
+  <h2>Which import route fits &ldquo;batt master off&rdquo; <span class="hint">answering the PM&rsquo;s question of 18:05 &mdash; the poll, with one condition</span></h2>
+  <p class="small">Claus: <em>&ldquo;I assume it is possible to always after the flight is ended (batt master off) to see the prefilled (auto by you) information&rdquo;</em>. If the Builder gets the logger to run the converter at battery-master-off so <span class="mono tiny">LEG.json</span> is already written when he walks to the laptop, the book has four ways in and only one of them needs no hands at all.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Route</th><th>Fits?</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Watch <span class="mono tiny">./LEG.json</span></strong></td><td><strong>This one</strong></td><td>Polls every 4 s and files the moment the file changes. He opens the book and the review page is already up. Deduped twice over: by content, so the same bytes are not re-read, and by <span class="mono tiny">legId</span>, so a re-run cannot post a leg twice.</td></tr>
+        <tr><td>Drop the file</td><td>fallback</td><td>One drag. Works on any origin, which the poll does not &mdash; see the condition below.</td></tr>
+        <tr><td>Open a file</td><td>fallback</td><td>Two clicks, same reliability as the drop.</td></tr>
+        <tr><td>Clipboard / paste</td><td>last resort</td><td>For a record that reaches him as text rather than a file.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note warn">
+    <p><strong>The condition, and it is the Builder&rsquo;s to arrange, not mine.</strong> The poll is a same-origin <span class="mono tiny">fetch</span>, so it only works when the book is <em>served from</em> the folder the converter writes into &mdash; a static server on <span class="mono tiny">http://127.0.0.1</span> rooted at <span class="mono tiny">FBVNK_LEGS</span>, with <span class="mono tiny">FBVNK-LEDGER.html</span> sitting in it. Opened straight off the disk as a <span class="mono tiny">file://</span> page, the browser refuses the fetch and the book says so rather than sitting there looking live: after four failed tries the line under the buttons reads <em>&ldquo;nothing is answering on this origin&rdquo;</em>. It never pretends.</p>
+    <p class="small"><strong>One thing to settle in the converter kit:</strong> the poll watches a single fixed path. If the converter writes one file per leg into <span class="mono tiny">FBVNK_LEGS</span>, it should <em>also</em> write or overwrite <span class="mono tiny">LEG.json</span> with the newest leg &mdash; or write a batch there, since the book accepts <span class="mono tiny">{"legs":[&hellip;]}</span> and files them in order. Either shape works; the book does not need a directory listing, which it could not read anyway.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Review after each flight <span class="hint">design proposal, nothing built &mdash; full table in <span class="mono tiny">KIT1_R4/NOTE.md</span></span></h2>
+  <p class="small">Claus asked what selections the review page should offer, and said <em>&ldquo;Maybe u already set this up, I haven&rsquo;t checked yet&rdquo;</em>. He has not, so here is the page as it actually stands with an automatic leg, read off the running book rather than described from the source.</p>
+  <div class="note">
+    <p><strong>What is already there.</strong> It opens by itself when a record arrives. Prefilled: route with off/on times, Date, Dur&eacute;e, Nature, Carburant with the rung that produced it, and an <span class="mono tiny">AUTO</span> block carrying Moteur, En vol, FP-5L, Touch&eacute;, Tacho and the record&rsquo;s reference. It lists every <span class="mono tiny">assumption:</span> it had to make, and every invoice and tech-log line the leg posted. Then a signature line, and the cost appears only once he signs.</p>
+  </div>
+  <div class="note warn">
+    <p><strong>What is missing is exactly what he asked for.</strong> The only thing on that page he can change is his own name. There is <strong>no remark box and no selections at all</strong>.</p>
+    <p class="small">The page is already naming the answer, though: the three <span class="mono tiny">assumption:</span> lines it prints on a normal leg are the fuel price, how she flew it and the surface &mdash; each one a thing the aeroplane cannot know and the pilot can. So the proposal is to turn each stated assumption into a choice and add the remark, which <em>removes</em> three assumption lines rather than adding new ways to be wrong. Nine rows proposed, with the label as in his carnet, the options, the default, and whether it touches money; four do, and they are those same four. Defaults are what the book picks today, so signing without touching anything behaves exactly as now. The selections sit <strong>before</strong> the signature, because four of them change the cost.</p>
+    <p class="small"><strong>The EASA side is deliberately not in that table.</strong> He suggested adapting the EASA logbook entry options; Records is reading AMC1 FCL.050 from the official pages as R18, and this session will not put entry categories in from recall. When it lands, <em>Nature du Vol</em> and <em>Fonctions</em> are the two rows that may widen.</p>
+  </div>
+  <p class="small"><strong>The P1 figure is closed, and not by me.</strong> Claus, 18:04:32: &ldquo;good bloody question&hellip; ha ha, I should know, but I just carried it over from the previous owners. Keep it the same&rdquo;. The Logbook tab no longer calls it an assumption of this session&rsquo;s &mdash; it quotes him, and the figure stays exactly as his pages carry it.</p>
+</section>
+
+<section>
   <h2>KIT1 revision 3 &mdash; STAGED <span class="hint">K7b closed &middot; <span class="mono">FBVNK_SIM_LEDGER_KIT1_R3/</span> &middot; 16 Sep 15:04 &middot; Records reviews it as K7c</span></h2>
   <div class="note">
     <p><strong>Six files, every size listed back by Dropbox at the byte count it has locally.</strong> The first two folders stay frozen exactly as K7 and K7b saw them. The same bytes are committed at <span class="mono tiny">fbvnk-sim-ledger/KIT1_R3/</span> on the branch, so the folder is checkable against a durable copy.</p>

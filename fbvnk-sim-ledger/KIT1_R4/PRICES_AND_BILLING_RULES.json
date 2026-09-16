@@ -934,5 +934,11 @@
       "LEMP_dropped": "Los Martinez del Puerto, Murcia. It was in the table only because the Empuriabrava figures had been filed under its code. Nothing of Claus's uses LEMP - searched, one hit, which is R17's own note - so the entry is gone rather than left as an aerodrome the book pretends to know."
     },
     "LEAP_name_query_CLOSED": "R3 flagged that LEAP was called \"Teruel\" while Claus's planning had LPCS-LETL and LETL-LEAP on one day, so at least one name was wrong. It was the book: LEAP is Ampuriabrava, LETL is Teruel, and the two codes were swapped in the table. The planning reads Cascais - Teruel - Ampuriabrava and is consistent. Claus never needed to be asked."
+  },
+  "carnet_p1_figure": {
+    "status": "CLOSED. Claus, Annunciator item ledger_p1_figure, 16 Sep 2026 18:04:32 local, relayed word for word.",
+    "his_words": "\"good bloody question... ha ha, I should know, but I just carried it over from the previous owners. Keep it the same\"",
+    "rule": "The figure beside P1 in Nature du Vol is the running total of P1 time and stays exactly as his pages carry it. R3 flagged this as this session's assumption; it is not an assumption any more, it is his instruction, and the Logbook tab says so in his words rather than mine.",
+    "provenance": "Carried over from the previous owners' pages. Not derived, not checked against anything, and not to be \"corrected\" by a later reader who thinks it should be something else."
   }
 }
