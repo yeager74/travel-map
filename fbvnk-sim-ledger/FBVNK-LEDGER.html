@@ -262,11 +262,6 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
 .drop.over{border-color:var(--accent); border-style:solid; background:var(--accent-soft)}
 .drop strong{font-size:14px}
 .signcard dl.rec{grid-template-columns:auto 1fr; gap:2px 12px}
-/* The iPad's own logbook panel, reproduced. Monospace and preserved line breaks, because
-   the point of it is that it matches the aeroplane's screen character for character. */
-.lbpanel{font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.55;
-  color:var(--carnet-ink); background:var(--accent-soft); border-left:3px solid var(--accent);
-  padding:9px 12px; margin:0; white-space:pre-wrap; overflow-wrap:anywhere}
 .signcard dl.rec dd{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--carnet-ink)}
 .fallback{border:1px solid var(--rule); background:var(--sheet-2); padding:0 14px; margin-top:16px}
 .fallback>summary{cursor:pointer; padding:11px 0; font-size:11px; letter-spacing:.09em;
@@ -374,17 +369,6 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
           </div>
         </details>
 
-        <details class="fallback" id="coordPanel">
-          <summary>Aerodrome positions &mdash; where she resolves <span class="mono tiny">????</span> from</summary>
-          <p class="small muted" style="margin-top:0">F-BVNK sends latitude and longitude, not ICAO codes, so naming the aerodrome is this book&rsquo;s job. No position is invented here: paste the set Records produces from the official AIPs, with its source against each one. Until then a leg files as <span class="mono">????</span> and says so &mdash; and naming one on the review page teaches the book that position on its own.</p>
-          <div class="btnrow" style="margin-top:0">
-            <button class="btn ghost small" id="btn-coord-paste">Paste a coordinate set</button>
-            <button class="btn ghost small" id="btn-coord-file">Open a file&hellip;</button>
-            <input type="file" id="coordFile" accept=".json,application/json,text/plain" hidden>
-          </div>
-          <p class="tiny muted" id="coordHint">Nothing loaded. Expecting <span class="mono tiny">{"LPCS":{"lat":..,"lon":..,"src":".."}, ...}</span>.</p>
-          <div id="coordList" style="margin-top:10px"></div>
-        </details>
       </div>
 
       <div class="sheet" style="margin-top:14px">
@@ -442,7 +426,7 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
         <div class="sheet" style="margin-top:14px">
           <div class="eyebrow">Sinking funds</div>
           <h2 style="margin-bottom:6px">Reserves</h2>
-          <p class="small muted" style="margin-bottom:10px">Every hour on the <strong>hour meter</strong> quietly sets aside &euro;20.79 for the engine and &euro;1.36 for the propeller &mdash; the real 2025 reserve rates. Claus&rsquo;s pick, 16 Sep: <em>&ldquo;Tacho time (the hour meter)&rdquo;</em>, so ground running counts too. Reach TBO with a full pot and the overhaul is already paid for.</p>
+          <p class="small muted" style="margin-bottom:10px">Every hour on the <strong>hour meter</strong> quietly sets aside &euro;20.79 for the engine and &euro;1.36 for the propeller &mdash; the real 2025 reserve rates. Claus&rsquo;s pick, 16 Sep 21:05: <em>&ldquo;Tacho time (the hour meter)&rdquo;</em>, so ground running counts too. The inspections run on airborne hours instead; the Counters card says which is which. Reach TBO with a full pot and the overhaul is already paid for.</p>
           <div class="tw"><table id="reserveTbl"></table></div>
         </div>
         <div class="sheet" style="margin-top:14px">
@@ -486,6 +470,7 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
     <div class="sheet">
       <div class="eyebrow">Carnet de route &mdash; sim</div>
       <h2>Logbook</h2>
+      <p class="simlabel"><strong>Home simulator record &mdash; not an EASA logbook.</strong> MSFS 2024, non-qualified device. Not flight time, not FSTD time.</p>
       <p class="small muted">The aeroplane files each leg on the Ramp tab and it writes its own row here &mdash; times, aerodromes, flight time, fuel and tacho, nothing typed. Columns, order, ruling and hand follow page 86 of NK&rsquo;s own book.</p>
       <div class="carnetphoto" id="carnetPhoto">
         <p style="margin:0"><strong>Built from page 86.</strong> Claus sent the scan on 16 Sep 2026 (<span class="mono tiny">P_86.pdf</span>) with: &ldquo;the logbook needs to be updated to reflect my NK bookkeeping &hellip; I have made my own line with tacho time etc, not a total oil but as said depart and arrive, also I am using airborne (flight time) and not block time.&rdquo; This page follows it: dates <span class="mono tiny">DD.MM</span> with the year once at the head, his name written out on the first row and ditto marks under it, <span class="mono tiny">PIC</span> in Fonctions, flight time <span class="mono tiny">HH+MM</span> and airborne not block, the tank total in litres in Carburant D&eacute;part and Arriv&eacute;e, the two Huile columns struck through, <span class="mono tiny">NIL</span> in Incidents, and TACHO &mdash; his own column, ruled in by hand &mdash; as <span class="mono tiny">1228,32</span>.</p>
@@ -636,14 +621,10 @@ var FIELDS = {
      Landing/parking here are still the invoiced 2025 figures; only the fuel default moved
      forward to today's price. The 2025 historical average (2.29, blended across every 2025
      fill-up, several fields) lives in the Year Book comparison and in README.md, untouched. */
-  LPCS:{name:'Cascais',       land:22.24, park:16.68, fuel:2.30, vat:VAT_PT, coastal:true,  sup:'Cascais Dinâmica E.M., S.A.', fsup:'BP Portugal Combustíveis, S.A.', src:'real',
-        lat:38.725556, lon:-9.355278, arp:'NAV Portugal eAIP AD 2.LPCS, confirmed'},
-  LPCO:{name:'Coimbra',       land:20.00, park:12.00, fuel:2.35, vat:VAT_PT, coastal:false, sup:'Aeródromo de Coimbra',        fsup:'BP Portugal Combustíveis, S.A.', src:'assume',
-        lat:40.156111, lon:-8.469167, arp:'NAV Portugal eVFR AD 2.LPCO, single read'},
-  LPVL:{name:'Vilar da Luz',  land:23.00, park: 0.00, fuel:0,    vat:VAT_PT, coastal:false, sup:'Vilar da Luz',                fsup:'', src:'real',
-        lat:41.279167, lon:-8.517222, arp:'NAV Portugal eVFR AD 2.LPVL, single read'},
-  LEVD:{name:'Valladolid',    land:122.00,park: 0.00, fuel:3.42, vat:VAT_ES, coastal:false, sup:'Aeropuerto de Valladolid',    fsup:'BP Energía España, S.A.U.', src:'real',
-        lat:41.706111, lon:-4.851944, arp:'ENAIRE AIP AD 2-LEVD, confirmed'},
+  LPCS:{name:'Cascais',       land:22.24, park:16.68, fuel:2.30, vat:VAT_PT, coastal:true,  sup:'Cascais Dinâmica E.M., S.A.', fsup:'BP Portugal Combustíveis, S.A.', src:'real'},
+  LPCO:{name:'Coimbra',       land:20.00, park:12.00, fuel:2.35, vat:VAT_PT, coastal:false, sup:'Aeródromo de Coimbra',        fsup:'BP Portugal Combustíveis, S.A.', src:'assume'},
+  LPVL:{name:'Vilar da Luz',  land:23.00, park: 0.00, fuel:0,    vat:VAT_PT, coastal:false, sup:'Vilar da Luz',                fsup:'', src:'real'},
+  LEVD:{name:'Valladolid',    land:122.00,park: 0.00, fuel:3.42, vat:VAT_ES, coastal:false, sup:'Aeropuerto de Valladolid',    fsup:'BP Energía España, S.A.U.', src:'real'},
   /* Two codes were swapped from the first build until 16 Sep 2026, and an invoice of Claus's
      settled it rather than a web page: BP Energía España 2002864264 prints "Location of
      Delivery: TEV - LETL - TERUEL" and bills F-BVNK for 155.000 L on 24 OCT 25, at
@@ -652,14 +633,14 @@ var FIELDS = {
      LEMP is Los Martínez del Puerto in Murcia and nothing of Claus's uses it, so it is gone.
      That makes his LPCS-LETL then LETL-LEAP planning of 24 Oct 2025 read straight:
      Cascais, Teruel, Ampuriabrava. */
-  LETL:{name:'Teruel',        land:12.00, park: 0.00, fuel:2.36, vat:VAT_ES, coastal:false, sup:'Aeropuerto de Teruel',        fsup:'BP Energía España, S.A.U.', src:'real',
-        lat:40.411944, lon:-1.217500, arp:'ENAIRE AIP AD 2-LETL, confirmed'},
-  LEAP:{name:'Empuriabrava',  land:108.00,park: 0.00, fuel:3.52, vat:VAT_ES, coastal:true,  sup:'Aeroclub Empuriabrava',       fsup:'BP Energía España, S.A.U.', src:'real',
-        lat:42.260000, lon:3.109722, arp:'ENAIRE AIP AD 1.3 index, single read'},
-  LEST:{name:'Santiago',      land:32.00, park: 0.00, fuel:0,    vat:VAT_ES, coastal:true,  sup:'Aeropuerto de Santiago',      fsup:'', src:'real',
-        lat:42.896389, lon:-8.415278, arp:'ENAIRE AIP AD 2-LEST, single read'},
-  LEBG:{name:'Burgos',        land:45.00, park: 0.00, fuel:3.19, vat:VAT_ES, coastal:false, sup:'Aeropuerto de Burgos',        fsup:'BP Energía España, S.A.U.', src:'assume',
-        lat:42.357500, lon:-3.613611, arp:'ENAIRE AIP AD 2-LEBG, single read'},
+  LETL:{name:'Teruel',        land:12.00, park: 0.00, fuel:2.36, vat:VAT_ES, coastal:false, sup:'Aeropuerto de Teruel',        fsup:'BP Energía España, S.A.U.', src:'real'},
+  LEAP:{name:'Empuriabrava',  land:108.00,park: 0.00, fuel:3.52, vat:VAT_ES, coastal:true,  sup:'Aeroclub Empuriabrava',       fsup:'BP Energía España, S.A.U.', src:'real'},
+  LEST:{name:'Santiago',      land:32.00, park: 0.00, fuel:0,    vat:VAT_ES, coastal:true,  sup:'Aeropuerto de Santiago',      fsup:'', src:'real'},
+  LEBG:{name:'Burgos',        land:45.00, park: 0.00, fuel:3.19, vat:VAT_ES, coastal:false, sup:'Aeropuerto de Burgos',        fsup:'BP Energía España, S.A.U.', src:'assume'},
+  /* Tarbes. The first record off the aeroplane departs and arrives here. Its fees are the
+     default field's and are LABELLED as such, because there is no figure on file for LFBT
+     and a made-up landing fee would be worse than an honest default. */
+  LFBT:{name:'Tarbes',        land:25.00, park:12.00, fuel:2.60, vat:VAT_PT, coastal:false, sup:'Aerodrome operator',          fsup:'Fuel supplier', src:'assume', noFees:true},
   ZZZZ:{name:'Other field',   land:25.00, park:12.00, fuel:2.60, vat:VAT_PT, coastal:false, sup:'Aerodrome operator',          fsup:'Fuel supplier', src:'assume'}
 };
 
@@ -802,7 +783,7 @@ function blankState(seeded){
     v:1, seeded: !!seeded, seq:{},
     seasonStart:'2026-01-01',
     lastDate:'2026-01-01',
-    counters:{ ttaf:1265.0, engSMOH:317.0, propSMOH:528.0, hrs:0 },
+    counters:{ ttaf:1265.0, engSMOH:317.0, propSMOH:528.0, hrs:0, meter:0 },
     /* The hour meter's own place in the book. cursor is the last real NK_ST_TACH reading
        the book has seen; carried is what has already been accrued since that reading from
        records that had no tacho, so the meter's progression is never counted twice. */
@@ -811,7 +792,7 @@ function blankState(seeded){
     billedMonths:[],
     reserves:{ engine:0, prop:0 },
     health:{ engine:88, prop:92, brakes:74, tyres:80, gear:86, airframe:84, avionics:79, interior:82, paint:91 },
-    squawks:[], done:[], spend:[], legs:[], ingested:[], fieldPos:{}, timeBase:'utc'
+    squawks:[], done:[], spend:[], legs:[], ingested:[], timeBase:'utc'
   };
 }
 
@@ -819,7 +800,7 @@ function load(){
   try{
     var raw = localStorage.getItem(KEY);
     if(raw){ var o = JSON.parse(raw);
-      if(o && o.v===1){ o.ingested = o.ingested || []; o.fieldPos = o.fieldPos || {}; o.timeBase = o.timeBase || 'utc'; return o; } }
+      if(o && o.v===1){ o.ingested = o.ingested || []; o.timeBase = o.timeBase || 'utc'; return o; } }
   }catch(e){}
   return seedExamples(blankState(true));
 }
@@ -944,6 +925,7 @@ function tachHours(leg){
 function fileLeg(leg){
   var posted = [], raised = [];
   var iso = leg.date;
+  if(leg.pending === false) return resFor(leg);   /* posted once, never twice */
   /* Claus's clock, 21:05:42: the hour meter, not airborne. leg.hours stays airborne and
      stays what the carnet totals; h is what the money and the counters run on. */
   var clk = tachHours(leg);
@@ -978,22 +960,32 @@ function fileLeg(leg){
     posted.push(post(iso, 'aero', {net:fee, vat:0, sup:fd.sup, desc:parts.join(' + ') + ' — ' + leg.to, cat:'Aerodrome landing/parking'}));
   }
 
-  /* --- counters and reserves --- */
-  S.counters.hrs     += h;
-  S.counters.ttaf    += h;
-  S.counters.engSMOH += h;
+  /* --- counters and reserves: TWO clocks, and Claus set both ---
+
+     21:05:42 — "Tacho time (the hour meter)", for the reserves.
+     21:57:47 — "NO, the inspection times, sorry if I said otherwise, are based on the
+                 journey log book airborne hours, NOT tacho."
+
+     So they are not one clock after all, and the split is a sound one rather than a
+     compromise: what is a countdown to work on the aeroplane runs on the hours his journey
+     log actually shows, and what is money set aside against engine life runs on the meter
+     that measures engine life. The 2000-hour TBO counters stay on the meter with the
+     reserve that pays for the overhaul, so the fund and the thing it buys count the same
+     hours. TTAF is airframe total and follows the journey log. */
+  var wh = leg.hours;                     /* airborne, off the journey log */
+  S.counters.hrs     += wh;               /* drives the 25 / 50 / 100 h inspections */
+  S.counters.ttaf    += wh;
+  S.counters.meter   += h;                /* the hour meter's own running total */
+  S.counters.engSMOH += h;                /* TBO, with the fund that pays for it */
   S.counters.propSMOH+= h;
   S.reserves.engine  += h * 20.79;
   S.reserves.prop    += h * 1.36;
 
   /* --- wear ---
-     Airborne, deliberately, and this is the one place the tacho decision was NOT applied.
-     Claus's pick named the two reserves and the inspection counters. These coefficients
-     were rated against airborne hours, so moving them to the meter would quietly re-rate
-     every one of them by the 18.8 % the two clocks differ by - a change nobody asked for.
-     The real wear model is the iPad's (HANGAR.js, NK_*) and is the PM's to set. Flagged in
-     R6 as this session's own call rather than left silent. */
-  var H = S.health, wh = leg.hours;
+     Airborne. R6 left it there as this session's own call and flagged it; Claus then
+     confirmed it outright on the Annunciator at 21:57:47, "Keep on airborne time (as
+     rated)". It is no longer anyone's assumption. */
+  var H = S.health;
   H.engine   -= wh * 1.15 * styleM;
   H.prop     -= wh * 0.55 * styleM * (leg.surface==='gravel'?1.9:1);
   H.brakes   -= (0.75 * styleM) + (leg.rate>400 ? 0.5 : 0);
@@ -1052,9 +1044,26 @@ function fileLeg(leg){
   leg.postedIds  = posted.map(function(r){ return r.id; });
   leg.accruedIds = accrued.map(function(r){ return r.id; });
   leg.raisedIds = raisedClean.map(function(s){ return s.id; });
-  S.legs.push(leg);
-  S.lastDate = iso;
+  leg.pending = false;
   return {posted:posted, raised:raisedClean};
+}
+
+/* A leg arrives, and nothing is billed for it yet.
+   Claus, 16 Sep 21:54: "update the cost sheet artisfact to look like the latest proposal."
+   The proposal has him adjusting what the aeroplane could not know BEFORE he signs, and
+   four of those rows change what the leg costs: how she was flown and the surface drive
+   wear, the nights and the handling drive the aerodrome invoice, the price drives the fuel
+   invoice. A leg that had already posted could not honour any of them - the invoices would
+   be written before he touched the page, and re-posting would either double-count or burn
+   the seeded squawk sequence.
+   So entering and posting are two steps now. enterLeg puts the leg in the book, on the
+   carnet page and in the inbox, marked pending. fileLeg posts it, and that happens when he
+   signs. Signing an untouched page gives exactly what the old flow gave. */
+function enterLeg(leg){
+  leg.pending = true;
+  S.legs.push(leg);
+  S.lastDate = leg.date;
+  return leg;
 }
 
 /* ---------------- inbound leg records ----------------
@@ -1081,52 +1090,6 @@ var LEG_SCHEMA_ACCEPTED = ['FBVNK_LEG/1', 'FBVNK_LEG/2'];
    refuel inside a leg makes start-minus-shutdown the wrong burn. Each of those is a
    field here now. */
 
-/* Nearest aerodrome to a position, within a radius. The aeroplane sends latitude and
-   longitude; the book owns the aerodrome table, so resolution is the book's job.
-   No coordinates are invented here: FIELDS carries none, and this session will not put
-   a position on a real aerodrome from recall. Until they are supplied, every position
-   resolves to null and says so on the review page, and the pilot's own correction on
-   that page teaches the book one field at a time (S.fieldPos). */
-var RESOLVE_RADIUS_NM = 8;
-function fieldPos(code){
-  if(S && S.fieldPos && S.fieldPos[code]) return S.fieldPos[code];
-  var f = FIELDS[code];
-  return (f && typeof f.lat === 'number' && typeof f.lon === 'number')
-    ? {lat:f.lat, lon:f.lon, src:f.arp || 'in the field table'} : null;
-}
-function nmBetween(a, b){
-  var R = 3440.065, toRad = Math.PI/180;
-  var dLat = (b.lat-a.lat)*toRad, dLon = (b.lon-a.lon)*toRad;
-  var la1 = a.lat*toRad, la2 = b.lat*toRad;
-  var h = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)*Math.sin(dLon/2);
-  return 2*R*Math.asin(Math.min(1, Math.sqrt(h)));
-}
-/* Every code the book has a position for, whether or not the price table knows it.
-   LETL is the case in point: Claus flew LPCS-LETL-LEAP in October 2025 and LETL has no
-   row in FIELDS, so a position there would never resolve if this only walked FIELDS.
-   An aerodrome with a position but no row still logs correctly and prices at the
-   default field, which is right - the book knows where she landed, not what it cost. */
-function knownCodes(){
-  var seen = {}, out = [];
-  Object.keys(FIELDS).concat(Object.keys((S && S.fieldPos) || {})).forEach(function(c){
-    if(c !== 'ZZZZ' && !seen[c]){ seen[c] = 1; out.push(c); }
-  });
-  return out;
-}
-function resolveField(lat, lon){
-  if(typeof lat !== 'number' || typeof lon !== 'number') return null;
-  var best = null;
-  knownCodes().forEach(function(code){
-    var p = fieldPos(code); if(!p) return;
-    var nm = nmBetween({lat:lat, lon:lon}, p);
-    if(!best || nm < best.nm) best = {code:code, nm:nm};
-  });
-  return (best && best.nm <= RESOLVE_RADIUS_NM) ? best : null;
-}
-function posTxt(lat, lon){
-  if(typeof lat !== 'number' || typeof lon !== 'number') return '';
-  return Math.abs(lat).toFixed(3)+(lat<0?'S':'N')+' '+Math.abs(lon).toFixed(3)+(lon<0?'W':'E');
-}
 
 /* Thresholds for reading "how she was flown" out of power data. This session's proposal,
    not measured off the aeroplane — the Builder or Claus sets the real ones, and until
@@ -1198,24 +1161,12 @@ function normaliseLeg(rec){
   if(rec.schema && LEG_SCHEMA_ACCEPTED.indexOf(rec.schema) < 0)
     notes.push('Record is '+rec.schema+'; this book reads '+LEG_SCHEMA_ACCEPTED.join(' and ')+'. Fields it does not know are ignored.');
 
-  /* Positions first, codes second. V274 stores latitude and longitude; the ICAO code is
-     the book's to resolve, and an unresolved one is labelled, never guessed. */
-  var depLat = numOrNull(rec.depLat), depLon = numOrNull(rec.depLon);
-  var arrLat = numOrNull(rec.arrLat), arrLon = numOrNull(rec.arrLon);
-  var from = icao(rec.from), to = icao(rec.to);
-
-  if(!from && depLat !== null && depLon !== null){
-    var rd = resolveField(depLat, depLon);
-    if(rd){ from = rd.code; notes.push('Departure resolved to '+rd.code+' from '+posTxt(depLat, depLon)+', '+num(rd.nm,1)+' nm.'); }
-    else { from = '????'; notes.push('Departure not resolved: '+posTxt(depLat, depLon)+' is not within '+RESOLVE_RADIUS_NM+' nm of any aerodrome the book has a position for. Priced at the default field. Name it on the review page and the book remembers the position.'); }
-  }
-  if(!to && arrLat !== null && arrLon !== null){
-    var ra = resolveField(arrLat, arrLon);
-    if(ra){ to = ra.code; notes.push('Arrival resolved to '+ra.code+' from '+posTxt(arrLat, arrLon)+', '+num(ra.nm,1)+' nm.'); }
-    else { to = '????'; notes.push('Arrival not resolved: '+posTxt(arrLat, arrLon)+' is not within '+RESOLVE_RADIUS_NM+' nm of any aerodrome the book has a position for. Priced at the default field. Name it on the review page and the book remembers the position.'); }
-  }
-  if(!from || !to)
-    return {ok:false, why:'The record needs a departure and a destination \u2014 either four-letter codes, or positions the book can resolve.'};
+  /* Claus, 16 Sep 22:08: "stop all this position shit, with lots and lats, u know what
+     airport we are at for take off and landing ICAO, use that. over engineered BS." He is
+     right. V277 has the aeroplane asking the sim which airport she is at, at engine start
+     and at shutdown, and sending the code. The book takes it and stops there. An old record
+     with no code shows ---- and he types it. */
+  var from = icao(rec.from) || '----', to = icao(rec.to) || '----';
 
   var date = /^\d{4}-\d{2}-\d{2}$/.test(String(rec.date||'')) ? rec.date : '';
   if(!date){ date = today(); notes.push('assumption: no date in the record — filed as '+date+'.'); }
@@ -1311,8 +1262,11 @@ function normaliseLeg(rec){
 
   var price = numOrNull(rec.fuelPrice);
   if(price === null || price <= 0){
-    price = (FIELDS[to] || FIELDS.ZZZZ).fuel || FIELDS.ZZZZ.fuel;
-    if(litres > 0) notes.push('assumption: fuel at '+eur(price)+'/L, the standing price for '+to+' — the record carried none.');
+    var pf = FIELDS[to] || FIELDS.ZZZZ;
+    price = pf.fuel || FIELDS.ZZZZ.fuel;
+    if(litres > 0) notes.push(pf.noFees
+      ? 'assumption: fuel at '+eur(price)+'/L at '+to+' — the default field\u2019s price. The book has no fuel, landing or parking figure for '+to+' at all, so its fees on this leg are the default\u2019s too.'
+      : 'assumption: fuel at '+eur(price)+'/L, the standing price for '+to+' — the record carried none.');
   }
 
   /* Sign convention, fixed by the contract: positive is descent, so 150 means 150 fpm
@@ -1440,70 +1394,16 @@ function normaliseLeg(rec){
     fp5lDep:fp5lDep, fp5lArr:fp5lArr, burn:burn,
     litres:litres, fuelSrc:fuelSrc, burnSource:burnSource, refuelInLeg:refuelInLeg, price:price,
     tachStart:tachStart, tachStop:tachStop,
-    depLat:depLat, depLon:depLon, arrLat:arrLat, arrLon:arrLon,
     landings:landings, noFlight:noFlight, airStart:airStart, stopInAir:stopInAir,
     rate:rate, nights:nights, handling: rec.handling ? 95 : 0,
     style:style, surface:surface,
+    /* The review page's selections, prefilled with what the book would have picked by
+       itself, so signing an untouched page behaves exactly as it did before they existed. */
+    natureVol:'P1', fonctions:'PIC', crew:'',
+    ldgDay: landings === null ? 0 : landings, ldgNight:0, nightH:0, ifrH:0,
     note:String(rec.note || '').slice(0,160),
     notes:notes, srcNotes:srcNotes
   }};
-}
-
-/* ---------------- aerodrome positions ----------------
-   Contract FBVNK_LEG/2 has the aeroplane sending latitude and longitude, so resolving
-   them to an ICAO code is the book's job - and the book had no coordinate for any
-   aerodrome, because this session will not put a position on a real one from recall.
-   Records is producing them from the official AIPs (NAV Portugal, ENAIRE) with a source
-   URL against each. This is where they go in. Nothing here invents a coordinate: it
-   takes what it is given, checks it is a plausible position, and records where it came
-   from so the Rule Book can show provenance next to every one. */
-function loadCoords(txt){
-  var obj;
-  try{ obj = JSON.parse(String(txt||'')); }
-  catch(e){ coordSay('That is not a coordinate set — expecting JSON keyed by ICAO.', true); return false; }
-  if(!obj || typeof obj !== 'object' || Array.isArray(obj)){ coordSay('Expecting an object keyed by ICAO code.', true); return false; }
-  /* A set may arrive wrapped, e.g. {"source":"...","aerodromes":{...}} */
-  if(obj.aerodromes && typeof obj.aerodromes === 'object') obj = obj.aerodromes;
-
-  var taken = [], refused = [];
-  Object.keys(obj).forEach(function(raw){
-    var code = icao(raw), v = obj[raw];
-    if(!code){ refused.push(raw + ' — not a four-letter code'); return; }
-    var lat = v && numOrNull(v.lat), lon = v && numOrNull(v.lon);
-    if(lat === null || lon === null){ refused.push(code + ' — no lat/lon'); return; }
-    if(lat < -90 || lat > 90 || lon < -180 || lon > 180){ refused.push(code + ' — off the globe'); return; }
-    if(lat === 0 && lon === 0){ refused.push(code + ' — 0,0 is the Atlantic, not an aerodrome'); return; }
-    S.fieldPos[code] = {lat:lat, lon:lon, src:String((v.src || v.source || 'supplied')).slice(0,120)};
-    taken.push(code);
-  });
-
-  if(!taken.length){ coordSay('Nothing usable in that. ' + refused.join('; '), true); return false; }
-  save(); render();
-  coordSay(taken.length + ' position' + (taken.length===1?'':'s') + ' on file: ' + taken.join(', ') +
-           (refused.length ? '. Refused: ' + refused.join('; ') : '.'), false);
-  toast(taken.length + ' aerodrome position' + (taken.length===1?'':'s') + ' loaded. Positions in a record resolve to these now.');
-  return true;
-}
-function coordSay(msg, bad){
-  var el = $('coordHint'); if(!el) return;
-  el.textContent = msg; el.style.color = bad ? 'var(--bad)' : '';
-}
-function renderCoords(){
-  var el = $('coordList'); if(!el) return;
-  var rows = knownCodes().map(function(code){
-    var p = fieldPos(code);
-    return {code:code, p:p, name:(FIELDS[code] ? FIELDS[code].name : 'not in the price table')};
-  });
-  var have = rows.filter(function(r){ return r.p; }).length;
-  el.innerHTML = '<div class="tw"><table><thead><tr><th>ICAO</th><th>Aerodrome</th><th>Position</th><th>Source</th></tr></thead><tbody>'+
-    rows.map(function(r){
-      return '<tr><td class="mono">'+esc(r.code)+'</td><td>'+esc(r.name)+'</td>'+
-        '<td class="mono tiny">'+(r.p ? esc(posTxt(r.p.lat, r.p.lon)) : '<span class="muted">none</span>')+'</td>'+
-        '<td class="tiny muted">'+(r.p ? esc(r.p.src || 'supplied') : '—')+'</td></tr>';
-    }).join('')+'</tbody></table></div>'+
-    '<p class="tiny muted" style="margin-top:8px">'+have+' of '+rows.length+' have a position. '+
-    'A record that carries a position and no ICAO code resolves against these, nearest within '+RESOLVE_RADIUS_NM+
-    ' nm. Without one it files as <span class="mono">????</span>, prices at the default field and says so on the review page.</p>';
 }
 
 function ingestSay(msg, bad){
@@ -1529,13 +1429,12 @@ function ingestRecord(obj){
   }
   if(leg.date < S.lastDate) leg.date = S.lastDate;
 
-  var res = fileLeg(leg);
+  enterLeg(leg);
   S.ingested.push(leg.legId);
-  save(); render(); renderSignCard(leg, res);
+  save(); render(); renderSignCard(leg);
   switchPane('ramp');
   ingestSay('Filed from the aeroplane · '+leg.from+'–'+leg.to+' · '+hhmm(leg.hours)+' · '+leg.legId, false);
-  toast('F-BVNK filed the leg. Read the page and sign it.' +
-        (res.raised.length ? ' '+res.raised.length+' new squawk'+(res.raised.length===1?'':'s')+'.' : ''));
+  toast('F-BVNK filed the leg. Check the page, change what she could not know, and sign it.');
   return true;
 }
 
@@ -1780,9 +1679,8 @@ function renderInbox(){
 function renderLastPosting(res){
   var lastLeg = S.legs[S.legs.length-1];
   if(!lastLeg) return;
-  if(!res) res = resFor(lastLeg);
-  if(lastLeg.signedBy) renderChit(lastLeg, res);
-  else renderSignCard(lastLeg, res);
+  if(lastLeg.signedBy) renderChit(lastLeg, res || resFor(lastLeg));
+  else renderSignCard(lastLeg);
 }
 function buildPostingHtml(res){
   var html = '';
@@ -1845,125 +1743,171 @@ function renderChit(leg, res){
 
 /* Everything the aeroplane sent, laid out under the carnet lines so the pilot can check
    it against what he just flew. Read-only by design: these are her figures, not his. */
-/* ---------------- the aircraft's own logbook panel, V275 ----------------
-   Claus, 16 Sep 21:0x: "update the cost ledger with what the lates layout of the lookbook
-   looks like". This reproduces the panel that opens when he taps "Logbook - last leg" on
-   the cockpit iPad, line for line, so the iPad and this page read the same. Every format
-   below is taken from the installed HANGAR.js (V275, 20:56) rather than described: times
-   HH:MMZ, durations h:mm with the hour NOT zero-padded, REM in whole litres, the burn to
-   0.1 L in brackets, tacho to two decimals, positions to three, touchdown whole fpm.
+/* What this book is, said on the page rather than left to be assumed. Records' R18 read
+   AMC1 FCL.050: a home MSFS leg is neither flight time nor an FSTD session, and how to log
+   a non-qualified home simulator is not stated in the rules. So the page says what it is
+   not. Ordered by Claus, 16 Sep 21:54. */
+var SIM_LABEL_HTML = '<p class="simlabel"><strong>Home simulator record &mdash; not an EASA logbook.</strong> MSFS 2024, non-qualified device. Not flight time, not FSTD time.</p>';
 
-   Three places this panel deliberately disagrees with the rest of the book:
-
-     - It is always Zulu. The carnet has a UTC/local control and the iPad has none, so a
-       line that is meant to match must not move when that control does.
-     - The tacho takes a DOT. The iPad prints toFixed(2); the carnet keeps the comma Claus
-       writes by hand on page 86. Same number, two hands.
-     - The touchdown is shown NEGATIVE-DOWN, the sim's own sign, because that is what the
-       iPad prints. The record's touchdownFpm stays positive-down per FBVNK_LEG/2 and the
-       whole book bills on that. The line under the panel says so, because two signs for
-       one number is exactly the kind of thing that gets read wrong later.
-
-   Where the record carries nothing for a line the book prints an em dash rather than
-   dropping the line, so a gap against the iPad is visible instead of invisible. */
 /* The rule the aeroplane saves a leg by, V275. Said in the same words wherever a leg is
    shown, so the page and the iPad agree on what is even a leg. */
 var LEG_RULE = 'A leg is an engine start to shutdown with at least 10 s airborne in one stretch. ' +
   'Ground runs, taxi bumps and hops under 10 s make no entry at all, so a tacho gap between one ' +
   'leg and the next is expected and is not an error.';
-function lbZ(hm){ return hm ? hm + 'Z' : '--:--'; }
+
+/* ---------------- what she recorded ----------------
+   Claus, 16 Sep 22:08: the order of the lines, and "No positions, no zulu day, no prose."
+   Departure and arrival by ICAO with their engine times, then the flying, then the fuel,
+   then the tacho. Touchdown positive, the way the record carries it and the way the book
+   bills it. A figure the record does not have shows a dash; nothing is derived here. */
+function lbZ(hm){ return hm ? hm + 'Z' : '\u2014'; }
 function lbDur(h){ return (h === null || h === undefined) ? '\u2014' : hhmm(h); }
 function lbFix(v, d){ return (v === null || v === undefined || v === '') ? '\u2014' : (+v).toFixed(d); }
-function zuluDay(iso){
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(String(iso||''))) return null;
-  var y = +iso.slice(0,4), m = +iso.slice(5,7), d = +iso.slice(8,10);
-  return Math.round((Date.UTC(y, m-1, d) - Date.UTC(y, 0, 1)) / 86400000) + 1;
-}
-function v275Panel(leg){
-  var L = [];
-  L.push('Leg ' + (leg.legNo === null || leg.legNo === undefined ? '\u2014' : leg.legNo) +
-         ': ' + lbZ(leg.engineStart) + ' - ' + lbZ(leg.shutdown) + ' (engine start - shutdown)');
-  L.push('Airborne ' + lbDur(leg.airborne) + ', block ' + lbDur(leg.block));
-  var hasRem = leg.fp5lDep !== null && leg.fp5lDep !== undefined;
-  L.push((hasRem || leg.refuelInLeg || (leg.burn !== null && leg.burn !== undefined))
-    ? 'Fuel ' + lbFix(leg.fp5lDep, 0) + ' L -> ' + lbFix(leg.fp5lArr, 0) + ' L (' +
-      (leg.refuelInLeg ? 'refuel inside the leg: no leg burn' : lbFix(leg.burn, 1) + ' L') + ')'
-    : 'Fuel \u2014');
-  L.push((leg.tachStart === null || leg.tachStart === undefined) &&
-         (leg.tachStop === null || leg.tachStop === undefined)
-    ? 'Tacho \u2014'
-    : 'Tacho ' + lbFix(leg.tachStart, 2) + ' -> ' + lbFix(leg.tachStop, 2));
-
-  var nl = leg.landings;
-  var ldg = (nl !== null && nl !== undefined && nl > 0)
-    ? ', ' + nl + ' landing' + (nl === 1 ? '' : 's') + ', last ' + lbZ(leg.landing) +
-      ' at ' + (leg.rate === 0 ? 0 : -leg.rate) + ' fpm'
-    : '';
-  /* The iPad reads NK_LB_L_F_NOTO, not the absence of a time, so an air start that somehow
-     carries a take-off stamp still prints "No take-off seen" there. Match it. */
-  L.push(((leg.airStart || !leg.takeOff) ? 'No take-off seen' : 'Take-off ' + lbZ(leg.takeOff)) + ldg);
-  if(leg.stopInAir) L.push('Engine stopped in flight');
-
-  var pos = function(a, b){ return (typeof a === 'number' && typeof b === 'number')
-    ? a.toFixed(3) + ' ' + b.toFixed(3) : '\u2014'; };
-  L.push('Position dep ' + pos(leg.depLat, leg.depLon) + ', arr ' + pos(leg.arrLat, leg.arrLon));
-  var dy = zuluDay(leg.date);
-  L.push('Zulu day ' + (dy === null ? '\u2014' : dy));
-  return L;
-}
 
 function recordedBlock(leg){
   if(leg.src !== 'aircraft') return '';
+  var row = function(k, v){ return '<dt>'+k+'</dt><dd>'+v+'</dd>'; };
   var html = '<hr class="rule">'+
     '<p class="tiny" style="letter-spacing:.09em; text-transform:uppercase; color:var(--ink-2); margin:0 0 6px">'+
       '<span class="stamp" style="font-size:12px; padding:1px 7px; transform:rotate(-3deg)">AUTO</span>'+
-      ' &nbsp;as F-BVNK logged it &middot; iPad, V275</p>'+
-    '<pre class="lbpanel">'+v275Panel(leg).map(esc).join('\n')+'</pre>'+
-    '<p class="tiny muted" style="margin:6px 0 0">Tap <em>Logbook &ndash; last leg</em> on the cockpit iPad and this is the same text, line for line. '+
-      'Always Zulu here whatever the carnet\u2019s time control shows, tacho with a dot as the iPad prints it, '+
-      'and the touchdown in the <strong>sim\u2019s sign, negative down</strong> &mdash; the record itself carries '+
-      (leg.rate === 0 ? '0' : '+'+leg.rate)+' fpm positive-down, which is what the book bills on.'+
-      (leg.legNo === null || leg.legNo === undefined
-        ? ' The record carries no leg number, so the first line shows a dash; the reference is <span class="mono">'+esc(leg.legId||'')+'</span>.'
-        : ' Reference <span class="mono">'+esc(leg.legId||'')+'</span>.')+
-      (leg.refuelInLeg ? '' : ' The bracket is the FP-5L&rsquo;s own USED count, so it need not equal the difference of the two rounded litre figures.')+
-    '</p>';
-  /* An unresolved position is the one thing on this card the pilot can put right, and
-     doing it once teaches the book that aerodrome's position for every leg after. The
-     fees on THIS leg already posted at the default field - naming it fixes the carnet
-     row and the next resolution, not the invoice, and the card says so. */
+      ' &nbsp;as F-BVNK recorded it</p>'+
+    '<dl class="rec">'+
+      row('D&eacute;part',   esc(leg.from) + ' &nbsp; ' + lbZ(leg.engineStart)) +
+      row('Arriv&eacute;e',  esc(leg.to)   + ' &nbsp; ' + lbZ(leg.shutdown)) +
+      row('D&eacute;collage', lbZ(leg.takeOff)) +
+      row('Atterrissage',    lbZ(leg.landing)) +
+      row('En vol',          lbDur(leg.airborne)) +
+      row('Bloc',            lbDur(leg.block)) +
+      row('Carburant',       lbFix(leg.fp5lDep,0) + ' &rarr; ' + lbFix(leg.fp5lArr,0) + ' L') +
+      row('Consomm&eacute;', leg.refuelInLeg ? 'refuel in leg' : lbFix(leg.burn,1) + ' L') +
+      row('Atterrissages',   (leg.landings === null || leg.landings === undefined) ? '&mdash;' : leg.landings) +
+      row('Touch&eacute;',   lbFix(leg.rate,0) + ' fpm') +
+      row('Tacho',           lbFix(leg.tachStart,2) + ' &rarr; ' + lbFix(leg.tachStop,2)) +
+      row('R&eacute;f.',     '<span class="tiny">'+esc(leg.legId||'')+'</span>') +
+    '</dl>';
+
+  /* An ICAO the record did not carry is the one thing on this page he can put right, and
+     it is one box. */
   ['from','to'].forEach(function(end){
-    if(leg[end] !== '????') return;
-    var lat = leg[end==='from'?'depLat':'arrLat'], lon = leg[end==='from'?'depLon':'arrLon'];
-    if(typeof lat !== 'number' || typeof lon !== 'number') return;
-    /* The list used to be the only way to name it, which left the pilot stuck the first
-       time she landed anywhere the book had never heard of - the 16 Sep read off Tarbes
-       being exactly that. So there is a box as well: any four-letter code is accepted,
-       the position is learned against it, and the carnet row reads the code he typed.
-       It does not invent a landing fee. An aerodrome with no entry in the field table is
-       priced at the default and the card says so, because a made-up fee would be worse
-       than an honest default. */
-    html += '<div class="field" style="margin-top:8px"><label for="pick-'+end+'">'+
-      (end==='from'?'D&eacute;part':'Arriv&eacute;e')+' &mdash; '+posTxt(lat, lon)+', not on file</label>'+
-      '<select id="pick-'+end+'" data-pick="'+end+'"><option value="">Name it&hellip;</option>'+
-      Object.keys(FIELDS).filter(function(k){ return k !== 'ZZZZ'; }).map(function(k){
-        return '<option value="'+k+'">'+k+' &mdash; '+esc(FIELDS[k].name)+'</option>';
-      }).join('')+'</select>'+
-      '<input type="text" id="type-'+end+'" maxlength="4" placeholder="&hellip; or type any ICAO, e.g. LFBT" '+
-        'style="margin-top:6px; text-transform:uppercase" autocapitalize="characters" autocomplete="off">'+
-      '</div>';
+    if(leg[end] !== '----') return;
+    html += '<div class="field" style="margin-top:8px"><label for="type-'+end+'">'+
+      (end==='from'?'D&eacute;part':'Arriv&eacute;e')+' &mdash; no ICAO in the record</label>'+
+      '<input type="text" id="type-'+end+'" maxlength="4" placeholder="type the ICAO, e.g. LFBT" '+
+        'style="text-transform:uppercase" autocapitalize="characters" autocomplete="off"></div>';
   });
 
-  /* The converter's notes first and under their own heading. They came off the laptop,
-     not out of this book, and the difference is the whole reason they are worth showing. */
   if(leg.srcNotes && leg.srcNotes.length)
     html += '<p class="tiny" style="margin-top:8px; color:var(--ink-2)">'+
       '<span style="letter-spacing:.09em; text-transform:uppercase">Du convertisseur</span><br>'+
       leg.srcNotes.map(esc).join('<br>')+'</p>';
-  if(leg.notes && leg.notes.length)
-    html += '<p class="tiny muted" style="margin-top:8px">'+leg.notes.map(esc).join('<br>')+'</p>';
+  var shown = (leg.notes || []).filter(function(n){
+    return !(leg.pending !== false && assumedNote(n));
+  });
+  if(shown.length)
+    html += '<p class="tiny muted" style="margin-top:8px">'+shown.map(esc).join('<br>')+'</p>';
   html += '<p class="tiny muted" style="margin-top:8px">'+LEG_RULE+'</p>';
   return html;
+}
+
+/* ---------------- the review page's selections ----------------
+   Eleven rows, the set proposed in R5 and ordered by Claus on 16 Sep 21:54. Every default
+   is what the book already picks, so a page signed untouched posts exactly what it posted
+   before any of this existed - which is the only way a change like this is safe.
+
+   Four of them move money, and they are marked. They are also exactly the four the page
+   used to print as "assumption:" lines, so turning them into choices removes three of
+   those lines rather than adding new ways to be wrong.
+
+   Two of them - the landings by day and night, and the night and IFR time - are EASA
+   pilot-logbook columns (AMC1 FCL.050 cols 8 and 9, via Records' R18). They are captured
+   here and kept OFF the carnet rows, because Claus's document is a Carnet de Route, an
+   aircraft journey record, and those are a pilot's columns. Proposed that way in R5 and
+   ordered that way. */
+var SEL_NATURE = ['P1','P1 (\u00e9cole)','P2','double commande','essai','convoyage'];
+var SEL_FONC   = ['PIC','co-pilot','dual','instructor'];
+var SEL_STYLE  = [['gentle','gentle'],['normal','by the book'],['pressed','pressed on']];
+var SEL_SURF   = [['asphalt','asphalt'],['grass','grass'],['gravel','gravel']];
+
+function selRow(label, control, money){
+  return '<div class="selrow"><label>'+label+
+    (money ? ' <span class="eur" title="this one changes what the leg costs">&euro;</span>' : '')+
+    '</label>'+control+'</div>';
+}
+function selOpts(list, cur){
+  return list.map(function(o){
+    var v = o instanceof Array ? o[0] : o, t = o instanceof Array ? o[1] : o;
+    return '<option value="'+esc(v)+'"'+(v===cur?' selected':'')+'>'+esc(t)+'</option>';
+  }).join('');
+}
+function hoursBox(id, v){
+  return '<input type="number" id="'+id+'" min="0" step="0.1" value="'+(+v||0)+'">';
+}
+function selectionsBlock(leg){
+  var fd = FIELDS[leg.to] || FIELDS.ZZZZ;
+  return '<hr class="rule">'+
+    '<p class="tiny" style="letter-spacing:.09em; text-transform:uppercase; color:var(--ink-2); margin:0 0 8px">'+
+      'What she could not know &nbsp;<span class="muted" style="text-transform:none; letter-spacing:0">'+
+      '&mdash; change nothing and it posts exactly as she filed it. <span class="eur">&euro;</span> marks the five that cost: '+
+      'the last three bill this leg, the first two spend her instead and bill later, through wear.</span></p>'+
+    '<div class="sels">'+
+      selRow('Nature du Vol', '<select id="sel-nature">'+selOpts(SEL_NATURE, leg.natureVol||'P1')+'</select>') +
+      selRow('Fonctions', '<select id="sel-fonc">'+selOpts(SEL_FONC, leg.fonctions||'PIC')+'</select>') +
+      selRow('\u00c9quipage &mdash; Noms', '<input type="text" id="sel-crew" placeholder="'+esc(leg.signedBy||'Claus Thanner')+'" value="'+esc(leg.crew||'')+'">') +
+      selRow('Atterrissages &mdash; jour / nuit',
+        '<span class="pair"><input type="number" id="sel-ldgd" min="0" step="1" value="'+(+leg.ldgDay||0)+'">'+
+        '<input type="number" id="sel-ldgn" min="0" step="1" value="'+(+leg.ldgNight||0)+'"></span>') +
+      selRow('Nuit / IFR &mdash; heures',
+        '<span class="pair">'+hoursBox('sel-night', leg.nightH)+hoursBox('sel-ifr', leg.ifrH)+'</span>') +
+      selRow('Incidents &middot; Observations', '<input type="text" id="sel-note" maxlength="160" placeholder="NIL" value="'+esc(leg.note||'')+'">') +
+      selRow('Comment elle a vol&eacute;', '<select id="sel-style">'+selOpts(SEL_STYLE, leg.style||'normal')+'</select>', true) +
+      selRow('Surface', '<select id="sel-surf">'+selOpts(SEL_SURF, leg.surface||'asphalt')+'</select>', true) +
+      selRow('Nuits stationn&eacute;es', '<input type="number" id="sel-nights" min="0" step="1" value="'+(+leg.nights||0)+'">', true) +
+      selRow('Handling', '<select id="sel-hand"><option value="0"'+(leg.handling?'':' selected')+'>no</option>'+
+        '<option value="95"'+(leg.handling?' selected':'')+'>yes &mdash; '+eur(95)+'</option></select>', true) +
+      selRow('&euro; par litre', '<input type="number" id="sel-price" min="0" step="0.01" value="'+(+leg.price||fd.fuel||0).toFixed(2)+'">', true) +
+    '</div>';
+}
+/* Three of the book's own "assumption:" lines are exactly the three choices below it, so
+   while the page is still his to change the card does not print them - it would be telling
+   him what it guessed about something he is looking straight at. If he leaves a default,
+   the line comes back when the leg posts, because then it really was an assumption. If he
+   overrules one, it was never an assumption at all and the line goes for good. */
+var SEL_ASSUMED = {
+  price:   'assumption: fuel at ',
+  style:   'assumption: flown by the book',
+  surface: 'assumption: asphalt at '
+};
+function assumedNote(n){
+  for(var k in SEL_ASSUMED) if(n.indexOf(SEL_ASSUMED[k]) === 0) return true;
+  return false;
+}
+function dropAssumption(leg, head){
+  leg.notes = (leg.notes || []).filter(function(n){ return n.indexOf(head) !== 0; });
+}
+
+/* What the pilot chose, read back off the page and onto the leg, just before it posts. */
+function applySelections(leg){
+  var g = function(id){ var el = $(id); return el ? el.value : null; };
+  var n = function(id, dflt){ var v = g(id); v = (v===null || v==='') ? dflt : +v; return isFinite(v) ? Math.max(0, v) : dflt; };
+  if(!$('sel-nature')) return;
+  leg.natureVol = g('sel-nature') || 'P1';
+  leg.fonctions = g('sel-fonc') || 'PIC';
+  leg.crew      = String(g('sel-crew') || '').trim().slice(0,60);
+  leg.ldgDay    = Math.round(n('sel-ldgd', 0));
+  leg.ldgNight  = Math.round(n('sel-ldgn', 0));
+  leg.nightH    = Math.round(n('sel-night', 0)*10)/10;
+  leg.ifrH      = Math.round(n('sel-ifr', 0)*10)/10;
+  leg.note      = String(g('sel-note') || '').slice(0,160);
+  leg.style     = ['gentle','normal','pressed'].indexOf(g('sel-style')) > -1 ? g('sel-style') : 'normal';
+  leg.surface   = ['asphalt','grass','gravel'].indexOf(g('sel-surf')) > -1 ? g('sel-surf') : 'asphalt';
+  leg.nights    = Math.round(n('sel-nights', 0));
+  leg.handling  = +g('sel-hand') ? 95 : 0;
+  var assumedPrice = (FIELDS[leg.to] || FIELDS.ZZZZ).fuel || FIELDS.ZZZZ.fuel;
+  leg.price     = n('sel-price', leg.price || 0);
+
+  if(leg.style   !== 'normal')  dropAssumption(leg, SEL_ASSUMED.style);
+  if(leg.surface !== 'asphalt') dropAssumption(leg, SEL_ASSUMED.surface);
+  if(Math.abs(leg.price - assumedPrice) > 0.0001) dropAssumption(leg, SEL_ASSUMED.price);
 }
 
 function renderSignCard(leg, res){
@@ -1971,62 +1915,57 @@ function renderSignCard(leg, res){
   var from = (FIELDS[leg.from] ? leg.from+' '+FIELDS[leg.from].name : leg.from) + (leg.depTime?' &middot; off '+leg.depTime:'');
   var to   = (FIELDS[leg.to]   ? leg.to+' '+FIELDS[leg.to].name   : leg.to)   + (leg.arrTime?' &middot; on '+leg.arrTime:'');
   var nature = leg.from===leg.to ? 'Local' : 'Navigation';
-  var entered = res.posted.map(function(r){ return r.desc; });
-  if(res.raised.length) entered = entered.concat(res.raised.map(function(sq){ return 'Tech log — '+sq.text; }));
+  var pending = leg.pending !== false;
   $('lastPosting').innerHTML =
     '<div class="signcard">'+
+      SIM_LABEL_HTML +
       '<div class="eyebrow">Carnet de route &middot; '+(auto?'filed by the aeroplane &middot; read it and sign':'review before you sign')+'</div>'+
       '<div class="hwline" style="font-size:23px; margin-top:2px">'+from+' &rarr; '+to+'</div>'+
       '<dl>'+
         '<dt>Date</dt><dd>'+esc(leg.date)+'</dd>'+
-        '<dt>Dur&eacute;e</dt><dd>'+hhmm(leg.hours)+'</dd>'+
+        /* Claus flies his book on airborne time and said so, and EASA's own flight time is
+           a different thing - first movement for take-off to coming to rest. So the label
+           says which one this is rather than leaving it to be guessed. */
+        '<dt>Dur&eacute;e (en vol)</dt><dd>'+hhmm(leg.hours)+
+          (leg.block ? ' <span class="tiny muted">&middot; '+hhmm(leg.block)+' bloc, not totalled</span>' : '')+'</dd>'+
         '<dt>Nature</dt><dd>'+nature+'</dd>'+
         (leg.fuelSrc?'<dt>Carburant</dt><dd style="font-size:16px">'+num(leg.litres,1)+' L &mdash; '+esc(leg.fuelSrc)+'</dd>':'')+
-        (leg.note?'<dt>Observations</dt><dd style="font-size:16px">'+esc(leg.note)+'</dd>':'')+
+        (!pending && leg.note?'<dt>Observations</dt><dd style="font-size:16px">'+esc(leg.note)+'</dd>':'')+
       '</dl>'+
       recordedBlock(leg)+
-      (entered.length ? '<p class="small muted" style="margin-top:6px"><strong>Entered this leg:</strong> '+entered.map(esc).join(', ')+'</p>' : '<p class="small muted" style="margin-top:6px">Nothing chargeable this leg.</p>')+
+      (pending ? selectionsBlock(leg) : '')+
       '<hr class="rule">'+
       '<div class="field"><label for="sign-name">Pilote &mdash; sign to confirm</label><input type="text" id="sign-name" class="signline" value="'+esc(leg.signedBy||'Claus Thanner')+'"></div>'+
       '<div class="btnrow"><button class="btn" id="btn-sign">Sign &amp; reveal cost</button></div>'+
+      '<p class="tiny muted" style="margin-top:6px">Nothing is billed until you sign. The invoices, the wear and the tech log are written at the signature, from the page as it stands.</p>'+
     '</div>';
   ['from','to'].forEach(function(end){
-    var lat = leg[end==='from'?'depLat':'arrLat'], lon = leg[end==='from'?'depLon':'arrLon'];
-    var name = function(code){
-      if(!/^[A-Z]{4}$/.test(code)) return false;
-      /* Idempotent on purpose. Moving off the box fires a native change as well as the
-         one the pilot's keystroke caused, and without this the note lands twice. */
-      if(leg[end] === code) return true;
-      S.fieldPos[code] = {lat:lat, lon:lon, src:'named by the pilot on the review page, '+leg.date};
-      leg[end] = code;
-      leg.notes = (leg.notes||[]).concat([
-        (end==='from'?'Departure':'Arrival')+' named '+code+' by the pilot. The book now has that position and resolves it by itself from here on. '+
-        (FIELDS[code] ? 'The fees on this leg posted at the default aerodrome before it was named.'
-                      : 'The book has no fees for '+code+', so this leg posted at the default aerodrome and so will the next one from there. Its landing, parking and fuel need a real figure before they can be right.')]);
-      save();
-      /* Out of the handler: this card is about to be rebuilt, and the element the event
-         came from is inside it. Redrawing under our own feet throws. */
-      setTimeout(function(){ render(); renderSignCard(leg, res); }, 0);
-      toast(code+' position learned. Next leg from there resolves on its own.');
-      return true;
-    };
-    var sel = $('pick-'+end);
-    if(sel) sel.addEventListener('change', function(){ if(this.value) name(this.value); });
-    var box = $('type-'+end);
-    if(box) box.addEventListener('change', function(){
+    var box = $('type-'+end); if(!box) return;
+    box.addEventListener('change', function(){
       var code = String(this.value||'').trim().toUpperCase();
       if(!code) return;
-      if(!name(code)) toast('An ICAO code is four letters \u2014 ' + code + ' is not one.');
+      if(!/^[A-Z]{4}$/.test(code)){ toast('An ICAO code is four letters \u2014 ' + code + ' is not one.'); return; }
+      if(leg[end] === code) return;
+      leg[end] = code;
+      applySelections(leg);
+      save();
+      setTimeout(function(){ render(); renderSignCard(leg); }, 0);
+      toast((end==='from'?'D\u00e9part':'Arriv\u00e9e')+' set to '+code+'.');
     });
   });
 
   $('btn-sign').addEventListener('click', function(){
+    /* The order matters: what he chose goes on the leg, THEN the leg posts. Doing it the
+       other way round would write the invoices from the aeroplane's guesses and leave his
+       choices decorating a page that had already been billed. */
+    applySelections(leg);
     leg.signedBy = $('sign-name').value.trim() || 'Claus Thanner';
     leg.signedAt = new Date().toISOString();
+    var out = fileLeg(leg);
     save();
-    renderChit(leg, res);
-    renderLogbook();
-    renderInbox();
+    renderChit(leg, out);
+    render();
+    if(out.raised.length) toast(out.raised.length+' new squawk'+(out.raised.length===1?'':'s')+' in the tech log.');
   });
 }
 
@@ -2047,9 +1986,10 @@ function renderCounters(){
     '<tr><td>Airframe total (TTAF)</td><td class="num">'+num(c.ttaf,1)+'</td><td class="num">—</td><td class="num">—</td></tr>'+
     '<tr><td>Engine since overhaul</td><td class="num">'+num(c.engSMOH,1)+'</td><td class="num">2000.0</td><td class="num">'+num(2000-c.engSMOH,1)+'</td></tr>'+
     '<tr><td>Propeller since overhaul</td><td class="num">'+num(c.propSMOH,1)+'</td><td class="num">2000.0</td><td class="num">'+num(2000-c.propSMOH,1)+'</td></tr>'+
-    '<tr><td>Hour meter this season</td><td class="num">'+num(c.hrs,1)+'</td><td class="num">—</td><td class="num">—</td></tr>'+
+    '<tr><td>Flown this season <span class="tiny muted">airborne</span></td><td class="num">'+num(c.hrs,1)+'</td><td class="num">—</td><td class="num">—</td></tr>'+
+    '<tr><td>Hour meter this season <span class="tiny muted">tacho</span></td><td class="num">'+num(c.meter||0,1)+'</td><td class="num">—</td><td class="num">—</td></tr>'+
     '</tbody>'+
-    '<tfoot><tr><td colspan="4" class="tiny muted" style="text-align:left">Every counter here runs on the hour meter, Claus&rsquo;s pick of 16 Sep: <em>&ldquo;Tacho time (the hour meter)&rdquo;</em>. It counts the ground running between legs as well as the flying, so it runs ahead of the carnet&rsquo;s airborne total'+
+    '<tfoot><tr><td colspan="4" class="tiny muted" style="text-align:left"><strong>Two clocks, both Claus&rsquo;s.</strong> The <strong>25 / 50 / 100 h inspections</strong> and the airframe total count <strong>airborne</strong> hours off the journey log &mdash; <em>&ldquo;the inspection times &hellip; are based on the journey log book airborne hours, NOT tacho&rdquo;</em>, 16 Sep 21:57. The <strong>reserves</strong> and the <strong>2000 h TBO counters</strong> run on the <strong>hour meter</strong> &mdash; <em>&ldquo;Tacho time (the hour meter)&rdquo;</em>, 21:05 &mdash; so the fund and the overhaul it pays for count the same hours. The meter also counts ground running, so it runs ahead'+
       (S.tach && S.tach.cursor !== null ? ', and stands at '+tachoTxt(S.tach.cursor) : '')+'.</td></tr></tfoot>';
   $('reserveTbl').innerHTML =
     '<thead><tr><th>Fund</th><th class="num">Rate €/h</th><th class="num">Held</th><th class="num">Target</th></tr></thead><tbody>'+
@@ -2163,6 +2103,19 @@ function surname(name){
   return parts.length ? parts[parts.length-1].toUpperCase() : '';
 }
 function groundRuns(){ return S.legs.filter(function(l){ return l.noFlight; }).length; }
+/* Hour-meter time that no leg's own tacho span covers: taxiing, run-ups, ground runs that
+   made no entry, and - the one that matters - a flight V275 lost to a reload. Summed off
+   what each leg actually accrued against what its own reading spans. */
+function engineTimeBetweenLegs(){
+  var total = 0;
+  S.legs.forEach(function(l){
+    if(l.accrualBasis !== 'meter progression') return;
+    var own = (typeof l.tachStart === 'number' && typeof l.tachStop === 'number')
+      ? Math.max(0, l.tachStop - l.tachStart) : 0;
+    total += Math.max(0, (l.accrualHours || 0) - own);
+  });
+  return Math.round(total*100)/100;
+}
 function logRows(){
   /* Runs that never got airborne stay out, per Claus's rule of 16 Sep 18:34. They are
      filed, they post, and the count is shown under the page. An air start is not one of
@@ -2183,7 +2136,9 @@ function logRows(){
       tach: (l.tachStop===0 || l.tachStop) ? l.tachStop : null,
       note: [l.note, l.stopInAir ? 'Arr\u00eat moteur en vol' : ''].filter(Boolean).join(' \u00b7 '),
       auto: legSummary(l),
-      name: l.signedBy || 'CLAUS THANNER',
+      nature: l.natureVol || 'P1',
+      fonc: l.fonctions || 'PIC',
+      name: l.crew || l.signedBy || 'CLAUS THANNER',
       signed: l.signedBy || '', signedAt: l.signedAt || ''
     };
   });
@@ -2254,11 +2209,11 @@ function renderLogbook(){
       : '';
     return '<tr>'+
       '<td>'+dayMonth(r.date)+'</td>'+
-      nom+'<td>PIC</td>'+
+      nom+'<td>'+esc(r.fonc)+'</td>'+
       '<td>'+esc(r.from)+'</td><td>'+esc(r.to)+'</td>'+
       '<td class="fill">'+r.depT+'</td><td class="fill">'+r.arrT+'</td>'+
       '<td>'+hplus(r.dur)+'</td>'+
-      '<td>P1 <span class="tiny">'+hplus(r.run)+'</span></td>'+
+      '<td>'+esc(r.nature)+' <span class="tiny">'+hplus(r.run)+'</span></td>'+
       '<td class="fill">'+(r.fuelDep===null ? '' : num(r.fuelDep,0))+'</td>'+
       '<td class="fill">'+(r.fuelArr===null ? '' : num(r.fuelArr,0))+'</td>'+
       '<td class="fill struck"></td><td class="fill struck"></td>'+
@@ -2275,11 +2230,21 @@ function renderLogbook(){
 
   $('logTbl').innerHTML = head+'<tbody>'+body+'</tbody>'+foot;
   var gr = groundRuns(), n = $('logNote');
+  /* Engine time that ran between legs, stated plainly and never as an error.
+     Claus, 18:34: "from time to time there may be a tacho log entry 'discrepency' between
+     last leg and current (last) leg - just like real world, so just accept this." So this
+     is a sentence under the page, not a flag on a row: it says how much the hour meter
+     counted that no leg accounts for, and leaves it at that. It is also the only visible
+     trace of the V275 limit where a reload near touchdown loses a flight outright - which
+     is a reason to show the figure, and no reason at all to call it wrong. */
+  var between = engineTimeBetweenLegs();
   if(n) n.innerHTML = '<span class="tiny muted">'+
     (gr ? gr+' run'+(gr===1?'':'s')+' with no airborne time '+(gr===1?'is':'are')+
       ' not on this page \u2014 only airborne events go in the logbook. '+(gr===1?'It is':'They are')+' in the Ledger, and '+
       (gr===1?'its':'their')+' fuel and fees posted as usual. ' : '')+
-    esc(LEG_RULE)+'</span>';
+    esc(LEG_RULE)+
+    (between > 0.005 ? ' The hour meter has counted <strong>'+hhmm(between)+'</strong> that no leg on this page accounts for \u2014 engine time between legs. It is accrued and it is normal.' : '')+
+    '</span>';
 }
 
 /* The signature on his pages is initials, not the name written out. */
@@ -2392,7 +2357,7 @@ function renderBook(){
 
 function render(){
   renderStatus(); renderMeters(); renderSeasonMini(); renderHealth(); renderInbox();
-  renderCounters(); renderSquawks(); renderLedger(); renderLogbook(); renderPaint(); renderYear(); renderBook(); renderCoords();
+  renderCounters(); renderSquawks(); renderLedger(); renderLogbook(); renderPaint(); renderYear(); renderBook();
 }
 
 /* ============================================================
@@ -2416,7 +2381,7 @@ function seedExamples(st){
     {date:'2026-03-18', depTime:'09:15', arrTime:'14:03', signedBy:'Claus Thanner', signedAt:'2026-03-18T14:11:00', from:'LEVD', to:'LPCS', hours:4.8, litres:130, price:2.29, rate:180, nights:0, handling:0, style:'normal',  surface:'asphalt', note:'Long leg home'}
   ];
   var res = null;
-  legs.forEach(function(l){ res = fileLeg(l); });
+  legs.forEach(function(l){ enterLeg(l); res = fileLeg(l); });
   S.seeded = true;
   RNG = null;
   LAST_RES = res;
@@ -2506,19 +2471,6 @@ function boot(){
   $('btn-ingest-demo').addEventListener('click', function(){ ingestRecord(demoRecord()); });
   $('btn-ingest-watch').addEventListener('click', function(){ setWatch(!WATCH.on); });
 
-  $('btn-coord-paste').addEventListener('click', function(){
-    var t = prompt('Paste the aerodrome coordinate set, keyed by ICAO.');
-    if(t) loadCoords(t);
-  });
-  $('btn-coord-file').addEventListener('click', function(){ $('coordFile').click(); });
-  $('coordFile').addEventListener('change', function(){
-    var f = this.files && this.files[0]; this.value = '';
-    if(!f) return;
-    var rd = new FileReader();
-    rd.onload = function(){ loadCoords(rd.result); };
-    rd.onerror = function(){ coordSay('Could not read that file.', true); };
-    rd.readAsText(f);
-  });
 
   $('btn-file').addEventListener('click', function(){
     if(grounded()){ toast('She is grounded. Clear the broken item first.'); switchPane('tech'); return; }
@@ -2541,13 +2493,13 @@ function boot(){
       note: $('f-note').value
     };
     if(leg.date < S.lastDate) leg.date = S.lastDate;
-    var res = fileLeg(leg);
-    save(); render(); renderSignCard(leg, res);
+    enterLeg(leg);
+    save(); render(); renderSignCard(leg);
     $('f-block').value=''; $('f-fuel').value=''; $('f-note').value=''; $('f-dep-time').value=''; $('f-arr-time').value='';
     $('f-fp5l-dep').value=''; $('f-fp5l-arr').value=''; $('f-tach').value='';
     $('f-date').value = leg.date;
     $('f-hint').textContent = grounded() ? 'Now grounded — see the tech log.' : '';
-    toast('Leg filed. Review the log below and sign it.' + (res.raised.length ? ' ' + res.raised.length + ' new squawk' + (res.raised.length===1?'':'s') + '.' : ''));
+    toast('Leg entered. Review the page below and sign it — the cost comes with the signature.');
   });
 
   $('f-dep-time').addEventListener('change', suggestArrival);
@@ -2577,7 +2529,7 @@ function boot(){
     var sgn = e.target.closest('[data-sign]');
     if(sgn){
       var lg = S.legs[+sgn.dataset.sign];
-      if(lg){ renderSignCard(lg, resFor(lg)); switchPane('ramp'); }
+      if(lg){ renderSignCard(lg); switchPane('ramp'); }
       return;
     }
   });
