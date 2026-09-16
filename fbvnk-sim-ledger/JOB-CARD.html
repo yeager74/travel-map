@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 14</dd>
+      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 15</dd>
     </dl>
   </div>
 </header>
@@ -495,6 +495,50 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <p class="small"><strong>The EASA side is now in, as R18.</strong> It moved one row, added two and left <em>Nature du Vol</em> alone &mdash; the section below has it.</p>
   </div>
   <p class="small"><strong>The P1 figure is closed, and not by me.</strong> Claus, 18:04:32: &ldquo;good bloody question&hellip; ha ha, I should know, but I just carried it over from the previous owners. Keep it the same&rdquo;. The Logbook tab no longer calls it an assumption of this session&rsquo;s &mdash; it quotes him, and the figure stays exactly as his pages carry it.</p>
+</section>
+
+<section>
+  <h2>K7e FAIL &mdash; fixed <span class="hint">R8 &middot; the reserve cursor is bounded &middot; commit <span class="mono">6ec1551</span> &middot; Sim Ledger publish on hold</span></h2>
+  <div class="note warn">
+    <p><strong>Records failed revision 6 on the reserve rule, and they were right to.</strong> One hour-meter reading from another machine, then one back on F-BVNK, and the book accrued the whole difference between the two meters: <strong>328.09 h &mdash; &euro;7,267.19</strong>. A mistyped <span class="mono tiny">tachStart</span> gave <strong>&euro;26,957.43</strong>. Filing a dated file out of order double-accrued &mdash; the exact case the contract called safe.</p>
+    <p class="small">Their tested remedy is taken <strong>as it stands</strong> rather than redesigned. Nothing here is a new idea of mine except one extension, marked.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Rule</th><th>What accrues</th><th>Cursor</th></tr></thead>
+      <tbody>
+        <tr><td>Forward gap more than <strong>5 h</strong> beyond the leg&rsquo;s own span</td><td>the own span, flagged &mdash; that is two meters, not one</td><td>resumes</td></tr>
+        <tr><td>An <strong>own span</strong> more than 5 h beyond the leg&rsquo;s own flying <span class="pill">my extension</span></td><td>the airborne time, flagged &mdash; that is a mistyped reading, not a leg</td><td>as above</td></tr>
+        <tr><td>A record <strong>older than the last one filed</strong></td><td>0 when its reading closes at or below the cursor, else its own span</td><td><strong>never moves</strong></td></tr>
+        <tr><td>A <strong>negative gap</strong></td><td>nothing &mdash; a reading that goes down is not flying</td><td><strong>never moves</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">The chronology key is <span class="mono tiny">date + engineStart</span>, taken from the <strong>record&rsquo;s own date</strong> before the ingest path pushes a back-dated leg forward to keep the carnet in order. Without that it would compare rewritten dates and never fire &mdash; the sort of thing that only shows up when you run it.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Case</th><th class="num">R6</th><th class="num">R8</th><th class="num">True</th></tr></thead>
+      <tbody>
+        <tr><td>The good sequence, V33 + V34</td><td class="num">6.03</td><td class="num"><strong>6.03</strong></td><td class="num">6.03</td></tr>
+        <tr><td>Another machine</td><td class="num">332.99</td><td class="num"><strong>3.17</strong></td><td class="num">3.17</td></tr>
+        <tr><td><span class="mono tiny">tachStart</span> typo</td><td class="num">1220.72</td><td class="num"><strong>2.92</strong></td><td class="num">safe side</td></tr>
+        <tr><td><span class="mono tiny">tachStop</span> typo</td><td class="num">~1110</td><td class="num"><strong>3.68</strong></td><td class="num">&mdash;</td></tr>
+        <tr><td>Filed out of order, A C B D</td><td class="num">5.80</td><td class="num"><strong>4.00</strong></td><td class="num">4.00</td></tr>
+        <tr><td>A reading below the cursor</td><td class="num">over by 0.90</td><td class="num"><strong>1.78</strong></td><td class="num">sound</td></tr>
+        <tr><td><strong>A real 3 h ground run between two legs</strong></td><td class="num">&mdash;</td><td class="num"><strong>5.00</strong></td><td class="num">5.00</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">That last row matters as much as the failures: <strong>the bound does not touch the real case</strong>, which is the whole point of putting it at five hours.</p>
+  <div class="note">
+    <p><strong>Also fixed.</strong> <strong>A5</strong> &mdash; a leg that flew showed <span class="mono tiny">0:00</span>, because V275 saves stretches as short as 10 s and rounding to the minute left nothing. It shows at least <span class="mono tiny">0:01</span> now. <strong>L1</strong> &mdash; the contract&rsquo;s stale <span class="mono tiny">noTakeOff</span> row, which contradicted the same file two sections later. <strong>L2</strong> &mdash; <span class="mono tiny">REJECTED_</span> holds the rejected legs of a run whose valid legs <em>were</em> written; a run with nothing valid writes no file.</p>
+    <p class="small"><strong>P4 left alone deliberately</strong> &mdash; Records call it bounded and small, the page says what it did, and building machinery for it is exactly what Claus told this session to stop doing. <strong>F1 closed by deletion</strong> with the positions. <span class="mono tiny">reserves_per_flown_hour</span> keeps its key name although the reserves run on the meter: the strip reads that key, and renaming it to fix a label would break a reader.</p>
+  </div>
+  <div class="note">
+    <p><strong>Clocks, final.</strong> Reserves on the meter. The 25/50/100 h inspections and the wear rates on journey-log airborne hours, Claus 21:57:47. TTAF and engine/prop SMOH on the meter, so they match the TT and ENG lines the iPad shows &mdash; <strong>the PM&rsquo;s pick, and labelled as his; one word changes it.</strong></p>
+    <p class="small"><strong>Sim Ledger publish is on hold</strong> as asked. The artifact stands at <strong>version 18</strong>; this session has not touched it. The branch file is ready to reconcile with whatever the PM publishes tonight.</p>
+  </div>
+  <p class="tiny muted">Commit <span class="mono">6ec155175cbfcfd3bbb28d92d229fbcd2d6824a8</span>, <span class="mono">fbvnk-sim-ledger/KIT1_R8/</span>. Book 165,167&nbsp;B md5 <span class="mono tiny">3e84dbab</span>. PRICES <span class="mono tiny">fc8d0058</span> &middot; VECTORS <span class="mono tiny">1e3112d7</span> &middot; LEG_CONTRACT <span class="mono tiny">64669728</span> &middot; STRIP_SPEC <span class="mono tiny">dddf2faa</span> &middot; NOTE <span class="mono tiny">969df605</span>. Thirty-nine vectors: <strong>V37</strong> the bounded cursor against every K7e sequence, <strong>V38</strong> the leg that flew. <strong>R8 and not R7</strong> because R7 was already reported with its checksums published &mdash; amending reported bytes breaks the checksum contract, so R7 stands.</p>
 </section>
 
 <section>
