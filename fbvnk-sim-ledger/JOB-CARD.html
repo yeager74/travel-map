@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 18</dd>
+      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 19</dd>
     </dl>
   </div>
 </header>
@@ -495,6 +495,31 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <p class="small"><strong>The EASA side is now in, as R18.</strong> It moved one row, added two and left <em>Nature du Vol</em> alone &mdash; the section below has it.</p>
   </div>
   <p class="small"><strong>The P1 figure is closed, and not by me.</strong> Claus, 18:04:32: &ldquo;good bloody question&hellip; ha ha, I should know, but I just carried it over from the previous owners. Keep it the same&rdquo;. The Logbook tab no longer calls it an assumption of this session&rsquo;s &mdash; it quotes him, and the figure stays exactly as his pages carry it.</p>
+</section>
+
+<section>
+  <h2>Dropbox pickup checked against the real connector <span class="hint">two read-only calls &middot; no code change &middot; one fact for the PM</span></h2>
+  <div class="note">
+    <p><strong>The publish flagged the page as declaring Dropbox without a call having been made in this session, so a call was made.</strong> Two, both read-only. Every field name the pickup depends on is now checked against a real payload rather than against the page&rsquo;s own assumptions.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>What the page does</th><th>Against the connector</th></tr></thead>
+      <tbody>
+        <tr><td class="mono tiny">list_folder {path, recursive, object_types, max_results}</td><td>all four accepted, spelled as the page spells them</td></tr>
+        <tr><td class="mono tiny">step({cursor}) for page 2 onward</td><td>correct &mdash; the connector requires cursor <em>alone</em>, and the page sends cursor alone</td></tr>
+        <tr><td><span class="mono tiny">p.entries</span>, <span class="mono tiny">p.has_more</span>, <span class="mono tiny">p.cursor</span></td><td>all three present; <span class="mono tiny">has_more true</span> on a real listing</td></tr>
+        <tr><td class="mono tiny">e.name</td><td>present</td></tr>
+        <tr><td class="mono tiny">fetch {id: e.path}</td><td>correct &mdash; <span class="mono tiny">e.path</span> comes back as an <span class="mono tiny">ns:17090671//&hellip;</span> namespace path, which is exactly what <span class="mono tiny">fetch</span> takes, and the connector says never to strip that prefix</td></tr>
+        <tr><td class="mono tiny">fp.text</td><td>the documented field for the extracted content</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note warn">
+    <p><strong>The folder is not there yet.</strong> <span class="mono tiny">/MSFS 2024 Screenshots/FBVNK_LEGS</span> returns <span class="mono tiny">[NOT_FOUND] File not found (reason: FILE_NOT_FOUND)</span>. That is the case the page already handles &mdash; it prints &ldquo;the folder is not there yet. It appears with the first leg the laptop files&rdquo; &mdash; and its <span class="mono tiny">/not.?found/i</span> test matches that message. So nothing is broken and nothing needs building; the pickup starts answering when <span class="mono tiny">nk_autofile</span> writes the first leg.</p>
+    <p class="small"><strong>assumption:</strong> that the artifact runtime hands that error to the page as <span class="mono tiny">code: 'tool_error'</span>, which is the branch the message sits behind. That is the runtime&rsquo;s error shape, not Dropbox&rsquo;s, and it cannot be checked from a cloud session &mdash; only by opening the book with the folder still absent.</p>
+  </div>
+  <p class="tiny muted">No code changed and the Sim Ledger is not republished; it stands at <strong>version 22</strong>. <strong>NOT INSTALLED.</strong></p>
 </section>
 
 <section>
