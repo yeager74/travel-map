@@ -2,8 +2,10 @@
 
 From: travel-map-da cloud session (subagent to FBVNK PROJECT MANAGER)
 Job: Step 7 GO, per PM's KIT1 review message, read 22:15, 15 Sep 2026
-Revision 4: answers K7c (PASS WITH NOTES, `REVIEW.md` md5 7adcb685) and folds in R17, Records'
-aerodrome-coordinate study (`NOTE.md` md5 4dbd0a19). Revisions 1-3 stay frozen.
+Revision 4: answers K7c (PASS WITH NOTES, `REVIEW.md` md5 7adcb685), the PM's two contract
+questions of 16 Sep 18:2x, and folds in **R17** (Records' aerodrome-coordinate study, `NOTE.md`
+md5 4dbd0a19) and **R18** (Records' EASA pilot-logbook study, `NOTE.md` md5 8d275080).
+Revisions 1-3 stay frozen.
 
 **KIT1 R4 REPORTED.** A new folder again, so the three before it stay frozen exactly as Records
 reviewed them and the md5s K7, K7b and K7c verified still point at the bytes they saw.
@@ -152,13 +154,89 @@ install, not this session's. Both facts are recorded in `STRIP_SPEC.md`.
 **Unchanged by design.** Oil top-up, fault repair, battery replacement, propeller overhaul and the
 detected scheduled check stay as "no posting, raise the flag", per the PM.
 
+## The two questions only the book could answer
+
+PM, 16 Sep 18:2x. Both were checked **in the running book in a browser**, not read off the source,
+because the last time this session answered a contract question from the source it got C1 backwards
+and Records had to catch it.
+
+### 1. `notes[]` — accepted, and silently dropped. Now read and shown.
+
+**What it did before this revision:** a record carrying `notes[]` filed without complaint and the
+array went nowhere. `normaliseLeg` reads named fields off the record and nothing else, so an unknown
+key raises no error and leaves no trace. Proved by ingesting a record whose note carried a unique
+marker string and searching the whole rendered page for it: **not on the review card, not anywhere
+in the document.** No page error either — which is the worst shape of all, because a converter
+would have had no way of knowing its notes were being thrown away.
+
+**The PM's proposal is the right one, and it is built.** `notes[]` is now an optional field of
+`FBVNK_LEG/2` and the book shows it on the review page. Full rules in `LEG_CONTRACT.md` →
+*`notes[]` — the converter's own notes*; in short:
+
+- strings only, in order, **12 at most**, **160 characters each**;
+- non-strings, empties and overflow are dropped **and counted out loud** in the book's own notes —
+  *"4 of the 5 notes on the record are not shown — not a string, empty, or past the twelfth"*;
+- a `notes` that is not an array is refused with a line saying so, rather than ignored;
+- escaped on the way out — `<img src=x onerror=…>` renders as text and creates no element.
+  Verified: zero elements created.
+
+**They are kept in their own array, not merged into the book's notes.** The book's notes are what
+the book decided (*"assumption: asphalt at LPCO"*); `notes[]` is what the laptop observed
+(*"FP-5L gap of 3 L at 09:41Z, not counted"*). A pilot signing the page should be able to tell the
+two apart, so the converter's notes print above the book's, under their own heading
+**Du convertisseur**, in darker ink. Screenshot in the branch at `fbvnk-sim-ledger/srcnotes-card.png`.
+
+**One thing for the Builder.** `note` (singular, string) and `notes[]` (array) are different fields
+and go to different places: `note` is the carnet's **Incidents · Observations** column, `notes[]`
+is review-page only and never enters the carnet. The adjacency of the two names is a trap; the
+contract now says so in both places.
+
+### 2. `burnSource: null` with `burnL` absent — accepted. No change needed.
+
+`burnSource` is validated by membership in `['logger','aircraft','rem','uplift']`, so JSON `null`
+is simply not a member and the book carries on with no declared rung. `burnL` absent gives `null`
+from `numOrNull`. The chain then runs from the top and takes the first rung the record supports —
+which is exactly V23's intent.
+
+Tested through `JSON.parse`, so the `null` is a real JSON null and not a JavaScript literal. All
+three V23-family shapes, each run twice — once with `burnSource: null` and once with the key
+absent:
+
+| Record | `burnSource: null` | key absent |
+|---|---|---|
+| FP-5L 200 → 158, no refuel | `rem`, 42.0 L | `rem`, 42.0 L |
+| refuel, uplift 60 | `uplift`, 60.0 L | `uplift`, 60.0 L |
+| refuel, no burn, no uplift (**V23**) | nothing billed | nothing billed |
+
+Identical in every row. `burnL: null` written out explicitly behaves the same. **The Builder's
+shape is fine as it stands — no change to the converter.**
+
+Two things the Builder should know before leaning on it, both now in `LEG_CONTRACT.md`:
+
+- **`null` with a `burnL` present is labelled `logger`.** With no rung named, the book takes a
+  present `burnL` as the logger's, because that is the only rung that can produce one without the
+  aeroplane's own figures. If the converter ever derives a `burnL` any other way, it must name the
+  rung — otherwise the review page credits the logger for a number the logger never made.
+- **`"none"` as a string would work today for the wrong reason.** It is ignored as any
+  unrecognised string is, so it behaves like `null` and would break silently if `"none"` ever
+  became meaningful. JSON `null` is the value.
+
+### The import facts, recorded
+
+Now in `LEG_CONTRACT.md` → *What the converter leaves on disk*: `LEG.json` is the latest conversion
+only and is what the poller reads; the dated `<YYYY-MM-DD_HHMMSS>.json` files are the complete
+record and are safe to give the book, all of them, more than once, because `legId` dedupes;
+`REJECTED_<stamp>.json` is the converter's own reject pile and **never goes to the book**. `legId`
+is `"YYYY-MM-DD/HH:MM:SSZ/tach"`, worked example `"2026-09-16/08:20:16Z/1228.32"`. The book treats
+it as an opaque string and compares it whole.
+
 ## What's in this folder
 
 | File | What it is |
 |---|---|
 | `PRICES_AND_BILLING_RULES.json` | The single price/rules source both the laptop ledger and the future HANGAR strip read. Prices transcribed verbatim from `FBVNK-LEDGER.html` commit `5e72853`, and in this revision checked against Claus's own 2025 accounts where an invoice exists for them. Wear-rate normalisation, posting-cursor, Reset-to-delivery, rounding and the hours/faults/battery rules cite `SPEC.md` (R5) and the K7/K7b reviews inline. |
-| `TEST_VECTORS.json` | Twenty-seven sequences (V1-V26, with V2 split into 2a/2b) of LocalVar reads → expected postings in euro. New this revision: **V18** the real Spanish invoice at 21 % and a `.xx5` rounding case, and **V19-V23** the `burnSource` fallback chain in order, including the two cases a mid-leg refuel breaks. **V6** now pins the rounding mode, **V14** the overhaul consuming its own step, **V16** the repriced brakes. |
-| `LEG_CONTRACT.md` | **New.** Contract `FBVNK_LEG/2` in one file — every field, where V274 stores it, what the book does without it, the fuel chain, the touchdown clamp, the time base, and what the converter must derive. The converter kit starts from this page and Records reviews against it. |
+| `TEST_VECTORS.json` | Twenty-nine sequences (V1-V28, with V2 split into 2a/2b) of LocalVar reads → expected postings in euro. New this revision: **V18** the real Spanish invoice at 21 % and a `.xx5` rounding case, **V19-V23** the `burnSource` fallback chain in order including the two cases a mid-leg refuel breaks, **V24** the aircraft rung barred by a refuel, **V25-V26** pro rata rounding net-first, and — answering the PM's two questions — **V27** the `notes[]` field with its caps, its drop-counting and its escaping, and **V28** `burnSource` JSON `null` proved identical to the key being absent. **V6** pins the rounding mode, **V14** the overhaul consuming its own step, **V16** the repriced brakes. |
+| `LEG_CONTRACT.md` | Contract `FBVNK_LEG/2` in one file — every field, where V274 stores it, what the book does without it, the fuel chain, the touchdown clamp, the time base, and what the converter must derive. New in this revision: the optional **`notes[]`** field with its caps and its drop-counting, `burnSource` **`null`** stated as a value in its own right, and **what the converter leaves on disk** — which of `LEG.json`, the dated files and `REJECTED_*.json` may be given to the book, and the `legId` format that makes a re-drop harmless. The converter kit starts from this page and Records reviews against it. |
 | `STRIP_SPEC.md` | What the HANGAR strip shows, its scope, the rounding rule it must share with the laptop book, what pro-rata pricing costs it in new persisted state, and the three capture routes including the one Records found at the SERVICE action. No package code. |
 | `MD5.txt` | `md5sum -c` format, this note included. |
 
@@ -244,14 +322,75 @@ touching anything gives exactly today's behaviour.
 Three notes on that table. The four money rows are the only ones that can change what the leg
 costs, and they are exactly the four the page currently prints as assumptions — so the change
 removes three `assumption:` lines rather than adding new ways to be wrong. The remark is the one
-Claus asked for by name and is free text, not a menu. And `Visa` stays empty: it is the customs and
-authorities column, and nothing in a sim fills it.
+Claus asked for by name and is free text, not a menu. And `Visa` stays empty: the column's own
+printed sub-head on his page 86 reads *Douanes et Autorités Aéronautiques*, and nothing in a sim
+fills it.
 
-**The EASA side is not in this table on purpose.** He suggested looking up the EASA logbook entry
-options and adapting them. Records is doing that as R18 from the official AMC1 FCL.050 pages, and
-this session will not put EASA entry categories in from recall. The options above are read off his
-own page 86 and the book's existing fields. When R18 lands, the *Nature du Vol* and *Fonctions*
-rows are the two that may need widening.
+### R18 landed — what it changes in that table, and what it does not
+
+Records' R18 (`FBVNK_STAGING/R18_easa_logbook/NOTE.md`, md5 `8d275080`) read AMC1 / GM1 FCL.050 off
+the EASA Easy Access Rules HTML, Revision from August 2023, and FCL.050 off the EUR-Lex consolidated
+text of 30.04.2026. Records states its own currency limit: **whether AMC1 / GM1 FCL.050 changed
+after August 2023 is not verified** — the newer text is PDF/XML only and was not fetched under the
+HTML-only rule. Everything below inherits that limit.
+
+**One correction to the table above, and it is this session's error.** *Fonctions* was offered as
+`PIC · PICUS · dual · SPIC`. AMC1 FCL.050 (i)(10) says **PIC, SPIC and PICUS are all entered as
+PIC**, with SPIC/PICUS countersigned by the PIC or FI in the remarks column — so PICUS and SPIC are
+not peers of PIC and should not be offered as if they were. The four names printed in column 10 of
+the AMC's own format are:
+
+| Row | Was | Is now | Why |
+|---|---|---|---|
+| **Fonctions** | PIC · PICUS · dual · SPIC | **PIC · co-pilot · dual · instructor** | the four printed in AMC1 col 10, *PILOT FUNCTION TIME*. Default stays `PIC`, as page 86. No money. |
+
+**Nature du Vol is not widened, because R18 gives nothing to widen it with.** R18 finds **no direct
+EASA column** for it: the nearest items are col 9 *OPERATIONAL CONDITION TIME (NIGHT, IFR)* and the
+col 12 remarks, which GM1 allows for "the specific nature of a particular flight". So the options
+stay as read off page 86.
+
+**Two rows R18 makes available, and one reason to hesitate.** The EASA items with no carnet column
+that a sim leg could actually fill are col 8 *LANDINGS DAY / NIGHT* and col 9 *OPERATIONAL CONDITION
+TIME NIGHT / IFR*:
+
+| Label | Options | Default | Money? |
+|---|---|---|---|
+| **Atterrissages — jour / nuit** | two counts | the record's `landings` in the day box, 0 at night | no |
+| **Nuit / IFR** | two times, h:mm | 0 / 0 | no |
+
+The hesitation: **those are pilot-logbook columns and this is an aircraft journey record.** Records
+reaches the same reading, labelled as an assumption — Carburant, Huile, Incidents and Visa with no
+aircraft type or registration column look like a *carnet de route*, not a pilot logbook. Claus's
+document is titled *Carnet de Route* and carries F-BVNK's own hours, so the two are different
+records and the EASA items are a second one, not a replacement. **Proposal: capture both on the
+review page, and keep them off the carnet rows**, which stay the seventeen columns of page 86.
+
+**Flight time: the definitions differ, and the page should say which it is using.** EASA flight time
+runs "from the moment an aircraft first moves for the purpose of taking off until the moment it
+finally comes to rest" — nearer block than airborne. Claus, 16 Sep: *"I am using airborne (flight
+time) and not block time."* His carnet keeps airborne. The book already holds both and shows both on
+the review card (*En vol* and *Moteur*), but **Durée** is printed with no statement of which it is.
+Proposal: label it — *Durée (en vol)* — and leave the totals airborne, as he asked.
+
+**Labelling, from Records' conclusion.** A home MSFS leg is **not flight time** (FCL.010 defines it
+by a real aircraft moving) and **not an FSTD session** (col 11 needs a qualification number, and
+Art. 10b makes qualification a condition). R18 states plainly that **how to log a non-qualified home
+simulator is not stated in the rules.** Records' recommendation, which this session agrees with:
+keep this book separate from Claus's EASA logbook, and label it. Proposal for the board — a single
+line at the head of the Logbook tab and on the review card:
+
+> **Home simulator record — not an EASA logbook.** MSFS 2024, non-qualified device. Not flight
+> time, not FSTD time.
+
+That line is **not built**. It changes what Claus's carnet says about itself, so it goes to the
+board through the PM like the rest. It is the one row here this session would ship without waiting,
+because it can only make the record more accurate about what it is.
+
+**One thing back to Records.** R18 marks *Visa* "not obvious" with the assumption that it means a
+countersignature, noting "I have not seen the carnet itself." The carnet settles it: the column's
+printed sub-head on page 86 reads **Visa · *Douanes et Autorités Aéronautiques***. It is the customs
+and aeronautical-authorities column, not a countersignature, and the book has carried that sub-head
+since it was built from the scan.
 
 ### Ordering, if this is built
 
@@ -261,34 +400,47 @@ aeroplane could not know → signs → cost. That is the order he described.
 
 ## Open — needs a person, not a guess
 
-Five, listed in full under `PRICES_AND_BILLING_RULES.json` → `open_items`. Three of revision 2's
-six closed this round, off `SPEC.md`.
+Two. Revision 4 closed three of revision 3's five: the aerodrome coordinates and the `LEAP` /
+Teruel naming, both under *Closed since revision 3* in `LEG_CONTRACT.md`, and the carnet's time
+base — **Claus tapped UTC on 16 Sep at 18:00**, the book is set to it, and the control stays.
 
 1. **Nine prices with no figure.** The five `PRICES` keys (carburettor, starter, oil pump/lines,
    exterior lamps, oil top-up per quart) and four of the eight fault components (static port,
-   pitot, COM wiring, NAV wiring). A Claus decision.
+   pitot, COM wiring, NAV wiring). A Claus decision. This session's working notes on what his own
+   records do and do not give are on the branch at `fbvnk-sim-ledger/PRICES_RESEARCH.md`; the six
+   with no figure in his accounts need a source this session cannot reach from here.
 2. **Which capture route the Builder takes** — the accumulator, the snapshot, or Records' capture
    at the SERVICE action. This session recommends the action capture *combined with* accumulation,
    because the action sees the exact value at the service while a mixed-R life still needs
    per-read division. Not chosen here.
-3. **Aerodrome coordinates.** Eight pairs: LPCS, LPCO, LPVL, LEVD, LEAP, LEST, LEBG, LEMP. The
-   contract has the aeroplane sending positions, so the book resolves them — but no coordinate is
-   on file and this session will not put a position on a real aerodrome from recall.
-4. **UTC or local in the carnet.** On the board. The book has a control either way.
-5. **The `LEAP` / Teruel naming.** Claus's own flight planning has `LPCS - LETL` and `LETL - LEAP`
-   for the same day, so at least one of the two names is wrong.
 
 None of these were guessed at to fill a gap — each is flagged instead.
 
 ## Verification
 
-`md5sum -c MD5.txt` from inside this folder should report all five files OK. This session computed
-the same hashes locally before upload, and the same bytes are committed at
-`fbvnk-sim-ledger/KIT1_R4/` on `claude/fbvnk-cost-sheet-maintenance-svcsw2`, so the folder is
-checkable against a durable copy. The PM checks them again on the laptop bytes per the usual
-practice. **KIT1 R4 REPORTED** — the folder is frozen from here; Records reviews it as K7d.
+**Where the bytes are.** All five files are committed at `fbvnk-sim-ledger/KIT1_R4/` on
+`claude/fbvnk-cost-sheet-maintenance-svcsw2`. That is the authoritative copy. This session is a
+cloud session: its Dropbox connector creates files from inline text and **cannot upload a local
+file**, so retyping 172 KB into the staging folder would risk exactly the kind of drift that put
+`STRIP_SPEC.md` one byte out on the R3 upload. The house rule covers this case and says to hand
+over the branch plus checksums instead of retyping bytes, which is what this is.
+
+The staging folder therefore carries `MD5.txt` and a pointer, not the five files. `md5sum -c
+MD5.txt` run against a checkout of the branch reports all five OK; this session ran it and it does.
+The `LEG_CONTRACT.md` sitting in the staging folder is the 16:01 copy, md5
+`591284519f7ca08f64cf19c85ca79f06`, and is **superseded** by the one on the branch.
+
+**KIT1 R4 REPORTED** — frozen from here; Records reviews it as K7d against the branch.
 
 Every euro figure in this revision was recomputed independently in Python `Decimal` with
 `ROUND_HALF_UP`, the decided mode, not in float: V1 513.65, V6 31.19, V15 1.80, V16 4.02,
 V18 80.33 VAT on a printed gross of 462.83, and the two new net-first services at 13.39 and 200.99.
 The laptop book's own `eur2()` gives the same answers on all 23 of its test cases.
+
+**The two answers in this note were taken from the running book in a browser, not from the
+source.** V27's cases were checked by ingesting records and reading the rendered review card and
+the whole document; V28's six runs went through `JSON.parse` first so the `null` was a real JSON
+null. The seeded book was re-counted after every change and is unmoved at **8 legs, 16 invoices,
+18.4 hours**, and the page raised no error on any of it. The reason for doing it this way is C1:
+the last contract question this session answered from the source came out backwards, and Records
+had to catch it.

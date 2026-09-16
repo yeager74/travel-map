@@ -687,7 +687,16 @@
       "expected_burn_source": null,
       "expected_litres_billed": 0.0,
       "labelled_on_the_review_page": true,
-      "why": "Nothing here can say what she used, so nothing is billed and the review page says exactly that. Guessing 10 L from the tank totals would be worse than billing nothing."
+      "why": "Nothing here can say what she used, so nothing is billed and the review page says exactly that. Guessing 10 L from the tank totals would be worse than billing nothing.",
+      "the_shape_the_converter_writes": {
+        "record_fields": {
+          "burnSource": null,
+          "fp5lStart": 200,
+          "fp5lShutdown": 190,
+          "refuelInLeg": true
+        },
+        "note": "The Builder's converter writes burnSource as JSON null with burnL absent, not the string \"none\". Verified in the running book through JSON.parse: null and the key being absent give the identical result here and on V21 and V22. See V28."
+      }
     },
     {
       "id": "V24_aircraft_rung_is_barred_by_a_refuel",
@@ -758,6 +767,131 @@
         "gross_first_would_give": 201.0,
         "why_it_differs": "Gross-first rounds the VAT into the 1,340.00 before the fraction is applied, so the fraction is taken of an already-rounded figure. One cent here, and one cent on every pro-rata service the book ever posts."
       }
+    },
+    {
+      "id": "V27_converter_notes_array",
+      "covers": "The notes[] field added in revision 4 on the PM's proposal of 16 Sep 18:2x. Before it, notes[] was accepted and silently discarded - no error, no trace on the page, and no way for the converter to know.",
+      "rule": "Strings only, in order. At most 12. At most 160 characters each, the 160th an ellipsis when truncated. Non-strings, empties and overflow are dropped AND counted in the book's own notes. A notes that is not an array keeps nothing and says so. Escaped on output. Shown on the review page under the heading 'Du convertisseur', above the book's own notes; never in the carnet.",
+      "cases": [
+        {
+          "sent": [
+            "fp5l gap 3 L at 09:41Z, not counted",
+            "logger ran end to end"
+          ],
+          "kept": 2,
+          "book_note_added": null,
+          "on_the_review_page": "both, in order, under Du convertisseur"
+        },
+        {
+          "sent": null,
+          "kept": 0,
+          "book_note_added": null,
+          "on_the_review_page": "nothing shown, nothing said",
+          "same_for": "field absent, or []"
+        },
+        {
+          "sent": "one string, not an array",
+          "kept": 0,
+          "book_note_added": "The record carries a \"notes\" field that is not an array. Ignored - the contract has notes[] as an array of strings.",
+          "on_the_review_page": "the book's note only"
+        },
+        {
+          "sent": [
+            1,
+            null,
+            {
+              "a": 1
+            },
+            "  real  ",
+            ""
+          ],
+          "kept": 1,
+          "kept_value": "real",
+          "book_note_added": "4 of the 5 notes on the record are not shown - not a string, empty, or past the twelfth.",
+          "why": "trimmed, and the three non-strings and the empty are dropped"
+        },
+        {
+          "sent": "15 strings",
+          "kept": 12,
+          "book_note_added": "3 of the 15 notes on the record are not shown - not a string, empty, or past the twelfth."
+        },
+        {
+          "sent": "one string of 200 characters",
+          "kept": 1,
+          "kept_length": 160,
+          "why": "truncated to 160 with the 160th an ellipsis; 160 exactly passes untouched, 161 truncates"
+        },
+        {
+          "sent": [
+            "<img src=x onerror=alert(1)>"
+          ],
+          "kept": 1,
+          "rendered_as": "text",
+          "elements_created": 0,
+          "why": "escaped on output; verified by counting img elements in the review card"
+        }
+      ],
+      "not_the_same_field_as": "note (singular, string) is the carnet's Incidents - Observations column and is truncated at 160. notes[] is review-page only. The adjacency of the two names is the trap; LEG_CONTRACT.md says so in both places.",
+      "verified_in_the_book": "Yes, on the branch, in a browser. A record whose note carried a unique marker was ingested and the whole rendered document searched for it: absent before the change, present on the review card after it. The caps, the drop-counting and the escaping were each checked separately."
+    },
+    {
+      "id": "V28_burn_source_null_equals_absent",
+      "covers": "The PM's second question of 16 Sep 18:2x. The converter writes burnSource as JSON null with burnL absent rather than the string \"none\", and this pins that the book treats null exactly as it treats the key not being there.",
+      "method": "Each record built as JSON text and put through JSON.parse before normaliseLeg, so the null is a real JSON null and not a JavaScript literal.",
+      "cases": [
+        {
+          "record_fields": {
+            "fp5lStart": 200,
+            "fp5lShutdown": 158,
+            "refuelInLeg": false
+          },
+          "with_burn_source_null": {
+            "burn_source": "rem",
+            "litres_billed": 42.0
+          },
+          "with_key_absent": {
+            "burn_source": "rem",
+            "litres_billed": 42.0
+          }
+        },
+        {
+          "record_fields": {
+            "fp5lStart": 200,
+            "fp5lShutdown": 190,
+            "refuelInLeg": true,
+            "uplift": 60
+          },
+          "with_burn_source_null": {
+            "burn_source": "uplift",
+            "litres_billed": 60.0
+          },
+          "with_key_absent": {
+            "burn_source": "uplift",
+            "litres_billed": 60.0
+          }
+        },
+        {
+          "record_fields": {
+            "fp5lStart": 200,
+            "fp5lShutdown": 190,
+            "refuelInLeg": true
+          },
+          "with_burn_source_null": {
+            "burn_source": null,
+            "litres_billed": 0.0
+          },
+          "with_key_absent": {
+            "burn_source": null,
+            "litres_billed": 0.0
+          },
+          "same_as": "V23"
+        }
+      ],
+      "burn_l_null": "burnL written out as JSON null behaves as absent: numOrNull returns null for both.",
+      "the_trap": "burnSource null WITH a burnL present is labelled 'logger'. With no rung named the book takes a present burnL as the logger's, because that is the only rung that can produce one without the aeroplane's own figures. A converter that ever derives burnL another way must name the rung, or the review page credits the logger for a number the logger never made.",
+      "the_string_none": "\"none\" is not a value. It is ignored as any unrecognised string is, so it behaves like null today for the wrong reason and would break silently if \"none\" ever became meaningful. JSON null is the value.",
+      "verdict": "The Builder's shape is accepted as it stands. No change to the converter.",
+      "verified_in_the_book": "Yes, on the branch, in a browser. All six runs above, and the three rungs that must not move (logger across a refuel, aircraft without a refuel, a named source winning) re-checked unmoved."
     }
   ],
   "r2_changes": {
@@ -803,7 +937,15 @@
       "the sim-rate note corrected: TACH is unclamped, so the reserves do not under-bill",
       "STRIP_SPEC line numbers moved to the installed V274: act() 186, set 192, MX_LOG 202",
       "LEG_CONTRACT carries the installed NK_LB_* names, the burnL derivation and the logger rung",
-      "the year wrap rule for a dep on day 365/366"
-    ]
+      "the year wrap rule for a dep on day 365/366",
+      "notes[] added to FBVNK_LEG/2 - the converter's notes, shown on the review page, pinned by V27",
+      "burnSource JSON null pinned as identical to the key being absent, by V28; V23 now carries the shape the converter actually writes",
+      "what the converter leaves on disk, and which of those files may be given to the book, recorded in LEG_CONTRACT.md with the legId format",
+      "R18 folded into the review-page proposal: Fonctions corrected to the four AMC1 col 10 names, day/night landings and night/IFR offered, and the non-qualified-home-simulator labelling proposed"
+    ],
+    "pm_questions_16_sep_18_2x": {
+      "notes_array": "Accepted before this revision, and silently dropped. Now read, capped, drop-counted, escaped and shown on the review page under Du convertisseur. Added to LEG_CONTRACT.md as optional. V27.",
+      "burn_source_null": "Accepted as it stands, identical to the key being absent on all three V23-family shapes. No change to the converter. V28."
+    }
   }
 }

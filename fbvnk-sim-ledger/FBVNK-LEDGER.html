@@ -1067,6 +1067,29 @@ function normaliseLeg(rec){
   if(!rec || typeof rec !== 'object' || Array.isArray(rec)) return {ok:false, why:'That is not a leg record.'};
   var notes = [];
 
+  /* The converter's own notes, optional under FBVNK_LEG/2. These are not the book's
+     reasoning - they are what the laptop saw while it read the logger, and they are the
+     only thing that can explain a figure the book has to take on trust ("fp5l gap 3 L at
+     09:41Z, not counted"). Kept in their own array rather than merged into the book's,
+     so a pilot signing the page can tell what the book decided from what the laptop
+     observed. Strings only, trimmed, 160 characters each and twelve in all: a converter
+     that starts shouting must not be able to bury the review page. Anything dropped is
+     counted out loud, because a note silently discarded is worse than no note at all. */
+  var srcNotes = [], ni, sn;
+  if(Array.isArray(rec.notes)){
+    for(ni=0; ni<rec.notes.length; ni++){
+      if(typeof rec.notes[ni] !== 'string') continue;
+      sn = rec.notes[ni].trim();
+      if(!sn) continue;
+      if(srcNotes.length >= 12) break;
+      srcNotes.push(sn.length > 160 ? sn.slice(0,159)+'\u2026' : sn);
+    }
+    if(rec.notes.length > srcNotes.length)
+      notes.push((rec.notes.length - srcNotes.length)+' of the '+rec.notes.length+' notes on the record are not shown \u2014 not a string, empty, or past the twelfth.');
+  } else if(rec.notes !== null && rec.notes !== undefined){
+    notes.push('The record carries a "notes" field that is not an array. Ignored \u2014 the contract has notes[] as an array of strings.');
+  }
+
   if(rec.schema && String(rec.schema).indexOf('FBVNK_LEG/') !== 0)
     return {ok:false, why:'Not an F-BVNK leg record — its schema reads "'+String(rec.schema).slice(0,28)+'".'};
   if(rec.schema && LEG_SCHEMA_ACCEPTED.indexOf(rec.schema) < 0)
@@ -1267,7 +1290,7 @@ function normaliseLeg(rec){
     rate:rate, nights:nights, handling: rec.handling ? 95 : 0,
     style:style, surface:surface,
     note:String(rec.note || '').slice(0,160),
-    notes:notes
+    notes:notes, srcNotes:srcNotes
   }};
 }
 
@@ -1702,6 +1725,12 @@ function recordedBlock(leg){
       }).join('')+'</select></div>';
   });
 
+  /* The converter's notes first and under their own heading. They came off the laptop,
+     not out of this book, and the difference is the whole reason they are worth showing. */
+  if(leg.srcNotes && leg.srcNotes.length)
+    html += '<p class="tiny" style="margin-top:8px; color:var(--ink-2)">'+
+      '<span style="letter-spacing:.09em; text-transform:uppercase">Du convertisseur</span><br>'+
+      leg.srcNotes.map(esc).join('<br>')+'</p>';
   if(leg.notes && leg.notes.length)
     html += '<p class="tiny muted" style="margin-top:8px">'+leg.notes.map(esc).join('<br>')+'</p>';
   return html;
