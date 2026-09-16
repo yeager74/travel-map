@@ -1061,6 +1061,14 @@ function numOrNull(v){
   var n = +v; return isFinite(n) ? n : null;
 }
 function toMinute(h){ return h===null ? null : Math.round(h*60)/60; }
+/* An ISO Zulu stamp reduced to the HH:MM the book prints. Anything else is dropped rather
+   than half-read, because a time the book cannot parse is worse than no time at all. */
+function isoZ(v){
+  var t = String(v===null||v===undefined?'':v).trim();
+  if(!t) return null;
+  var m = /^\d{4}-\d{2}-\d{2}T(\d{2}):(\d{2})(?::\d{2})?(?:\.\d+)?Z$/.exec(t);
+  return m ? m[1]+':'+m[2] : (hmFrom(t) || null);
+}
 
 /* A record off the aeroplane becomes a leg this book can post — or a reason why not. */
 function normaliseLeg(rec){
@@ -1127,12 +1135,20 @@ function normaliseLeg(rec){
   var block = numOrNull(rec.blockHours);
   if(block === null && engineStart && shutdown) block = minsBetween(engineStart, shutdown)/60;
 
-  var hours = airborne;
+  /* A run with ZERO airborne time is not a carnet entry (Claus, 18:34) but it is still a
+     record: it burnt fuel and it ran the engine, so it is filed and it posts. That means
+     falling through to the block time when the airborne figure is zero, not only when it
+     is missing. The first real read off the aeroplane, 16 Sep 16:14:01Z, is exactly this
+     shape - airborneHours 0.0 with blockHours 0.081 - and before this it was REFUSED
+     outright, so its fuel and its engine time would have gone nowhere at all. */
+  var hours = (airborne !== null && airborne > 0) ? airborne : null;
   if(hours === null){
     hours = block;
-    if(hours !== null) notes.push('No take-off or landing time in the record — Heures de Vol taken off the block time instead.');
+    if(hours !== null) notes.push(airborne === null
+      ? 'No take-off or landing time in the record — Heures de Vol taken off the block time instead.'
+      : 'Zero airborne time, so the engine time for this record is its block time, ' + hhmm(block) + '. It posts on that; it does not go in the carnet.');
   }
-  if(hours === null || hours <= 0) return {ok:false, why:'The record carries no flight time: no take-off and landing, no block time.'};
+  if(hours === null || hours <= 0) return {ok:false, why:'The record carries no time at all: no take-off and landing, no block time, no airborne figure.'};
   hours = toMinute(hours);
 
   var fp5lDep = numOrNull(rec.fp5lStart), fp5lArr = numOrNull(rec.fp5lShutdown);
@@ -1225,13 +1241,36 @@ function normaliseLeg(rec){
 
   /* V274 keeps a landing count and the last landing's time only, so the carnet's Heure
      Arrivee is the last one. A leg with several landings says so. */
-  /* V274 flags. An engine run that never got airborne is not a flight, so it does not go
-     in the carnet - Claus's book is a record of flights. It still cost fuel and it still
-     ran the engine, so it is filed and it posts; the Logbook tab says how many are being
-     left out and the Ledger tab has them in full. */
-  var noFlight = rec.noTakeOff === true;
+  /* What goes in the carnet. Claus, 16 Sep 18:34, word for word: "If NO airborne event, no
+     log entry at all. Eg, engine starts, taxi etc. if no airborne (flight even) NO log book
+     entry. Only airborne (flight time) events goes into the logbook."
+
+     So the test is the AIRBORNE EVENT, not the take-off flag, and the two are not the same
+     thing. An AIR START is spawned airborne and has no take-off at all: noTakeOff is true,
+     airborne time is real, and it IS a carnet entry. A taxi run has a take-off flag of
+     false and no airborne time, and it is not. Reading noTakeOff as "not a flight" would
+     have got the air start exactly backwards.
+
+     The airborne figure decides it when the record carries one. Only when it carries none
+     does the book fall back to the evidence of a take-off or a landing time, because an
+     aeroplane that took off was airborne whether or not the record put a number on it.
+
+     A run that is not a flight is still filed and still posts - it cost fuel and it ran the
+     engine. It is kept off the carnet page, the Logbook tab says how many, and the Ledger
+     has them in full. */
+  var flew;
+  if(airborne !== null) flew = airborne > 0;
+  else flew = !!takeOff || !!landing;
+  var noFlight = !flew;
+  var airStart = flew && rec.noTakeOff === true;
   var stopInAir = rec.stopInAir === true;
-  if(noFlight) notes.push('No take-off on this record. Filed for its costs, but kept out of the carnet \u2014 an engine run is not a flight.');
+
+  if(noFlight)
+    notes.push('No airborne time on this record. Filed for its costs, and kept off the carnet \u2014 Claus\u2019s rule of 16 Sep: only airborne events go in the logbook. The tacho and any fuel it burnt sit between legs, which is expected and is not an error.');
+  if(airStart)
+    notes.push('No take-off on this record but ' + hhmm(airborne) + ' airborne \u2014 an air start. It goes in the carnet: the rule is the airborne event, not the take-off.');
+  if(airborne !== null && airborne <= 0 && (takeOff || landing))
+    notes.push('The record contradicts itself: it states zero airborne time and also carries a ' + (takeOff ? 'take-off' : 'landing') + ' time. The airborne figure is taken as the answer and this is kept off the carnet. Worth checking the converter.');
   if(stopInAir) notes.push('The record says the engine stopped in flight. Flagged here and written into the carnet\u2019s Observations; nothing is billed for it, per the standing rule.');
 
   var landings = numOrNull(rec.landings);
@@ -1267,6 +1306,19 @@ function normaliseLeg(rec){
      variable. Measured off page 86, the tacho runs 0.1567 h per leg more than the flight
      time (7.9200 tacho hours against 6.6667 flown, over eight legs) — it turns on the
      ground too, so it is never derived from the flight time here. Sent, or blank. */
+  /* The converter's real-clock pair, optional under FBVNK_LEG/2. engineStart and shutdown
+     are the SIM clock and stay the leg's times - the carnet is the aeroplane's book, and it
+     is her clock that belongs in it. realEngineStart and realShutdown are the PC clock in
+     UTC at the logger rows that opened and closed the leg, and they exist only because
+     Claus may later prefer the real one. He has not been asked, so nothing here switches:
+     the book carries them, shows them on the review page where the two differ, and the
+     carnet is unmoved. Logger legs only - a state.CFG leg has neither. */
+  var realStart = isoZ(rec.realEngineStart), realStop = isoZ(rec.realShutdown);
+  if((realStart || realStop) && (realStart !== engineStart || realStop !== shutdown))
+    notes.push('The PC clock and the aeroplane\u2019s clock differ on this leg: she says ' +
+      (engineStart||'\u2014') + ' \u2192 ' + (shutdown||'\u2014') + ', the laptop says ' +
+      (realStart||'\u2014') + ' \u2192 ' + (realStop||'\u2014') + '. The carnet takes her clock.');
+
   var tachStart = numOrNull(rec.tachStart), tachStop = numOrNull(rec.tachStop);
   if(tachStop === null && tachStart === null) notes.push('No tacho in the record — the TACHO column stays empty on this row.');
 
@@ -1281,12 +1333,13 @@ function normaliseLeg(rec){
     date:date, from:from, to:to,
     hours:hours, airborne:toMinute(airborne), block:toMinute(block),
     engineStart:engineStart, shutdown:shutdown, takeOff:takeOff, landing:landing,
+    realEngineStart:realStart, realShutdown:realStop,
     depTime: takeOff || engineStart, arrTime: landing || shutdown,
     fp5lDep:fp5lDep, fp5lArr:fp5lArr, burn:burn,
     litres:litres, fuelSrc:fuelSrc, burnSource:burnSource, refuelInLeg:refuelInLeg, price:price,
     tachStart:tachStart, tachStop:tachStop,
     depLat:depLat, depLon:depLon, arrLat:arrLat, arrLon:arrLon,
-    landings:landings, noFlight:noFlight, stopInAir:stopInAir,
+    landings:landings, noFlight:noFlight, airStart:airStart, stopInAir:stopInAir,
     rate:rate, nights:nights, handling: rec.handling ? 95 : 0,
     style:style, surface:surface,
     note:String(rec.note || '').slice(0,160),
@@ -1717,12 +1770,22 @@ function recordedBlock(leg){
     if(leg[end] !== '????') return;
     var lat = leg[end==='from'?'depLat':'arrLat'], lon = leg[end==='from'?'depLon':'arrLon'];
     if(typeof lat !== 'number' || typeof lon !== 'number') return;
+    /* The list used to be the only way to name it, which left the pilot stuck the first
+       time she landed anywhere the book had never heard of - the 16 Sep read off Tarbes
+       being exactly that. So there is a box as well: any four-letter code is accepted,
+       the position is learned against it, and the carnet row reads the code he typed.
+       It does not invent a landing fee. An aerodrome with no entry in the field table is
+       priced at the default and the card says so, because a made-up fee would be worse
+       than an honest default. */
     html += '<div class="field" style="margin-top:8px"><label for="pick-'+end+'">'+
       (end==='from'?'D&eacute;part':'Arriv&eacute;e')+' &mdash; '+posTxt(lat, lon)+', not on file</label>'+
       '<select id="pick-'+end+'" data-pick="'+end+'"><option value="">Name it&hellip;</option>'+
       Object.keys(FIELDS).filter(function(k){ return k !== 'ZZZZ'; }).map(function(k){
         return '<option value="'+k+'">'+k+' &mdash; '+esc(FIELDS[k].name)+'</option>';
-      }).join('')+'</select></div>';
+      }).join('')+'</select>'+
+      '<input type="text" id="type-'+end+'" maxlength="4" placeholder="&hellip; or type any ICAO, e.g. LFBT" '+
+        'style="margin-top:6px; text-transform:uppercase" autocapitalize="characters" autocomplete="off">'+
+      '</div>';
   });
 
   /* The converter's notes first and under their own heading. They came off the laptop,
@@ -1761,16 +1824,32 @@ function renderSignCard(leg, res){
       '<div class="btnrow"><button class="btn" id="btn-sign">Sign &amp; reveal cost</button></div>'+
     '</div>';
   ['from','to'].forEach(function(end){
-    var sel = $('pick-'+end); if(!sel) return;
-    sel.addEventListener('change', function(){
-      var code = this.value; if(!code) return;
-      var lat = leg[end==='from'?'depLat':'arrLat'], lon = leg[end==='from'?'depLon':'arrLon'];
+    var lat = leg[end==='from'?'depLat':'arrLat'], lon = leg[end==='from'?'depLon':'arrLon'];
+    var name = function(code){
+      if(!/^[A-Z]{4}$/.test(code)) return false;
+      /* Idempotent on purpose. Moving off the box fires a native change as well as the
+         one the pilot's keystroke caused, and without this the note lands twice. */
+      if(leg[end] === code) return true;
       S.fieldPos[code] = {lat:lat, lon:lon, src:'named by the pilot on the review page, '+leg.date};
       leg[end] = code;
       leg.notes = (leg.notes||[]).concat([
-        (end==='from'?'Departure':'Arrival')+' named '+code+' by the pilot. The book now has that position and resolves it by itself from here on. The fees on this leg posted at the default aerodrome before it was named.']);
-      save(); render(); renderSignCard(leg, res);
+        (end==='from'?'Departure':'Arrival')+' named '+code+' by the pilot. The book now has that position and resolves it by itself from here on. '+
+        (FIELDS[code] ? 'The fees on this leg posted at the default aerodrome before it was named.'
+                      : 'The book has no fees for '+code+', so this leg posted at the default aerodrome and so will the next one from there. Its landing, parking and fuel need a real figure before they can be right.')]);
+      save();
+      /* Out of the handler: this card is about to be rebuilt, and the element the event
+         came from is inside it. Redrawing under our own feet throws. */
+      setTimeout(function(){ render(); renderSignCard(leg, res); }, 0);
       toast(code+' position learned. Next leg from there resolves on its own.');
+      return true;
+    };
+    var sel = $('pick-'+end);
+    if(sel) sel.addEventListener('change', function(){ if(this.value) name(this.value); });
+    var box = $('type-'+end);
+    if(box) box.addEventListener('change', function(){
+      var code = String(this.value||'').trim().toUpperCase();
+      if(!code) return;
+      if(!name(code)) toast('An ICAO code is four letters \u2014 ' + code + ' is not one.');
     });
   });
 
@@ -1916,8 +1995,9 @@ function surname(name){
 }
 function groundRuns(){ return S.legs.filter(function(l){ return l.noFlight; }).length; }
 function logRows(){
-  /* Engine runs that never got airborne stay out: the carnet de route is a flight record.
-     They are filed, they post, and the count is shown under the page. */
+  /* Runs that never got airborne stay out, per Claus's rule of 16 Sep 18:34. They are
+     filed, they post, and the count is shown under the page. An air start is not one of
+     them - it has airborne time and belongs here. */
   var legs = S.legs.filter(function(l){ return !l.noFlight; })
                    .sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
   var run = 0;
@@ -2027,9 +2107,10 @@ function renderLogbook(){
   $('logTbl').innerHTML = head+'<tbody>'+body+'</tbody>'+foot;
   var gr = groundRuns(), n = $('logNote');
   if(n) n.innerHTML = gr
-    ? '<span class="tiny muted">'+gr+' engine run'+(gr===1?'':'s')+' with no take-off '+(gr===1?'is':'are')+
-      ' not on this page \u2014 a ground run is not a flight. '+(gr===1?'It is':'They are')+' in the Ledger, and '+
-      (gr===1?'its':'their')+' fuel and fees posted as usual.</span>'
+    ? '<span class="tiny muted">'+gr+' run'+(gr===1?'':'s')+' with no airborne time '+(gr===1?'is':'are')+
+      ' not on this page \u2014 only airborne events go in the logbook. '+(gr===1?'It is':'They are')+' in the Ledger, and '+
+      (gr===1?'its':'their')+' fuel and fees posted as usual. The tacho gap '+(gr===1?'it leaves':'they leave')+
+      ' between legs is expected, not an error.</span>'
     : '';
 }
 
