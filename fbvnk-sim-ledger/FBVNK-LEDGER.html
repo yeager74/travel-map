@@ -477,6 +477,8 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
       </div>
       <div class="btnrow" style="margin-top:10px">
         <button class="btn ghost small" id="btn-log-csv">Copy as CSV</button>
+        <span class="small muted">Times</span>
+        <select id="l-tz" style="width:auto"><option value="utc">UTC &mdash; as she records them</option><option value="local">Local</option></select>
       </div>
       <hr class="rule">
       <div class="tw carnet" style="max-height:620px; overflow-y:auto"><table id="logTbl"></table></div>
@@ -698,7 +700,28 @@ var PACKAGES = [
 ];
 
 /* ---------------- helpers ---------------- */
-function eur(n){ return '€' + (Math.round(n*100)/100).toLocaleString('en-GB',{minimumFractionDigits:2, maximumFractionDigits:2}); }
+/* ---------------- money ----------------
+   K7b F2, decided by the PM 16 Sep: round half-up on the exact decimal value, to the
+   cent, once per posting line. Not toFixed and not Math.round on a float. 1.5 h of
+   engine reserve is 31.185 exactly; (31.185).toFixed(2) gives 31.18 because the binary
+   double sits just under .185, and a Builder strip written with toFixed would disagree
+   with this book by a cent. toPrecision(15) snaps that noise off, then the rounding is
+   done on the decimal digits, which is what the rule actually says.
+   The same routine is specified in PRICES_AND_BILLING_RULES.json -> rounding, so the
+   laptop book and the future HANGAR strip agree to the cent. */
+function eur2(v){
+  if(typeof v !== 'number' || !isFinite(v)) return 0;
+  var neg = v < 0, s = Number(Math.abs(v).toPrecision(15)).toString();
+  if(s.indexOf('e') > -1) return v;            /* never reached by money in this book */
+  var dot = s.indexOf('.');
+  if(dot < 0) return neg ? -Number(s) : Number(s);
+  var frac = s.slice(dot+1);
+  while(frac.length < 3) frac += '0';
+  var n = parseInt(s.slice(0, dot) + frac.slice(0, 2), 10);
+  if(frac.charAt(2) >= '5') n += 1;
+  return (neg ? -n : n) / 100;
+}
+function eur(n){ return '€' + eur2(n).toLocaleString('en-GB',{minimumFractionDigits:2, maximumFractionDigits:2}); }
 function num(n,d){ if(d===undefined) d=1; return (Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toLocaleString('en-GB',{minimumFractionDigits:d, maximumFractionDigits:d}); }
 function today(){ var d=new Date(); return d.toISOString().slice(0,10); }
 function monthKey(iso){ return iso.slice(0,7); }
@@ -750,14 +773,15 @@ function blankState(seeded){
     billedMonths:[],
     reserves:{ engine:0, prop:0 },
     health:{ engine:88, prop:92, brakes:74, tyres:80, gear:86, airframe:84, avionics:79, interior:82, paint:91 },
-    squawks:[], done:[], spend:[], legs:[], ingested:[]
+    squawks:[], done:[], spend:[], legs:[], ingested:[], fieldPos:{}, timeBase:'utc'
   };
 }
 
 function load(){
   try{
     var raw = localStorage.getItem(KEY);
-    if(raw){ var o = JSON.parse(raw); if(o && o.v===1){ o.ingested = o.ingested || []; return o; } }
+    if(raw){ var o = JSON.parse(raw);
+      if(o && o.v===1){ o.ingested = o.ingested || []; o.fieldPos = o.fieldPos || {}; o.timeBase = o.timeBase || 'utc'; return o; } }
   }catch(e){}
   return seedExamples(blankState(true));
 }
@@ -774,9 +798,13 @@ function post(iso, key, opts){
   var sup  = opts.sup  || p.sup  || 'Supplier';
   var desc = opts.desc || p.desc || key;
   var cat  = opts.cat  || p.cat  || 'Maintenance, parts & airworthiness';
-  var vatAmt = Math.round(net*vat)/100;
+  /* Rounded once, in this order: net to the cent, VAT off the rounded net, gross as the
+     sum of the two. That is how the invoice itself adds up, so the book's gross always
+     equals its own printed net plus its own printed VAT. */
+  var netR   = eur2(net);
+  var vatAmt = eur2(netR * vat / 100);
   var row = { id:uid(), date:iso, no:invNo(S,sup,iso), sup:sup, desc:desc, cat:cat,
-              net:Math.round(net*100)/100, vat:vatAmt, gross:Math.round((net+vatAmt)*100)/100, key:key };
+              net:netR, vat:vatAmt, gross:eur2(netR + vatAmt), key:key };
   S.spend.push(row);
   return row;
 }
@@ -855,7 +883,7 @@ function fileLeg(leg){
   /* carrying deferred worn items costs you */
   S.squawks.forEach(function(sq){
     if(sq.kind==='worn' && sq.cost>0){
-      sq.cost = Math.round(sq.cost * 1.06 * 100)/100;
+      sq.cost = eur2(sq.cost * 1.06);
       sq.legs = (sq.legs||0) + 1;
       if(H[sq.comp]!==undefined) H[sq.comp] -= 1.5;
     }
@@ -920,7 +948,49 @@ function fileLeg(leg){
    Contract FBVNK_LEG/1, published on the Job Card for the Builder to accept or adjust.
    Only "from" and "to" are required. Anything else missing is derived where it can be
    and printed on the review page where it cannot — nothing is filled in silently. */
-var LEG_SCHEMA = 'FBVNK_LEG/1';
+var LEG_SCHEMA = 'FBVNK_LEG/2';
+var LEG_SCHEMA_ACCEPTED = ['FBVNK_LEG/1', 'FBVNK_LEG/2'];
+
+/* Revision 2 of the contract, after Records' K7b read it against what V274 actually
+   records. The aeroplane stores positions, not ICAO codes; its clock is Zulu; it keeps
+   a landing count and the last landing only; its vertical speed is negative down; and a
+   refuel inside a leg makes start-minus-shutdown the wrong burn. Each of those is a
+   field here now. */
+
+/* Nearest aerodrome to a position, within a radius. The aeroplane sends latitude and
+   longitude; the book owns the aerodrome table, so resolution is the book's job.
+   No coordinates are invented here: FIELDS carries none, and this session will not put
+   a position on a real aerodrome from recall. Until they are supplied, every position
+   resolves to null and says so on the review page, and the pilot's own correction on
+   that page teaches the book one field at a time (S.fieldPos). */
+var RESOLVE_RADIUS_NM = 8;
+function fieldPos(code){
+  if(S && S.fieldPos && S.fieldPos[code]) return S.fieldPos[code];
+  var f = FIELDS[code];
+  return (f && typeof f.lat === 'number' && typeof f.lon === 'number') ? {lat:f.lat, lon:f.lon} : null;
+}
+function nmBetween(a, b){
+  var R = 3440.065, toRad = Math.PI/180;
+  var dLat = (b.lat-a.lat)*toRad, dLon = (b.lon-a.lon)*toRad;
+  var la1 = a.lat*toRad, la2 = b.lat*toRad;
+  var h = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return 2*R*Math.asin(Math.min(1, Math.sqrt(h)));
+}
+function resolveField(lat, lon){
+  if(typeof lat !== 'number' || typeof lon !== 'number') return null;
+  var best = null;
+  Object.keys(FIELDS).forEach(function(code){
+    if(code === 'ZZZZ') return;
+    var p = fieldPos(code); if(!p) return;
+    var nm = nmBetween({lat:lat, lon:lon}, p);
+    if(!best || nm < best.nm) best = {code:code, nm:nm};
+  });
+  return (best && best.nm <= RESOLVE_RADIUS_NM) ? best : null;
+}
+function posTxt(lat, lon){
+  if(typeof lat !== 'number' || typeof lon !== 'number') return '';
+  return Math.abs(lat).toFixed(3)+(lat<0?'S':'N')+' '+Math.abs(lon).toFixed(3)+(lon<0?'W':'E');
+}
 
 /* Thresholds for reading "how she was flown" out of power data. This session's proposal,
    not measured off the aeroplane — the Builder or Claus sets the real ones, and until
@@ -958,11 +1028,27 @@ function normaliseLeg(rec){
 
   if(rec.schema && String(rec.schema).indexOf('FBVNK_LEG/') !== 0)
     return {ok:false, why:'Not an F-BVNK leg record — its schema reads "'+String(rec.schema).slice(0,28)+'".'};
-  if(rec.schema && rec.schema !== LEG_SCHEMA)
-    notes.push('Record is '+rec.schema+'; this book reads '+LEG_SCHEMA+'. Fields it does not know are ignored.');
+  if(rec.schema && LEG_SCHEMA_ACCEPTED.indexOf(rec.schema) < 0)
+    notes.push('Record is '+rec.schema+'; this book reads '+LEG_SCHEMA_ACCEPTED.join(' and ')+'. Fields it does not know are ignored.');
 
+  /* Positions first, codes second. V274 stores latitude and longitude; the ICAO code is
+     the book's to resolve, and an unresolved one is labelled, never guessed. */
+  var depLat = numOrNull(rec.depLat), depLon = numOrNull(rec.depLon);
+  var arrLat = numOrNull(rec.arrLat), arrLon = numOrNull(rec.arrLon);
   var from = icao(rec.from), to = icao(rec.to);
-  if(!from || !to) return {ok:false, why:'The record needs a four-letter departure and destination.'};
+
+  if(!from && depLat !== null && depLon !== null){
+    var rd = resolveField(depLat, depLon);
+    if(rd){ from = rd.code; notes.push('Departure resolved to '+rd.code+' from '+posTxt(depLat, depLon)+', '+num(rd.nm,1)+' nm.'); }
+    else { from = '????'; notes.push('Departure not resolved: '+posTxt(depLat, depLon)+' is not within '+RESOLVE_RADIUS_NM+' nm of any aerodrome the book has a position for. Priced at the default field. Name it on the review page and the book remembers the position.'); }
+  }
+  if(!to && arrLat !== null && arrLon !== null){
+    var ra = resolveField(arrLat, arrLon);
+    if(ra){ to = ra.code; notes.push('Arrival resolved to '+ra.code+' from '+posTxt(arrLat, arrLon)+', '+num(ra.nm,1)+' nm.'); }
+    else { to = '????'; notes.push('Arrival not resolved: '+posTxt(arrLat, arrLon)+' is not within '+RESOLVE_RADIUS_NM+' nm of any aerodrome the book has a position for. Priced at the default field. Name it on the review page and the book remembers the position.'); }
+  }
+  if(!from || !to)
+    return {ok:false, why:'The record needs a departure and a destination \u2014 either four-letter codes, or positions the book can resolve.'};
 
   var date = /^\d{4}-\d{2}-\d{2}$/.test(String(rec.date||'')) ? rec.date : '';
   if(!date){ date = today(); notes.push('assumption: no date in the record — filed as '+date+'.'); }
@@ -989,19 +1075,48 @@ function normaliseLeg(rec){
   if(fp5lDep !== null) fp5lDep = Math.max(0, fp5lDep);
   if(fp5lArr !== null) fp5lArr = Math.max(0, fp5lArr);
 
-  /* Fuel billed. KIT1's rule stands: the FP-5L reading first, the uplift as the fallback.
-     Start less shutdown is what she burned, and you pay for what you burn. */
+  /* Fuel billed, in the order Records set in K7b. fp5lStart/fp5lShutdown are FP-5L REM,
+     the tank total, which is what Claus writes in Carburant Depart/Arrivee. The burn is
+     a separate figure because a refuel inside the leg makes start-minus-shutdown wrong:
+     the tank goes up mid-leg and the subtraction loses everything burned before it.
+
+       logger   burnL from the laptop logger's per-row fp5l_used. The only source that
+                survives a refuel, because it sums the increases instead of subtracting.
+       aircraft the leg's own burn from V274's saved values.
+       rem      start less shutdown. Allowed only when refuelInLeg is false.
+       uplift   the typed uplift, last.
+
+     Anything but logger is labelled on the review page. burnL inherits the FP-5L's own
+     gaps either way: a single-update drop of 2 L or more is never counted, and nothing
+     counts while the instrument is unpowered. */
   var uplift = numOrNull(rec.uplift);
-  var burn = (fp5lDep !== null && fp5lArr !== null) ? Math.max(0, fp5lDep - fp5lArr) : null;
-  var litres = 0, fuelSrc = '';
-  if(burn !== null && burn > 0){
-    litres = Math.round(burn*10)/10;
-    fuelSrc = 'FP-5L: '+num(fp5lDep,0)+' at start less '+num(fp5lArr,0)+' at shutdown';
+  var burnL = numOrNull(rec.burnL);
+  var refuelInLeg = rec.refuelInLeg === true;
+  var declared = ['logger','aircraft','rem','uplift'].indexOf(rec.burnSource) > -1 ? rec.burnSource : null;
+  var rem = (fp5lDep !== null && fp5lArr !== null) ? Math.max(0, fp5lDep - fp5lArr) : null;
+
+  var litres = 0, fuelSrc = '', burnSource = null, burn = null;
+  if(burnL !== null && burnL > 0){
+    burnSource = declared === 'aircraft' ? 'aircraft' : (declared || 'logger');
+    litres = Math.round(burnL*10)/10; burn = litres;
+    fuelSrc = (burnSource === 'logger' ? 'FP-5L used, summed from the logger rows' : 'FP-5L used, the leg’s own burn off the aeroplane')
+            + ': '+num(litres,1)+' L';
+    if(burnSource !== 'logger')
+      notes.push('Fuel billed from the ' + burnSource + ' burn, not the logger rows. The logger did not run this leg end to end.');
+  } else if(rem !== null && rem > 0 && !refuelInLeg){
+    burnSource = 'rem'; litres = Math.round(rem*10)/10; burn = litres;
+    fuelSrc = 'FP-5L tank total: '+num(fp5lDep,0)+' at start less '+num(fp5lArr,0)+' at shutdown';
+    notes.push('Fuel billed from the tank totals, not a burn figure. Sound here only because the record says there was no refuel in the leg.');
   } else if(uplift !== null && uplift > 0){
-    litres = uplift; fuelSrc = 'uplift as recorded';
-    notes.push('Fuel billed off the uplift, not the FP-5L — the record gave no usable start/shutdown pair.');
+    burnSource = 'uplift'; litres = uplift;
+    fuelSrc = 'uplift as recorded';
+    notes.push(refuelInLeg
+      ? 'Refuel inside the leg and no burn figure, so the tank totals cannot give the burn. Fuel billed off the uplift instead.'
+      : 'Fuel billed off the uplift — the record gave no burn and no usable tank pair.');
   } else {
-    notes.push('No fuel billed: the record carries neither an FP-5L pair nor an uplift.');
+    notes.push(refuelInLeg
+      ? 'No fuel billed: there was a refuel inside the leg, and the record carries neither a burn figure nor an uplift, so nothing here can say what she used.'
+      : 'No fuel billed: the record carries neither an FP-5L pair nor an uplift.');
   }
 
   var price = numOrNull(rec.fuelPrice);
@@ -1010,11 +1125,21 @@ function normaliseLeg(rec){
     if(litres > 0) notes.push('assumption: fuel at '+eur(price)+'/L, the standing price for '+to+' — the record carried none.');
   }
 
+  /* Sign convention, fixed by the contract: positive is descent, so 150 means 150 fpm
+     down. The converter negates the sim's own negative vertical speed. Math.abs here is
+     belt and braces for a converter that forgets. */
   var rate = numOrNull(rec.touchdownFpm);
   if(rate === null){
     rate = 150;
     notes.push('assumption: touchdown taken as 150 fpm — the record carried no rate, so no hard-landing check was made on this leg.');
   } else rate = Math.abs(Math.round(rate));
+
+  /* V274 keeps a landing count and the last landing's time only, so the carnet's Heure
+     Arrivee is the last one. A leg with several landings says so. */
+  var landings = numOrNull(rec.landings);
+  landings = (landings === null) ? null : Math.max(0, Math.round(landings));
+  if(landings !== null && landings > 1)
+    notes.push(landings+' landings this leg. The arrival time is the last one \u2014 that is all the aeroplane keeps.');
 
   /* Style is the one judgement in the book and the aeroplane can only infer it. Power
      data, then a style the record states outright, then "by the book" and it says so. */
@@ -1054,14 +1179,16 @@ function normaliseLeg(rec){
   }
 
   return {ok:true, notes:notes, leg:{
-    legId:legId, src:'aircraft', schema:rec.schema || null,
+    legId:legId, src:'aircraft', schema:rec.schema || null, tz:'Z',
     date:date, from:from, to:to,
     hours:hours, airborne:toMinute(airborne), block:toMinute(block),
     engineStart:engineStart, shutdown:shutdown, takeOff:takeOff, landing:landing,
     depTime: takeOff || engineStart, arrTime: landing || shutdown,
     fp5lDep:fp5lDep, fp5lArr:fp5lArr, burn:burn,
-    litres:litres, fuelSrc:fuelSrc, price:price,
+    litres:litres, fuelSrc:fuelSrc, burnSource:burnSource, refuelInLeg:refuelInLeg, price:price,
     tachStart:tachStart, tachStop:tachStop,
+    depLat:depLat, depLon:depLon, arrLat:arrLat, arrLon:arrLon,
+    landings:landings,
     rate:rate, nights:nights, handling: rec.handling ? 95 : 0,
     style:style, surface:surface,
     note:String(rec.note || '').slice(0,160),
@@ -1200,7 +1327,7 @@ function raise(comp, def){
   if(S.squawks.some(function(s){ return s.text===def.t; })) return null;
   var price = def.c ? PRICES[def.c] : null;
   var sq = { id:uid(), comp:comp, text:def.t, kind:def.kind,
-             key:def.c, cost: price ? Math.round((price.net*(1+(price.vat||0)/100))*100)/100 : 0,
+             key:def.c, cost: price ? eur2(price.net*(1+(price.vat||0)/100)) : 0,
              raised:S.lastDate, legs:0 };
   S.squawks.push(sq);
   return sq;
@@ -1427,6 +1554,22 @@ function recordedBlock(leg){
       ((leg.tachStop||leg.tachStop===0) ? '<dt>Tacho</dt><dd>'+tachoTxt(leg.tachStart)+' &rarr; '+tachoTxt(leg.tachStop)+'</dd>' : '')+
       '<dt>R&eacute;f.</dt><dd>'+esc(leg.legId||'')+'</dd>'+
     '</dl>';
+  /* An unresolved position is the one thing on this card the pilot can put right, and
+     doing it once teaches the book that aerodrome's position for every leg after. The
+     fees on THIS leg already posted at the default field - naming it fixes the carnet
+     row and the next resolution, not the invoice, and the card says so. */
+  ['from','to'].forEach(function(end){
+    if(leg[end] !== '????') return;
+    var lat = leg[end==='from'?'depLat':'arrLat'], lon = leg[end==='from'?'depLon':'arrLon'];
+    if(typeof lat !== 'number' || typeof lon !== 'number') return;
+    html += '<div class="field" style="margin-top:8px"><label for="pick-'+end+'">'+
+      (end==='from'?'D&eacute;part':'Arriv&eacute;e')+' &mdash; '+posTxt(lat, lon)+', not on file</label>'+
+      '<select id="pick-'+end+'" data-pick="'+end+'"><option value="">Name it&hellip;</option>'+
+      Object.keys(FIELDS).filter(function(k){ return k !== 'ZZZZ'; }).map(function(k){
+        return '<option value="'+k+'">'+k+' &mdash; '+esc(FIELDS[k].name)+'</option>';
+      }).join('')+'</select></div>';
+  });
+
   if(leg.notes && leg.notes.length)
     html += '<p class="tiny muted" style="margin-top:8px">'+leg.notes.map(esc).join('<br>')+'</p>';
   return html;
@@ -1456,6 +1599,20 @@ function renderSignCard(leg, res){
       '<div class="field"><label for="sign-name">Pilote &mdash; sign to confirm</label><input type="text" id="sign-name" class="signline" value="'+esc(leg.signedBy||'Claus Thanner')+'"></div>'+
       '<div class="btnrow"><button class="btn" id="btn-sign">Sign &amp; reveal cost</button></div>'+
     '</div>';
+  ['from','to'].forEach(function(end){
+    var sel = $('pick-'+end); if(!sel) return;
+    sel.addEventListener('change', function(){
+      var code = this.value; if(!code) return;
+      var lat = leg[end==='from'?'depLat':'arrLat'], lon = leg[end==='from'?'depLon':'arrLon'];
+      S.fieldPos[code] = {lat:lat, lon:lon};
+      leg[end] = code;
+      leg.notes = (leg.notes||[]).concat([
+        (end==='from'?'Departure':'Arrival')+' named '+code+' by the pilot. The book now has that position and resolves it by itself from here on. The fees on this leg posted at the default aerodrome before it was named.']);
+      save(); render(); renderSignCard(leg, res);
+      toast(code+' position learned. Next leg from there resolves on its own.');
+    });
+  });
+
   $('btn-sign').addEventListener('click', function(){
     leg.signedBy = $('sign-name').value.trim() || 'Claus Thanner';
     leg.signedAt = new Date().toISOString();
@@ -1580,6 +1737,18 @@ function hplus(h){
 /* Tacho to two decimals, comma decimal mark, as he writes it: 1228,32. */
 function tachoTxt(v){ return (v===null || v===undefined || v==='') ? '' : (+v).toFixed(2).replace('.',','); }
 function hhmm4(t){ return t ? t.replace(':','') : ''; }
+/* The aeroplane's clock is Zulu, so a record's times are UTC (contract FBVNK_LEG/2).
+   A leg typed into the fallback form carries no zone at all, so it is shown exactly as
+   it was entered and never converted - a conversion needs a base, and guessing one
+   would put a wrong time in the carnet. The column head says which base is showing. */
+function dispHM(l, hm){
+  if(!hm) return '';
+  if(S.timeBase === 'utc' || l.tz !== 'Z') return hm;
+  var d = new Date(l.date + 'T' + hm + ':00Z');
+  if(isNaN(d)) return hm;
+  return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+function baseLabel(){ return S.timeBase === 'utc' ? 'UTC' : 'local'; }
 function surname(name){
   var parts = String(name||'').trim().split(/\s+/);
   return parts.length ? parts[parts.length-1].toUpperCase() : '';
@@ -1591,7 +1760,7 @@ function logRows(){
     var prev = run; run += l.hours;
     return {
       date: l.date, prev: prev, run: run, dur: l.hours,
-      from: l.from, to: l.to, depT: hhmm4(l.depTime), arrT: hhmm4(l.arrTime),
+      from: l.from, to: l.to, depT: hhmm4(dispHM(l, l.depTime)), arrT: hhmm4(dispHM(l, l.arrTime)),
       /* Fuel: the tank totals off the FP-5L at engine start and at shutdown, in the
          Carburant columns, which is where he writes them. The Huile columns are printed
          but struck through on his pages, so nothing goes in them. */
@@ -1634,7 +1803,7 @@ function renderLogbook(){
         '<th rowspan="2">Date<span class="sub">Fecha</span>'+(yr?'<span class="yr">'+yr+'</span>':'')+'</th>'+
         '<th colspan="2">Equipage &middot; Crew<span class="sub">Tripulaci&oacute;n</span></th>'+
         '<th colspan="2">Lieu &middot; Place<span class="sub">Lugar</span></th>'+
-        '<th colspan="2">Heure &middot; Times<span class="sub">Hora</span></th>'+
+        '<th colspan="2">Heure &middot; Times<span class="sub">Hora &middot; '+baseLabel()+'</span></th>'+
         '<th rowspan="2">Heures de Vol<span class="sub">Hour of flight &middot; Horas de Vuelo</span>'+
           '<span class="sub">Report &middot; Brought forward &middot; Suma anterior</span></th>'+
         '<th rowspan="2">Nature du Vol<span class="sub">Nature of flight &middot; Clase del Vuelo</span></th>'+
@@ -1978,6 +2147,14 @@ function boot(){
     }
   });
 
+  $('l-tz').value = S.timeBase;
+  $('l-tz').addEventListener('change', function(){
+    S.timeBase = this.value === 'local' ? 'local' : 'utc';
+    save(); renderLogbook();
+    toast(S.timeBase === 'utc'
+      ? 'Carnet showing UTC, the way the aeroplane records it.'
+      : 'Carnet showing local time. Legs typed by hand are shown exactly as entered \u2014 they carry no zone.');
+  });
   $('l-filter').addEventListener('change', renderLedger);
   $('btn-manual').addEventListener('click', function(){ var f=$('manualForm'); f.hidden=!f.hidden; });
   $('btn-manual-add').addEventListener('click', function(){
