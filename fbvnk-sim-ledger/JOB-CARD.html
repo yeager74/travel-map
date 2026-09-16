@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 12</dd>
+      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 13</dd>
     </dl>
   </div>
 </header>
@@ -206,6 +206,10 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
   </div>
 
   <div class="ticks">
+    <div class="tick done"><span class="box">&#10003;</span><span class="q">Should the engine and propeller reserves and the 25 / 50 / 100 h inspection counters run on tacho time or on airborne (flight) time?</span><time>16 Sep 21:05:42 local</time>
+      <span class="a">You picked <b>&ldquo;Tacho time (the hour meter)&rdquo;</b>. Built in R6. The cockpit strip was already on the meter and does not change; the laptop book moved to it, so there is one clock. It accrues the meter&rsquo;s progression <em>between</em> records, which is what counts the ground running between legs. Airborne keeps your carnet&rsquo;s Heures de Vol and the airborne totals. The wear coefficients stay on airborne &mdash; that is this session&rsquo;s own call, flagged, because your answer named the reserves and the counters.</span>
+      <span class="stat"><span class="answered">&#10003; Answered on the Annunciator</span></span></div>
+
     <div class="tick done"><span class="box">&#10003;</span><span class="q">Wire the ledger to the iPad wear model, or keep it standalone?</span><time>15 Sep 14:18:07Z</time>
       <span class="a">You picked <b>&ldquo;Wire it to the iPad wear model (NK_*)&rdquo;</b>. Nothing has been wired &mdash; the design below is the answer to it, and the PM reviews before any build.</span>
       <span class="stat"><span class="answered">&#10003; Answered on the Annunciator</span></span></div>
@@ -494,6 +498,68 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <section>
+  <h2>KIT1 revision 6 &mdash; REPORTED <span class="hint">Claus picked the clock 21:05:42 &middot; the book moved to it &middot; Records reviews it as K7e, covering R5 too</span></h2>
+  <div class="note warn">
+    <p><strong>Claus, on the Annunciator at 21:05:42 local:</strong> <em>&ldquo;Tacho time (the hour meter)&rdquo;</em>. R5 put the question up with the arithmetic &mdash; the two halves were billing the same aeroplane on different clocks, 18.80&nbsp;% apart on page 86&rsquo;s own figures, &euro;303.98 a year on his 2025 flying. <strong>There is now one clock.</strong></p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Half</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td>The cockpit strip</td><td><strong>Unchanged.</strong> Already reading <span class="mono tiny">NK_ST_TACH</span> under the <span class="mono tiny">(MX_LOG, TACH)</span> cursor it has. Right all along.</td></tr>
+        <tr><td>The test vectors</td><td><strong>Unchanged.</strong> Every <span class="mono tiny">hourly_reserve</span> figure in V1, V5, V6 and V15 was already a TACH cursor delta &mdash; re-checked in R6, zero mismatches.</td></tr>
+        <tr><td>The laptop book</td><td><strong>Moved.</strong> It was the half on the wrong clock.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small"><strong>On the meter now:</strong> both reserves, <span class="mono tiny">counters.hrs</span> and the 25 / 50 / 100-hour inspections it drives, <span class="mono tiny">ttaf</span>, and <span class="mono tiny">engSMOH</span> / <span class="mono tiny">propSMOH</span> with their 2000-hour TBO postings. <strong>Airborne keeps</strong> the carnet&rsquo;s Heures de Vol and the airborne totals.</p>
+  <div class="note">
+    <p><strong>One thing left on airborne, and it is this session&rsquo;s own call rather than Claus&rsquo;s pick: the wear coefficients.</strong> His answer named the two reserves and the inspection counters. Those coefficients were rated against airborne hours, so moving them would quietly re-rate every one by the 18.8&nbsp;% the clocks differ by &mdash; a change nobody asked for &mdash; and the real wear model is the iPad&rsquo;s (<span class="mono tiny">HANGAR.js</span>, <span class="mono tiny">NK_*</span>), which is the PM&rsquo;s. Flagged rather than left silent; say the word and they move.</p>
+  </div>
+
+  <h3 style="margin-top:14px">The progression rule <span class="tiny muted" style="font-weight:400">the part that needed care</span></h3>
+  <p class="small">Accrual is the meter&rsquo;s movement <strong>between records</strong>, not a leg&rsquo;s own <span class="mono tiny">tachStop &minus; tachStart</span> &mdash; because under V275 only airborne legs become records, so the taxi, the run-up and any ground running between them lives in the gap, and that is precisely the engine time the hour meter was picked to capture.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Case</th><th>What accrues</th></tr></thead>
+      <tbody>
+        <tr><td>Normal</td><td>this <span class="mono tiny">tachStop</span> less the <strong>previous record&rsquo;s</strong> <span class="mono tiny">tachStop</span>, to 0.01 h</td></tr>
+        <tr><td>First record the book sees</td><td>its own span; the cursor is picked up there</td></tr>
+        <tr><td><span class="mono tiny">tachStart</span> below the cursor</td><td>a reload or another machine. Flagged, <strong>nothing negative posted</strong>, own span, cursor resumes from the new reading</td></tr>
+        <tr><td>No <span class="mono tiny">tachStop</span> at all</td><td>the leg&rsquo;s <strong>airborne</strong> time, said out loud, and <strong>carried</strong> &mdash; the next real reading subtracts it from the measured gap</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">That last row is the one that needed thinking about. Without the carry, a leg with no reading would accrue its airborne hours and then the next real reading would measure a gap spanning that same leg and accrue it again. Carrying the figure and netting it off is exact, self-correcting, and invents no meter reading the book never saw.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Record</th><th>Meter</th><th class="num">Accrued</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>T-1</td><td class="mono tiny">1228.32 &rarr; 1229.34</td><td class="num"><strong>1.02 h</strong></td><td>first reading, own span</td></tr>
+        <tr><td>T-2</td><td class="mono tiny">1230.00 &rarr; 1231.10</td><td class="num"><strong>1.76 h</strong></td><td>gap from 1229.34. The leg ran 1.10 &mdash; <strong>the other 0.66 h ran on the ground between the two records and is accrued</strong></td></tr>
+        <tr><td>T-3</td><td class="mono tiny">900.00 &rarr; 901.25</td><td class="num"><strong>1.25 h</strong></td><td>the meter went backwards. Flagged, nothing negative, own span, cursor resumes</td></tr>
+        <tr><td>T-4</td><td class="mono tiny">none</td><td class="num"><strong>1.50 h</strong></td><td>no reading: airborne, said out loud, carried</td></tr>
+        <tr><td>T-5</td><td class="mono tiny">902.10 &rarr; 903.25</td><td class="num"><strong>0.50 h</strong></td><td>gap 2.00 less the 1.50 carried</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">Counters <strong>18.40 &rarr; 24.43 h</strong>, engine reserve <strong>&euro;382.54 &rarr; &euro;507.90</strong>. Recomputed independently in Python <span class="mono tiny">Decimal</span> with <span class="mono tiny">ROUND_HALF_UP</span>: 6.03 h &times; &euro;20.79 = &euro;125.36, and 382.54 + 125.36 = 507.90. The book&rsquo;s own arithmetic agrees to the cent. <strong>The seeded eight do not move</strong> &mdash; hand-filed before the aeroplane wrote tacho, so all eight take the airborne fallback and stand at 18.4 h, &euro;382.54 and &euro;25.02 as before.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>File</th><th class="num">Size</th><th>md5</th></tr></thead>
+      <tbody>
+        <tr><td class="mono tiny">PRICES_AND_BILLING_RULES.json</td><td class="num">69,254 B</td><td class="mono tiny">4c35f624035a0a82a7a5c4ff499089f6</td></tr>
+        <tr><td class="mono tiny">TEST_VECTORS.json</td><td class="num">65,386 B</td><td class="mono tiny">6713e5c1c0951e045714dda75890a5dc</td></tr>
+        <tr><td class="mono tiny">LEG_CONTRACT.md</td><td class="num">28,936 B</td><td class="mono tiny">99eba12d87cb63fd8b62672574f739ae</td></tr>
+        <tr><td class="mono tiny">STRIP_SPEC.md</td><td class="num">13,886 B</td><td class="mono tiny">dddf2faaa12cd2c12b2e7939309acbbb</td></tr>
+        <tr><td class="mono tiny">NOTE.md</td><td class="num">48,864 B</td><td class="mono tiny">211e6e150aca550148746b9c05466609</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tiny muted"><span class="mono">fbvnk-sim-ledger/KIT1_R6/</span> on <span class="mono">claude/fbvnk-cost-sheet-maintenance-svcsw2</span>, commit <span class="mono">7bca351cea51dc35191ac15bf2c82e74aef4c75e</span>. The book itself is <span class="mono tiny">FBVNK-LEDGER.html</span> on the same commit, 163,971&nbsp;B, md5 <span class="mono tiny">265ffcdc</span>. Staging folder <span class="mono tiny">FBVNK_SIM_LEDGER_KIT1_R6/</span> carries <span class="mono tiny">MD5.txt</span> and <span class="mono tiny">READ_THIS_FIRST.md</span>. Thirty-five vectors, V1&ndash;V34: <strong>V33</strong> the progression across a ground run and the no-reading carry, <strong>V34</strong> the meter going backwards, <strong>V32</strong> rewritten as closed with Claus&rsquo;s words. <span class="mono tiny">open_items</span> down to three. R1&ndash;R5 stay frozen.</p>
+</section>
+
+<section>
   <h2>Logbook layout (V275) <span class="hint">16 Sep 2026 &middot; Claus 21:0x &middot; built and pushed &middot; commit <span class="mono">93417c8</span></span></h2>
   <p class="small">Claus, word for word: <em>&ldquo;update the cost ledger with what the lates layout of the lookbook looks like&rdquo;</em>. Built from the staged <span class="mono tiny">LEDGER_DOCS_3_LOGBOOK_V275/</span> &mdash; every format below taken from the installed <span class="mono tiny">HANGAR.js</span> (md5 <span class="mono tiny">91fa9dce</span>, the <span class="mono tiny">lbLastText()</span> strings) rather than from the summary, so the two cannot drift.</p>
   <div class="note">
@@ -575,7 +641,7 @@ Zulu day 259</pre>
     <p class="small"><strong>No R6 tonight, unless the PM wants one.</strong> R5 has not been fetched yet &mdash; it is on Claus&rsquo;s board as a download &mdash; and stacking a second unreviewed revision on top of it would churn the queue for text that changes no figure and no behaviour. The book needs no code change for any of the above. Holding V275 and whatever K7e finds for one revision.</p>
   </div>
   <div class="note">
-    <p><strong>Noted, with nothing to do:</strong> R4 will not be reviewed and R5 supersedes it &mdash; a <span class="mono tiny">SUPERSEDED.md</span> is in the R4 staging folder so nobody works from it. A4 is on the board as <span class="mono tiny">ledger_accrual_clock</span> and <strong>neither half has been changed</strong>, as instructed. A1, A2, A3 accepted pending K7e. The Tarbes box is accepted and stays; LFBT&rsquo;s ARP is R19 when Records is running; its landing, parking and fuel figures are <strong>none on file</strong>, so the default and the label stand and the book says so on every leg from there.</p>
+    <p><strong>Noted, with nothing to do:</strong> R4 will not be reviewed and R5 supersedes it &mdash; a <span class="mono tiny">SUPERSEDED.md</span> is in the R4 staging folder so nobody works from it. A4 was on the board as <span class="mono tiny">ledger_accrual_clock</span> and <strong>Claus answered it at 21:05:42 &mdash; the hour meter</strong>; built in R6 above. A1, A2, A3 accepted pending K7e. The Tarbes box is accepted and stays; LFBT&rsquo;s ARP is R19 when Records is running; its landing, parking and fuel figures are <strong>none on file</strong>, so the default and the label stand and the book says so on every leg from there.</p>
   </div>
 </section>
 
@@ -768,7 +834,7 @@ Zulu day 259</pre>
     <p><strong>Five open, and three of them are things only you or Claus can supply.</strong></p>
     <p class="small"><strong>1. Aerodrome coordinates, eight pairs</strong> &mdash; LPCS, LPCO, LPVL, LEVD, LEAP, LEST, LEBG, LEMP. <span class="mono">FBVNK_LEG/2</span> has her sending positions, so the book resolves them, but no coordinate is on file and <strong>this session will not put a position on a real aerodrome from recall</strong>. Until they arrive every position resolves to <span class="mono tiny">????</span>, priced at the default field and labelled; the pilot naming it once on the review page teaches the book that position for good, so the book bootstraps itself if you would rather not chase them.</p>
     <p class="small"><strong>2. <span class="mono tiny">LEAP</span> / Teruel.</strong> The field table calls <span class="mono tiny">LEAP</span> &ldquo;Teruel&rdquo;, but Claus's own flight-planning folder has both <span class="mono tiny">LPCS - LETL</span> and <span class="mono tiny">LETL - LEAP</span> for 24 Oct 2025 &mdash; two different aerodromes. At least one name is wrong. Flagged, not corrected.</p>
-    <p class="small"><strong>3. UTC or local in the carnet</strong> &mdash; on the board. The book has a control, UTC by default, so either tap works with no rebuild.</p>
+    <p class="small"><strong>3. UTC or local in the carnet</strong> &mdash; answered: <b>UTC</b>, 16 Sep 18:00. The book is set to it and the control stays.</p>
     <p class="small"><strong>4. Nine prices with no figure</strong> &mdash; the five <span class="mono tiny">PRICES</span> keys and four of the eight fault components. <strong>5. Which capture route</strong> &mdash; accumulator, snapshot, or your capture at the SERVICE action. That third one is the best of the three and it is yours: it sees the exact value at the service where both polling designs see only the last confirmed read. It replaces the snapshot, not the accumulator, because a mixed-R life still needs per-read division. Recommended: the action capture combined with accumulation. Not chosen here.</p>
   </div>
 </section>
@@ -982,10 +1048,11 @@ Zulu day 259</pre>
     <table>
       <thead><tr><th>Artefact</th><th>Where</th><th class="num">Size</th><th>md5</th></tr></thead>
       <tbody>
-        <tr><td>The ledger itself</td><td class="mono tiny">fbvnk-sim-ledger/FBVNK-LEDGER.html</td><td class="num">152,677 B</td><td class="mono tiny">7dd833a6</td></tr>
+        <tr><td>The ledger itself</td><td class="mono tiny">fbvnk-sim-ledger/FBVNK-LEDGER.html</td><td class="num">163,971 B</td><td class="mono tiny">265ffcdc</td></tr>
         <tr><td>Install and rules note</td><td class="mono tiny">fbvnk-sim-ledger/README.md</td><td class="num">5,767 B</td><td class="mono tiny">1a645093</td></tr>
-        <tr><td>KIT1 R5, five files <span class="pill done">reported</span></td><td class="mono tiny">fbvnk-sim-ledger/KIT1_R5/</td><td class="num">204,492 B</td><td class="mono tiny">see the R5 table above</td></tr>
-        <tr><td>Checksums + pointer, R5</td><td class="mono tiny">FBVNK_STAGING/FBVNK_SIM_LEDGER_KIT1_R5/</td><td class="num">4,537 B</td><td class="mono tiny">&mdash;</td></tr>
+        <tr><td>KIT1 R6, five files <span class="pill done">reported</span></td><td class="mono tiny">fbvnk-sim-ledger/KIT1_R6/</td><td class="num">226,326 B</td><td class="mono tiny">see the R6 table above</td></tr>
+        <tr><td>Checksums + pointer, R6</td><td class="mono tiny">FBVNK_STAGING/FBVNK_SIM_LEDGER_KIT1_R6/</td><td class="num">5,498 B</td><td class="mono tiny">&mdash;</td></tr>
+        <tr><td>KIT1 R5, five files <span class="pill done">frozen</span></td><td class="mono tiny">fbvnk-sim-ledger/KIT1_R5/</td><td class="num">204,492 B</td><td class="mono tiny">see the R5 table above</td></tr>
         <tr><td>KIT1 R4, five files <span class="pill done">frozen</span></td><td class="mono tiny">fbvnk-sim-ledger/KIT1_R4/</td><td class="num">172,036 B</td><td class="mono tiny">see the R4 table above</td></tr>
         <tr><td>Staging note <span class="pill done">frozen</span></td><td class="mono tiny">FBVNK_STAGING/FBVNK_SIM_LEDGER/NOTE.md</td><td class="num">5,152 B</td><td class="mono tiny">&mdash;</td></tr>
         <tr><td>Checksums, <code>md5sum -c</code> format</td><td class="mono tiny">FBVNK_STAGING/FBVNK_SIM_LEDGER/MD5.txt</td><td class="num">96 B</td><td class="mono tiny">&mdash;</td></tr>
@@ -993,7 +1060,7 @@ Zulu day 259</pre>
       </tbody>
     </table>
   </div>
-  <p class="tiny muted">Git: <span class="mono">yeager74/travel-map</span>, branch <span class="mono">claude/fbvnk-cost-sheet-maintenance-svcsw2</span>, commit <span class="mono">e0d924b</span>. The spec's md5 is as stated by Records and Checks &mdash; <span class="mono">assumption:</span> not re-verified here, because the Dropbox connector returns extracted text rather than the file's bytes.</p>
+  <p class="tiny muted">Git: <span class="mono">yeager74/travel-map</span>, branch <span class="mono">claude/fbvnk-cost-sheet-maintenance-svcsw2</span>, commit <span class="mono">7bca351</span>. The spec's md5 is as stated by Records and Checks &mdash; <span class="mono">assumption:</span> not re-verified here, because the Dropbox connector returns extracted text rather than the file's bytes.</p>
 </section>
 
 <footer>
