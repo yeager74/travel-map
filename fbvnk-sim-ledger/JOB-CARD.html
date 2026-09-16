@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 13</dd>
+      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 14</dd>
     </dl>
   </div>
 </header>
@@ -495,6 +495,63 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <p class="small"><strong>The EASA side is now in, as R18.</strong> It moved one row, added two and left <em>Nature du Vol</em> alone &mdash; the section below has it.</p>
   </div>
   <p class="small"><strong>The P1 figure is closed, and not by me.</strong> Claus, 18:04:32: &ldquo;good bloody question&hellip; ha ha, I should know, but I just carried it over from the previous owners. Keep it the same&rdquo;. The Logbook tab no longer calls it an assumption of this session&rsquo;s &mdash; it quotes him, and the figure stays exactly as his pages carry it.</p>
+</section>
+
+<section>
+  <h2>Built &mdash; the review page, the two clocks, and the position machinery gone <span class="hint">R7 &middot; three orders 21:54&ndash;22:08 &middot; Ledger artifact v18 &middot; commit <span class="mono">d394526</span></span></h2>
+  <div class="note warn">
+    <p><strong>&ldquo;Why I need to ask for this&rdquo; &mdash; you should not have had to.</strong> Everything the card had as <em>proposed, not built</em> is built and the Sim Ledger artifact is republished. From here, anything that changes how the ledger looks or what it captures gets built and republished in the same step, with today&rsquo;s defaults kept. Only money rules, prices and your carnet&rsquo;s own columns wait for an answer.</p>
+  </div>
+
+  <h3>1 &middot; The review page, as ordered at 21:54</h3>
+  <div class="note">
+    <p><strong>Eleven rows before the signature.</strong> Nature du Vol &middot; Fonctions &middot; &Eacute;quipage&nbsp;&mdash;&nbsp;Noms &middot; Atterrissages jour/nuit &middot; Nuit/IFR heures &middot; Incidents&nbsp;&middot;&nbsp;Observations &middot; Comment elle a vol&eacute; &middot; Surface &middot; Nuits stationn&eacute;es &middot; Handling &middot; &euro; par litre. Every default is what the book already picks, so <strong>signing an untouched page posts exactly what the same record posted before the rows existed</strong> &mdash; verified both ways.</p>
+    <p class="small"><strong>A correction of mine, found while building it.</strong> The R5 table said four rows move money. It is <strong>five</strong>: nights, handling and the litre price bill this leg; how she flew and the surface bill later, through wear. The page says so and marks all five.</p>
+    <p class="small"><strong>So a leg now enters the book on arrival and posts at the signature.</strong> Nothing else could honour those rows &mdash; invoices written before you touch the page cannot reflect your choices, and re-posting afterwards would either double-count or burn the seeded squawk sequence. The carnet row and the inbox entry still appear the moment the leg arrives.</p>
+    <p class="small">Also built: <strong>Dur&eacute;e (en vol)</strong> with every total airborne; the <strong>home-simulator label</strong> at the head of the Logbook tab and every review card; the <strong>neutral engine-time-between-legs line</strong> under the carnet, a plain sentence and never a flag. The two EASA rows &mdash; landings by day/night and night/IFR time &mdash; are captured on the review page and kept off the carnet rows, because your document is a Carnet de Route and those are a pilot&rsquo;s columns.</p>
+    <p class="small"><strong>One more thing the page stopped doing:</strong> it no longer prints its own &ldquo;assumption:&rdquo; line for the fuel price, how she flew or the surface while those three are sitting right there as choices. Sign untouched and they come back, because then they really were assumptions. Overrule one and it goes for good, because then it never was.</p>
+  </div>
+
+  <h3>2 &middot; Two clocks, and both are yours <span class="tiny muted" style="font-weight:400">21:57:47</span></h3>
+  <div class="note warn">
+    <p><em>&ldquo;NO, the inspection times, sorry if I said otherwise, are based on the journey log book airborne hours, NOT tacho.&rdquo;</em> Built. It is not a compromise &mdash; what is a countdown to work on the aeroplane runs on the hours your journey log shows, and what is money set aside against engine life runs on the meter that measures engine life.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Airborne, off the journey log</th><th>Hour meter</th></tr></thead>
+      <tbody>
+        <tr><td>the carnet&rsquo;s Heures de Vol</td><td>engine reserve, &euro;20.79/h</td></tr>
+        <tr><td><strong>the 25 / 50 / 100 h inspections</strong></td><td>propeller reserve, &euro;1.36/h</td></tr>
+        <tr><td>airframe total (TTAF)</td><td>engine and propeller since overhaul, and the 2000 h TBO</td></tr>
+        <tr><td><strong>the wear rates</strong></td><td>the meter&rsquo;s own running total</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small">The one deliberate crossing is SMOH/TBO, kept on the meter with the reserve that pays for the overhaul, so the fund and the thing it buys count the same hours. <strong>Built, say the word to change it.</strong> Verified: one leg feeds the two counters different numbers &mdash; over the same five records, <strong>+5.317 h airborne</strong> and <strong>+6.03 h on the meter</strong>, engine reserve +&euro;125.36.</p>
+
+  <h3>3 &middot; The position machinery is gone <span class="tiny muted" style="font-weight:400">22:08</span></h3>
+  <div class="note warn">
+    <p><em>&ldquo;stop all this position shit, with lots and lats, u know what airport we are at for take off and landing ICAO, use that. over engineered BS.&rdquo;</em></p>
+    <p class="small"><strong>You were right, and the removal is bigger than the build was.</strong> Out of the book: the aerodrome-positions panel and the coordinate set, the 8 nm resolve radius, the <span class="mono tiny">????</span> code, <span class="mono tiny">resolveField</span>, <span class="mono tiny">nmBetween</span>, <span class="mono tiny">knownCodes</span>, <span class="mono tiny">fieldPos</span>, <span class="mono tiny">posTxt</span>, <span class="mono tiny">loadCoords</span>, <span class="mono tiny">S.fieldPos</span>, the four position fields on every record, the position line in the AUTO block, and the latitude and longitude in the field table. <strong>About 9 KB of machinery, replaced by taking the code the aeroplane sends.</strong> A record with no code shows <span class="mono tiny">----</span> and you type it in the box.</p>
+    <p class="small">R17 and R19, the two coordinate studies, are not wasted work. They are what proved the resolver worked before you decided the resolver was the wrong answer to the question.</p>
+  </div>
+  <div class="note">
+    <p><strong>The AUTO block is your 22:08 layout.</strong> D&eacute;part and Arriv&eacute;e by ICAO with their engine times, then D&eacute;collage, Atterrissage, En vol, Bloc, Carburant, Consomm&eacute;, Atterrissages, Touch&eacute;, Tacho, R&eacute;f. <strong>No positions, no Zulu day, no prose</strong>, and the touchdown <strong>positive</strong> &mdash; which is what the record carries and what the book bills on, so the sim-sign line R6 added is gone with the rest.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>File</th><th class="num">Size</th><th>md5</th></tr></thead>
+      <tbody>
+        <tr><td class="mono tiny">FBVNK-LEDGER.html <span class="pill done">artifact v18</span></td><td class="num">160,891 B</td><td class="mono tiny">b08af286857c6451b44d262e26297c88</td></tr>
+        <tr><td class="mono tiny">PRICES_AND_BILLING_RULES.json</td><td class="num">70,222 B</td><td class="mono tiny">c70706f5fb31dd34f72d61de1487cea1</td></tr>
+        <tr><td class="mono tiny">TEST_VECTORS.json</td><td class="num">70,854 B</td><td class="mono tiny">116c990e04ab064d0f89eaff9f5705a3</td></tr>
+        <tr><td class="mono tiny">LEG_CONTRACT.md</td><td class="num">30,330 B</td><td class="mono tiny">980012b7b0a55488b0d43b5b02fbe08b</td></tr>
+        <tr><td class="mono tiny">STRIP_SPEC.md</td><td class="num">13,886 B</td><td class="mono tiny">dddf2faaa12cd2c12b2e7939309acbbb</td></tr>
+        <tr><td class="mono tiny">NOTE.md</td><td class="num">52,030 B</td><td class="mono tiny">be9fc6da26359000900275ce1d6e778d</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tiny muted">Commit <span class="mono">d39452690c623fb5f1bb2317a27051bf0e09374f</span>, <span class="mono">fbvnk-sim-ledger/KIT1_R7/</span>. Thirty-seven vectors: <strong>V35</strong> the two clocks on one leg, <strong>V36</strong> the eleven rows defaulting to no change. Regression set green; the seeded book is unmoved at 8 legs, 16 invoices, 18.4 hours.</p>
 </section>
 
 <section>
