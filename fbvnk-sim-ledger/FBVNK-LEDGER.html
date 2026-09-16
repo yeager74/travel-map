@@ -198,8 +198,10 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
 /* ---- carnet de route: nostalgic handwritten styling, scoped to the Logbook tab ---- */
 /* Ruling follows the real book: faint blue horizontal rules, thin black column rules,
    printed headings in small serif caps, a red rule closing the page total. */
-.carnet{background:var(--carnet-paper); border:1px solid var(--carnet-colrule); box-shadow:var(--shadow); padding:0}
-.carnet table{background:transparent}
+.carnet{border:1px solid var(--carnet-colrule); box-shadow:var(--shadow); padding:0}
+/* Paper goes on the table, not the wrapper: the spread is wider than the page, so a
+   background on the wrapper stops at the fold and the right-hand columns fall off it. */
+.carnet table{background:var(--carnet-paper)}
 .carnet th{
   background:transparent; color:var(--carnet-head);
   font-family:"Zilla Slab",Georgia,serif; font-weight:600; font-size:10px; letter-spacing:.06em;
@@ -292,6 +294,8 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
           <div class="field"><label for="f-dep-time">Off blocks</label><input type="time" id="f-dep-time"></div>
           <div class="field"><label for="f-block">Block time (h)</label><input type="text" id="f-block" inputmode="decimal" placeholder="1.2 or 1:12"></div>
           <div class="field"><label for="f-arr-time">On blocks</label><input type="time" id="f-arr-time"></div>
+          <div class="field"><label for="f-fp5l-dep">FP-5L at start (L)</label><input type="number" id="f-fp5l-dep" min="0" step="1" placeholder="total on the gauge"></div>
+          <div class="field"><label for="f-fp5l-arr">FP-5L at shutdown (L)</label><input type="number" id="f-fp5l-arr" min="0" step="1" placeholder="total on the gauge"></div>
           <div class="field"><label for="f-fuel">Uplift (L)</label><input type="number" id="f-fuel" min="0" step="1" placeholder="0"></div>
           <div class="field"><label for="f-price">&euro; per litre</label><input type="number" id="f-price" min="0" step="0.01"></div>
           <div class="field"><label for="f-rate">Touchdown (fpm)</label><input type="number" id="f-rate" min="0" step="10" placeholder="180"></div>
@@ -427,7 +431,7 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
       </div>
       <hr class="rule">
       <div class="tw carnet" style="max-height:620px; overflow-y:auto"><table id="logTbl"></table></div>
-      <p class="tiny muted" style="margin-top:8px">Written the way the book is written: dates day-month with the year once at the head of the column, aerodromes as bare ICAO, times four digits, flight time h:mm, the running total carried forward in <em>Report</em> and closed at the foot under a red rule. <strong>Huile</strong> and <strong>Visa</strong> stay empty &mdash; the sim tracks neither, and a real carnet carries blank cells too. Totals are sim hours only; they never join or overwrite NK's real total time.</p>
+      <p class="tiny muted" style="margin-top:8px">Written the way the book is written: dates day-month with the year once at the head of the column, aerodromes as bare ICAO, times four digits, flight time h:mm, the running total carried forward in <em>Report</em> and closed at the foot under a red rule. The <strong>Huile</strong> column is split D&eacute;part/Arriv&eacute;e and holds what you write there in the real book: the FP-5L total on engine start and again at shutdown. Type both on the Ramp tab and they land here. <strong>Visa</strong> stays empty &mdash; nothing in the sim signs for customs. Totals are sim hours only; they never join or overwrite NK's real total time.</p>
     </div>
   </section>
 
@@ -1171,6 +1175,8 @@ function logRows(){
       from: l.from, to: l.to, depT: hhmm4(l.depTime), arrT: hhmm4(l.arrTime),
       nature: l.from===l.to ? 'Local' : 'Navigation',
       litres: l.litres || 0,
+      fp5lDep: (l.fp5lDep===0 || l.fp5lDep) ? l.fp5lDep : null,
+      fp5lArr: (l.fp5lArr===0 || l.fp5lArr) ? l.fp5lArr : null,
       note: l.note || '', auto: legSummary(l),
       crew: surname(l.signedBy) || 'THANNER',
       signed: l.signedBy || '', signedAt: l.signedAt || ''
@@ -1194,7 +1200,7 @@ function renderLogbook(){
         '<th rowspan="2">Nature du Vol<span class="sub">Nature of flight &middot; Clase del Vuelo</span></th>'+
         '<th rowspan="2">Report<span class="sub">Brought forward &middot; Suma anterior</span></th>'+
         '<th colspan="2">Carburant &middot; Fuel<span class="sub">Combustible</span></th>'+
-        '<th rowspan="2">Huile<span class="sub">Oil &middot; Aceite</span></th>'+
+        '<th colspan="2">Huile &middot; Oil<span class="sub">Aceite</span></th>'+
         '<th rowspan="2">Incidents &middot; Observations<span class="sub">Observations, if any</span></th>'+
         '<th rowspan="2">Signature du Commandant de bord<span class="sub">Person in charge &middot; Comandante a bordo</span></th>'+
         '<th rowspan="2">Visa<span class="sub">Douanes et Autorit&eacute;s A&eacute;ronautiques</span></th>'+
@@ -1204,6 +1210,7 @@ function renderLogbook(){
         '<th>D&eacute;part<span class="sub">Salida</span></th><th>Arriv&eacute;e<span class="sub">Llegada</span></th>'+
         '<th>D&eacute;part<span class="sub">Salida</span></th><th>Arriv&eacute;e<span class="sub">Llegada</span></th>'+
         '<th>Quantit&eacute;<span class="sub">Quantity</span></th><th>D&eacute;p. / Arr.<span class="sub">at</span></th>'+
+        '<th>D&eacute;part<span class="sub">FP-5L, start</span></th><th>Arriv&eacute;e<span class="sub">FP-5L, shutdown</span></th>'+
       '</tr>'+
     '</thead>';
 
@@ -1224,15 +1231,16 @@ function renderLogbook(){
       '<td>'+r.nature+'</td>'+
       '<td>'+hhmm(r.prev)+'</td>'+
       '<td class="fill">'+(r.litres ? num(r.litres,0)+' L' : '')+'</td><td class="fill"></td>'+
-      '<td class="fill"></td>'+
+      '<td class="fill">'+(r.fp5lDep===null ? '' : num(r.fp5lDep,0))+'</td>'+
+      '<td class="fill">'+(r.fp5lArr===null ? '' : num(r.fp5lArr,0))+'</td>'+
       '<td class="obs"'+(full?' title="'+esc(full)+'"':'')+'>'+obs+'</td>'+
       '<td>'+sig+'</td>'+
       '<td class="fill"></td>'+
     '</tr>';
-  }).join('') : '<tr><td colspan="16" class="muted">No legs filed yet.</td></tr>';
+  }).join('') : '<tr><td colspan="17" class="muted">No legs filed yet.</td></tr>';
 
   var foot = rows.length
-    ? '<tfoot><tr><td colspan="7">Total &mdash; report &agrave; nouveau</td><td>'+hhmm(total)+'</td><td colspan="8"></td></tr></tfoot>'
+    ? '<tfoot><tr><td colspan="7">Total &mdash; report &agrave; nouveau</td><td>'+hhmm(total)+'</td><td colspan="9"></td></tr></tfoot>'
     : '';
 
   $('logTbl').innerHTML = head+'<tbody>'+body+'</tbody>'+foot;
@@ -1425,6 +1433,8 @@ function boot(){
       from: $('f-from').value, to: $('f-to').value,
       hours: h,
       depTime: $('f-dep-time').value || '', arrTime: $('f-arr-time').value || '',
+      fp5lDep: $('f-fp5l-dep').value==='' ? null : Math.max(0, +$('f-fp5l-dep').value || 0),
+      fp5lArr: $('f-fp5l-arr').value==='' ? null : Math.max(0, +$('f-fp5l-arr').value || 0),
       litres: Math.max(0, +$('f-fuel').value || 0),
       price:  Math.max(0, +$('f-price').value || 0),
       rate:   Math.max(0, +$('f-rate').value || 150),
@@ -1437,6 +1447,7 @@ function boot(){
     var res = fileLeg(leg);
     save(); render(); renderSignCard(leg, res);
     $('f-block').value=''; $('f-fuel').value=''; $('f-note').value=''; $('f-dep-time').value=''; $('f-arr-time').value='';
+    $('f-fp5l-dep').value=''; $('f-fp5l-arr').value='';
     $('f-date').value = leg.date;
     $('f-hint').textContent = grounded() ? 'Now grounded — see the tech log.' : '';
     toast('Leg filed. Review the log below and sign it.' + (res.raised.length ? ' ' + res.raised.length + ' new squawk' + (res.raised.length===1?'':'s') + '.' : ''));
@@ -1492,10 +1503,11 @@ function boot(){
   });
   $('btn-log-csv').addEventListener('click', function(){
     var rows = logRows();
-    var head = 'Date,Nom,Fonctions,Lieu depart,Lieu arrivee,Heure depart,Heure arrivee,Heures de vol,Nature du vol,Report,Carburant,Huile,Incidents - Observations,Signature du Commandant de bord,Visa\n';
+    var head = 'Date,Nom,Fonctions,Lieu depart,Lieu arrivee,Heure depart,Heure arrivee,Heures de vol,Nature du vol,Report,Carburant quantite,Carburant dep/arr,FP-5L depart,FP-5L arrivee,Incidents - Observations,Signature du Commandant de bord,Visa\n';
     var body = rows.map(function(r){
       return [dayMonth(r.date), r.crew, 'CDB', r.from, r.to, r.depT, r.arrT, hhmm(r.dur), r.nature,
               hhmm(r.prev), (r.litres?num(r.litres,0)+' L':''), '',
+              (r.fp5lDep===null?'':num(r.fp5lDep,0)), (r.fp5lArr===null?'':num(r.fp5lArr,0)),
               [r.note].concat(r.auto).filter(Boolean).join('; '), r.signed, '']
         .map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
     }).join('\n');
