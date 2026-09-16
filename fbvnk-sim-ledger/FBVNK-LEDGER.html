@@ -11,7 +11,8 @@
   --due:#8A6110; --due-soft:#F5E9CE;
   --bad:#9C2F27; --bad-soft:#F6DFDC;
   --shadow:0 1px 0 rgba(25,29,23,.05), 0 2px 10px rgba(25,29,23,.05);
-  --carnet-paper:#EDE3C8; --carnet-ink:#2B3A67; --carnet-line:#D8C9A0; --carnet-stamp:#8A3324;
+  --carnet-paper:#F0E7CA; --carnet-ink:#2B3A67; --carnet-line:#D8C9A0; --carnet-stamp:#8A3324;
+  --carnet-rule:#AFC0DA; --carnet-colrule:#4A4A42; --carnet-red:#A8302A; --carnet-head:#33507F;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -24,6 +25,7 @@
     --bad:#E0837A; --bad-soft:#331C19;
     --shadow:0 1px 0 rgba(0,0,0,.3), 0 2px 10px rgba(0,0,0,.25);
     --carnet-paper:#22190F; --carnet-ink:#E4D3A0; --carnet-line:#4A3C22; --carnet-stamp:#C9705F;
+    --carnet-rule:#3C4A63; --carnet-colrule:#5A5245; --carnet-red:#C9705F; --carnet-head:#8FAAE3;
   }
 }
 :root[data-theme="dark"]{
@@ -36,6 +38,7 @@
   --bad:#E0837A; --bad-soft:#331C19;
   --shadow:0 1px 0 rgba(0,0,0,.3), 0 2px 10px rgba(0,0,0,.25);
   --carnet-paper:#22190F; --carnet-ink:#E4D3A0; --carnet-line:#4A3C22; --carnet-stamp:#C9705F;
+  --carnet-rule:#3C4A63; --carnet-colrule:#5A5245; --carnet-red:#C9705F; --carnet-head:#8FAAE3;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -193,14 +196,30 @@ code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; background:var(--s
 pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--sheet-2); border:1px solid var(--rule); padding:11px 13px; overflow-x:auto; margin:8px 0}
 
 /* ---- carnet de route: nostalgic handwritten styling, scoped to the Logbook tab ---- */
-.carnet{
-  background:repeating-linear-gradient(var(--carnet-paper) 0px, var(--carnet-paper) 27px, var(--carnet-line) 28px);
-  border:1px solid var(--carnet-line); box-shadow:var(--shadow); padding:18px 20px 20px;
+/* Ruling follows the real book: faint blue horizontal rules, thin black column rules,
+   printed headings in small serif caps, a red rule closing the page total. */
+.carnet{background:var(--carnet-paper); border:1px solid var(--carnet-colrule); box-shadow:var(--shadow); padding:0}
+.carnet table{background:transparent}
+.carnet th{
+  background:transparent; color:var(--carnet-head);
+  font-family:"Zilla Slab",Georgia,serif; font-weight:600; font-size:10px; letter-spacing:.06em;
+  text-transform:uppercase; line-height:1.25; white-space:normal; vertical-align:bottom;
+  border-bottom:1px solid var(--carnet-colrule); border-right:1px solid var(--carnet-colrule);
+  padding:5px 6px;
 }
-.carnet .eyebrow, .carnet h2{color:var(--carnet-ink)}
-.carnet th{background:transparent; color:var(--carnet-ink); opacity:.75; border-bottom:1px solid var(--carnet-line); font-family:"IBM Plex Sans",sans-serif}
-.carnet td{font-family:"Caveat",cursive; font-size:17px; color:var(--carnet-ink); border-bottom:1px solid var(--carnet-line); background:transparent}
-.carnet tfoot td{background:transparent; border-top:1px solid var(--carnet-line)}
+.carnet th .sub{display:block; font-size:8.5px; letter-spacing:.04em; opacity:.72; font-weight:500}
+.carnet th .yr{display:block; font-family:"Caveat",cursive; font-size:15px; letter-spacing:0; text-transform:none; color:var(--carnet-ink); opacity:1}
+.carnet td{
+  font-family:"Caveat",cursive; font-size:17px; color:var(--carnet-ink); background:transparent;
+  border-bottom:1px solid var(--carnet-rule); border-right:1px solid var(--carnet-colrule);
+  padding:3px 6px; vertical-align:top;
+}
+.carnet tbody tr:nth-child(even) td{background:transparent}
+.carnet th:last-child, .carnet td:last-child{border-right:0}
+.carnet tfoot td{
+  background:transparent; font-family:"Caveat",cursive; font-size:18px; color:var(--carnet-ink);
+  border-top:2px solid var(--carnet-red); border-bottom:0;
+}
 .carnetphoto{border:1px solid var(--carnet-line); background:var(--sheet-2); padding:14px 16px; color:var(--ink-2); font-size:13px}
 .carnetphoto img{display:block; margin:10px auto 0; max-height:340px; border:1px solid var(--carnet-line)}
 .carnetphoto img[hidden]{display:none}
@@ -389,20 +408,18 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
     <div class="sheet">
       <div class="eyebrow">Carnet de route &mdash; sim</div>
       <h2>Logbook</h2>
-      <p class="small muted">Every leg you file on the Ramp tab writes its own row here, auto-filled &mdash; no separate typing, the way a real carnet gets filled in after each flight.</p>
+      <p class="small muted">Every leg you file on the Ramp tab writes its own row here, auto-filled &mdash; no separate typing, the way the real carnet gets filled in after each flight. Columns, order and ruling follow NK's own book.</p>
       <div class="carnetphoto" id="carnetPhoto">
-        <p style="margin:0"><strong>52 years old, and no photo of the original yet.</strong> This session cannot pull it from Dropbox itself &mdash; the download host is blocked by this session's network policy (not a permissions question; confirmed again 15 Sep 2026), and the scanned pages have no text layer to read another way. Paste or attach the real page directly in chat and it goes right here.</p>
+        <p style="margin:0"><strong>Columns taken from the real book.</strong> The printed headings below are the ones in NK's own <em>Carnet de Route</em> &mdash; three languages per column, left page then right page &mdash; transcribed by the project manager from Claus's colour scan (<span class="mono tiny">F-BVNK - JOURNEY LOGBOOK - COMPLETE - COLOR - 2023-05-13 - PDF 1.pdf</span>) and staged in <span class="mono tiny">FBVNK_STAGING/LEDGER_DOCS/</span>. <span class="mono tiny">assumption:</span> this page follows that transcription; this session read the transcription, not the scan itself &mdash; JPEGs cannot be opened from here.</p>
+        <p style="margin:8px 0 0" class="tiny muted">Staged alongside it, if you want the originals: <span class="mono tiny">F-BVNK_logbook_COVER_red_p1.jpg</span> (md5 8a972853) and <span class="mono tiny">F-BVNK_logbook_FILLED_2023_p92.jpg</span> (md5 d91701fe) &mdash; the April 2023 spread, &ldquo;NEW OWNER, FIRST FLIGHT&rdquo;.</p>
         <img id="carnetPhotoImg" alt="F-BVNK Carnet de Route, original page" hidden>
-      </div>
-      <div class="note warn" style="margin-top:10px">
-        <p><strong>Draft columns.</strong> This follows the standard French journey-log layout (date, d&eacute;part, arriv&eacute;e, dur&eacute;e, nature, totaux, pilote, observations) &mdash; it is <em>not yet checked against your real NK carnet</em>. Send a page (or the blank form) and this gets aligned to it exactly.</p>
       </div>
       <div class="btnrow" style="margin-top:10px">
         <button class="btn ghost small" id="btn-log-csv">Copy as CSV</button>
       </div>
       <hr class="rule">
       <div class="tw carnet" style="max-height:620px; overflow-y:auto"><table id="logTbl"></table></div>
-      <p class="tiny muted" style="margin-top:8px">Totaux is sim hours only &mdash; it never joins or overwrites NK's real total time. Off-blocks/on-blocks times come from the Ramp tab when you fill them in; leave them blank and only place, date and duration show.</p>
+      <p class="tiny muted" style="margin-top:8px">Written the way the book is written: dates day-month with the year once at the head of the column, aerodromes as bare ICAO, times four digits, flight time h:mm, the running total carried forward in <em>Report</em> and closed at the foot under a red rule. <strong>Huile</strong> and <strong>Visa</strong> stay empty &mdash; the sim tracks neither, and a real carnet carries blank cells too. Totals are sim hours only; they never join or overwrite NK's real total time.</p>
     </div>
   </section>
 
@@ -1128,31 +1145,86 @@ function legSummary(l){
   }
   return items;
 }
-function renderLogbook(){
+/* The real book writes dates day-month with the year once at the head of the column,
+   times as four digits, aerodromes as bare ICAO. */
+function dayMonth(iso){ return iso.slice(8,10)+'-'+iso.slice(5,7); }
+function hhmm4(t){ return t ? t.replace(':','') : ''; }
+function surname(name){
+  var parts = String(name||'').trim().split(/\s+/);
+  return parts.length ? parts[parts.length-1].toUpperCase() : '';
+}
+function logRows(){
   var legs = S.legs.slice().sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
   var run = 0;
-  var rows = legs.map(function(l, i){
+  return legs.map(function(l){
     var prev = run; run += l.hours;
-    var from = (FIELDS[l.from] ? l.from+' '+FIELDS[l.from].name : l.from) + (l.depTime ? ' &middot; '+l.depTime : '');
-    var to   = (FIELDS[l.to]   ? l.to+' '+FIELDS[l.to].name   : l.to)   + (l.arrTime ? ' &middot; '+l.arrTime : '');
-    var nature = l.from===l.to ? 'Local' : 'Navigation';
-    return {n:i+1, date:l.date, from:from, to:to, dur:l.hours, nature:nature, prev:prev, run:run,
-            note:l.note||'', signed:l.signedBy||'', signedAt:l.signedAt||'', auto:legSummary(l)};
+    return {
+      date: l.date, prev: prev, run: run, dur: l.hours,
+      from: l.from, to: l.to, depT: hhmm4(l.depTime), arrT: hhmm4(l.arrTime),
+      nature: l.from===l.to ? 'Local' : 'Navigation',
+      litres: l.litres || 0,
+      note: l.note || '', auto: legSummary(l),
+      crew: surname(l.signedBy) || 'THANNER',
+      signed: l.signedBy || '', signedAt: l.signedAt || ''
+    };
   });
-  $('logTbl').innerHTML =
-    '<thead><tr><th class="num">#</th><th>Date</th><th>D&eacute;part</th><th>Arriv&eacute;e</th><th class="num">Dur&eacute;e</th><th>Nature</th><th>Pilote</th>'+
-    '<th class="num">Report</th><th class="num">Ce vol</th><th class="num">Total</th><th>Observations</th></tr></thead><tbody>'+
-    (rows.length ? rows.map(function(r){
-      var pilote = r.signed
-        ? esc(r.signed)+' <span style="color:var(--ok)">&check;</span>'+(r.signedAt?' <span class="tiny muted">'+localHM(r.signedAt)+'</span>':'')
-        : '<span class="muted">unsigned</span>';
-      var obs = esc(r.note) + (r.auto.length ? (r.note?'<br>':'')+'<span class="tiny muted">'+r.auto.map(esc).join('; ')+'</span>' : '');
-      return '<tr><td class="num">'+r.n+'</td><td class="mono">'+esc(r.date)+'</td><td>'+r.from+'</td><td>'+r.to+'</td>'+
-        '<td class="num mono">'+hhmm(r.dur)+'</td><td class="small">'+r.nature+'</td><td class="small">'+pilote+'</td>'+
-        '<td class="num mono">'+hhmm(r.prev)+'</td><td class="num mono">'+hhmm(r.dur)+'</td><td class="num mono">'+hhmm(r.run)+'</td>'+
-        '<td class="small">'+obs+'</td></tr>';
-    }).join('') : '<tr><td colspan="11" class="muted">No legs filed yet.</td></tr>')+
-    (rows.length ? '</tbody><tfoot><tr><td colspan="9">Total sim hours</td><td class="num mono">'+hhmm(run)+'</td><td></td></tr></tfoot>' : '</tbody>');
+}
+function renderLogbook(){
+  var rows = logRows();
+  var total = rows.length ? rows[rows.length-1].run : 0;
+  var years = rows.map(function(r){ return r.date.slice(0,4); });
+  var yr = years.length ? (years[0]===years[years.length-1] ? years[0] : years[0]+'–'+years[years.length-1]) : '';
+
+  var head =
+    '<thead>'+
+      '<tr>'+
+        '<th rowspan="2">Date<span class="sub">Fecha</span>'+(yr?'<span class="yr">'+yr+'</span>':'')+'</th>'+
+        '<th colspan="2">Equipage &middot; Crew<span class="sub">Tripulaci&oacute;n</span></th>'+
+        '<th colspan="2">Lieu &middot; Place<span class="sub">Lugar</span></th>'+
+        '<th colspan="2">Heure &middot; Times<span class="sub">Hora</span></th>'+
+        '<th rowspan="2">Heures de Vol<span class="sub">Hour of flight &middot; Horas de Vuelo</span></th>'+
+        '<th rowspan="2">Nature du Vol<span class="sub">Nature of flight &middot; Clase del Vuelo</span></th>'+
+        '<th rowspan="2">Report<span class="sub">Brought forward &middot; Suma anterior</span></th>'+
+        '<th colspan="2">Carburant &middot; Fuel<span class="sub">Combustible</span></th>'+
+        '<th rowspan="2">Huile<span class="sub">Oil &middot; Aceite</span></th>'+
+        '<th rowspan="2">Incidents &middot; Observations<span class="sub">Observations, if any</span></th>'+
+        '<th rowspan="2">Signature du Commandant de bord<span class="sub">Person in charge &middot; Comandante a bordo</span></th>'+
+        '<th rowspan="2">Visa<span class="sub">Douanes et Autorit&eacute;s A&eacute;ronautiques</span></th>'+
+      '</tr>'+
+      '<tr>'+
+        '<th>Nom<span class="sub">Name</span></th><th>Fonctions<span class="sub">Duties</span></th>'+
+        '<th>D&eacute;part<span class="sub">Salida</span></th><th>Arriv&eacute;e<span class="sub">Llegada</span></th>'+
+        '<th>D&eacute;part<span class="sub">Salida</span></th><th>Arriv&eacute;e<span class="sub">Llegada</span></th>'+
+        '<th>Quantit&eacute;<span class="sub">Quantity</span></th><th>D&eacute;p. / Arr.<span class="sub">at</span></th>'+
+      '</tr>'+
+    '</thead>';
+
+  var body = rows.length ? rows.map(function(r){
+    var obs = esc(r.note) + (r.auto.length ? (r.note?'<br>':'')+'<span class="tiny muted">'+r.auto.map(esc).join('; ')+'</span>' : '');
+    var sig = r.signed
+      ? esc(r.signed)+(r.signedAt?' <span class="tiny muted">'+localHM(r.signedAt)+'</span>':'')
+      : '';
+    return '<tr>'+
+      '<td>'+dayMonth(r.date)+'</td>'+
+      '<td>'+esc(r.crew)+'</td><td>CDB</td>'+
+      '<td>'+esc(r.from)+'</td><td>'+esc(r.to)+'</td>'+
+      '<td>'+r.depT+'</td><td>'+r.arrT+'</td>'+
+      '<td>'+hhmm(r.dur)+'</td>'+
+      '<td>'+r.nature+'</td>'+
+      '<td>'+hhmm(r.prev)+'</td>'+
+      '<td>'+(r.litres ? num(r.litres,0)+' L' : '')+'</td><td></td>'+
+      '<td></td>'+
+      '<td>'+obs+'</td>'+
+      '<td>'+sig+'</td>'+
+      '<td></td>'+
+    '</tr>';
+  }).join('') : '<tr><td colspan="16" class="muted">No legs filed yet.</td></tr>';
+
+  var foot = rows.length
+    ? '<tfoot><tr><td colspan="7">Total &mdash; report &agrave; nouveau</td><td>'+hhmm(total)+'</td><td colspan="8"></td></tr></tfoot>'
+    : '';
+
+  $('logTbl').innerHTML = head+'<tbody>'+body+'</tbody>'+foot;
 }
 
 function renderPaint(){
@@ -1408,18 +1480,15 @@ function boot(){
     copy(head+body, S.spend.length+' rows copied as CSV.');
   });
   $('btn-log-csv').addEventListener('click', function(){
-    var legs = S.legs.slice().sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
-    var run = 0;
-    var head = 'No.,Date,Depart,Heure depart,Arrivee,Heure arrivee,Duree,Nature,Pilote,Report,Ce vol,Total,Observations\n';
-    var body = legs.map(function(l, i){
-      var prev = run; run += l.hours;
-      var from = FIELDS[l.from] ? l.from+' '+FIELDS[l.from].name : l.from;
-      var to   = FIELDS[l.to]   ? l.to+' '+FIELDS[l.to].name   : l.to;
-      var nature = l.from===l.to ? 'Local' : 'Navigation';
-      return [i+1, l.date, from, l.depTime||'', to, l.arrTime||'', hhmm(l.hours), nature, l.signedBy||'unsigned', hhmm(prev), hhmm(l.hours), hhmm(run), l.note||'']
+    var rows = logRows();
+    var head = 'Date,Nom,Fonctions,Lieu depart,Lieu arrivee,Heure depart,Heure arrivee,Heures de vol,Nature du vol,Report,Carburant,Huile,Incidents - Observations,Signature du Commandant de bord,Visa\n';
+    var body = rows.map(function(r){
+      return [dayMonth(r.date), r.crew, 'CDB', r.from, r.to, r.depT, r.arrT, hhmm(r.dur), r.nature,
+              hhmm(r.prev), (r.litres?num(r.litres,0)+' L':''), '',
+              [r.note].concat(r.auto).filter(Boolean).join('; '), r.signed, '']
         .map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
     }).join('\n');
-    copy(head+body, legs.length+' rows copied as CSV.');
+    copy(head+body, rows.length+' rows copied as CSV.');
   });
   $('btn-bat').addEventListener('click', function(){ copy($('batOut').textContent, 'Batch script copied.'); });
   $('btn-export').addEventListener('click', function(){
