@@ -308,6 +308,13 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
 .chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--sheet)}
 .chip:focus-visible{outline:2px solid var(--ink); outline-offset:2px}
 @media(max-width:560px){ .selrow{grid-template-columns:1fr; gap:4px} .entry .ap{font-size:30px} .entry .v{font-size:18px} }
+
+/* ---- book transfer between his two PCs ---- */
+.xfer{border:1px solid var(--accent); border-left:4px solid var(--accent); background:var(--accent-soft);
+  padding:12px 15px; margin-bottom:14px; display:grid; gap:9px}
+.xfer.warn{border-color:var(--due); border-left-color:var(--due); background:var(--due-soft)}
+.xfer p{margin:0; max-width:none; font-size:13.5px}
+.xfer .btnrow{margin-top:0}
 </style>
 
 <div class="wrap">
@@ -345,6 +352,7 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
 
   <!-- ================= RAMP ================= -->
   <section class="pane" id="pane-ramp" role="tabpanel" aria-labelledby="tab-ramp">
+    <div id="xferBar" hidden></div>
     <div id="entryCard" hidden style="margin-bottom:14px"></div>
     <div class="cols c2">
       <div class="sheet">
@@ -574,11 +582,14 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
       <h3>Save, move, reset</h3>
       <p class="small muted">The book lives in your browser's storage for this file. Copy it out before you move machines, reinstall the sim, or clear browsing data.</p>
       <div class="btnrow">
+        <button class="btn ghost small" id="btn-xfer-save">Save book to Dropbox</button>
+        <button class="btn ghost small" id="btn-xfer-load">Load newest book</button>
         <button class="btn ghost small" id="btn-export">Copy book as JSON</button>
         <button class="btn ghost small" id="btn-import">Load book from JSON</button>
         <button class="btn ghost small" id="btn-seed">Clear examples, start my season</button>
         <button class="btn danger small" id="btn-reset">Wipe everything</button>
       </div>
+      <p class="tiny muted" id="xferHint" style="margin-top:10px">The book travels between the laptop and the CT desktop through Dropbox.</p>
       <textarea id="io" rows="6" hidden style="margin-top:12px" spellcheck="false"></textarea>
     </div>
   </section>
@@ -844,8 +855,15 @@ function load(){
   }catch(e){}
   return seedExamples(blankState(true));
 }
-function save(){
+function saveBook(){
   try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+}
+/* Every call that changes the book stamps it. The transfer code compares that stamp
+   against the last copy this PC sent to Dropbox, which is how it tells "nothing has
+   happened here since I sent it" from "these two books have moved apart". */
+function save(){
+  saveBook();
+  try{ var x = xLoad(); x.changedAt = new Date().toISOString(); xSave(x); }catch(e){}
 }
 
 /* ---------------- posting ---------------- */
@@ -2137,6 +2155,9 @@ function renderSignCard(leg, res){
     var next = S.legs.filter(function(l){ return !l.signedBy; });
     if(next.length) renderSignCard(next[0]);
     else { var lp = $('lastPosting'); if(lp && lp.scrollIntoView) lp.scrollIntoView(); }
+    /* Claus, 17 Sep: the export is kept up to date by itself. Every signature sends the
+       whole book across, so the other PC is never more than one leg behind. */
+    xferAutoSave();
     toast('Signed.' + (out.raised.length ? ' '+out.raised.length+' new squawk'+(out.raised.length===1?'':'s')+' in the tech log.' : ''));
   });
 }
@@ -2243,10 +2264,285 @@ function dbxStart(){
     if(!m){ dbxSay('Dropbox pickup is not available in this view. Drop the leg file in instead.', false, false); return; }
     DBX.mcp = m;
     dbxSay('Looking in Dropbox FBVNK_LEGS…', false, true);
+    xferCheck(false);
     dbxTick(false);
     setInterval(function(){ dbxTick(false); }, 30000);
     document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') dbxTick(false); });
   }, function(){ dbxSay('Dropbox pickup is not available in this view. Drop the leg file in instead.', false, false); });
+}
+
+/* ---------------- the book between his two PCs ----------------
+   Claus, 17 Sep 2026, relayed by the PM, word for word: "The export between MY laptop
+   and MY desktop computer should be prepared and kept up to date if we add anything
+   further along the development. The push of a button to do the export of whats needed
+   would be great."
+
+   The book lives in each PC's browser storage, so the page has to carry it across itself.
+   It writes the whole book into Dropbox as a NEW dated file after every signature and on
+   the button, and never overwrites one: a file per save is an accident you can walk back,
+   an overwrite is not. On open it reads the newest file in that folder, and if it came
+   from the other PC and is newer than what this one last sent, it says so in one line.
+
+   Nothing is ever merged. Two books that have moved apart are a question for the pilot,
+   not something for this page to guess at.
+
+   This retires when the book moves into the aeroplane. Planned, not accepted. */
+var XKEY = 'fbvnk.ledger.xfer';
+var XFER = { path:'/MSFS 2024 Screenshots/FBVNK_TRANSFER/SimLedger', keep:20,
+             busy:false, noDelete:false, mine:{}, offer:null };
+/* Codes that mean the tool is not there for this page at all, as against a call that
+   failed once. The page declares list_folder, fetch and create_file and nothing else, so
+   a delete is expected to come back on this list - and then the folder simply is not
+   pruned, and the page says so rather than trying again every save. */
+var XFER_NOTOOL = ['not_in_manifest','blocked_by_policy','approval_required','not_granted',
+  'capability_disabled','capability_removed','consent_required','bad_request'];
+
+function xLoad(){
+  var x = null;
+  try{ x = JSON.parse(localStorage.getItem(XKEY) || 'null'); }catch(e){}
+  if(!x || typeof x !== 'object') x = {};
+  /* Which PC this is. Its own key, NOT inside the book - load the other PC's book and you
+     must not inherit its identity with it, or the two would answer to the same name and
+     neither would ever see the other's saves. Math.random, never rnd(): that sequence
+     belongs to the seeded wear model. */
+  if(!x.deviceId){ x.deviceId = 'pc' + Math.random().toString(36).slice(2,8); xSave(x); }
+  return x;
+}
+function xSave(x){ try{ localStorage.setItem(XKEY, JSON.stringify(x)); }catch(e){} }
+
+function xferWhen(iso){
+  var d = new Date(iso);
+  if(isNaN(d)) return '\u2014';
+  var p = function(n){ return String(n).padStart(2,'0'); };
+  return p(d.getDate())+'.'+p(d.getMonth()+1)+' '+p(d.getHours())+':'+p(d.getMinutes());
+}
+/* book_<UTC stamp>_<device>.json. The stamp leads so a plain sort by name is a sort by
+   time, and the device closes the name so it can be read back off the listing without
+   fetching the file. A second save inside the same second takes a -2 before the device,
+   which keeps both of those true. */
+function xferName(iso, dev){
+  var d = new Date(iso), p = function(n){ return String(n).padStart(2,'0'); };
+  var base = 'book_' + d.getUTCFullYear()+'-'+p(d.getUTCMonth()+1)+'-'+p(d.getUTCDate())+'_'+
+             p(d.getUTCHours())+p(d.getUTCMinutes())+p(d.getUTCSeconds());
+  var name = base+'_'+dev+'.json', k = 1;
+  while(XFER.mine[name]){ k++; name = base+'-'+k+'_'+dev+'.json'; }
+  return name;
+}
+function xferDeviceOf(name){ var m = /_([A-Za-z0-9]+)\.json$/.exec(String(name||'')); return m ? m[1] : ''; }
+function xferSay(msg, bad){
+  var el = $('xferHint'); if(!el) return;
+  el.textContent = msg; el.style.color = bad ? 'var(--bad)' : '';
+}
+function xferReady(){
+  if(DBX.mcp) return true;
+  xferSay('The book travels through Dropbox when it is open in claude.ai. Here, use Copy book as JSON.', false);
+  return false;
+}
+
+/* Write the whole book as a new file. Never overwrites, never retries by itself: a write
+   that comes back server_unavailable or upstream_error may have run anyway, so a second
+   one could leave two copies of the same save. The button is the retry. */
+function xferWrite(book, why, retried){
+  var x = xLoad(), savedAt = new Date().toISOString();
+  var name = xferName(savedAt, x.deviceId);
+  XFER.mine[name] = 1;
+  return DBX.mcp.callTool(DBX.server, 'create_file',
+      { path: XFER.path + '/' + name,
+        content: JSON.stringify({ savedAt: savedAt, deviceId: x.deviceId, book: book }) },
+      { cache:false })
+    .then(function(){
+      var y = xLoad();
+      y.lastSavedAt = savedAt; y.lastSavedName = name; xSave(y);
+      xferSay('Book sent to Dropbox \u2014 ' + name + (why ? ' (' + why + ')' : ''), false);
+      return { savedAt: savedAt, name: name };
+    }, function(e){
+      /* Dropbox refuses a path that already exists, which is what makes "never overwrite"
+         a guarantee rather than a naming convention. It also means two windows of the same
+         book saving in the same second collide: each computes the same name and the second
+         is refused. That refusal is definitive - the write did NOT happen - so bumping the
+         name and going again is safe, unlike a timeout, which is not. Once only. */
+      if(!retried && /already.?exists/i.test(String((e && e.message) || ''))){
+        XFER.mine[name] = 1;
+        return xferWrite(book, why, true);
+      }
+      throw e;
+    });
+}
+function xferErrText(e){
+  var c = e && e.code;
+  if(c === 'needs_reauth') return 'Dropbox needs reconnecting (claude.ai Settings \u2192 Connectors). The book was not sent.';
+  if(c === 'server_not_connected' || c === 'selection_required' || c === 'server_not_found')
+    return 'Dropbox is not connected for this book (claude.ai Settings \u2192 Connectors). The book was not sent.';
+  if(c === 'not_in_manifest' || c === 'consent_required')
+    return 'Dropbox is switched off for this book, so it cannot carry itself across. Press Save book to Dropbox to allow it.';
+  if(c === 'blocked_by_policy' || c === 'approval_required') return 'Writing to Dropbox is blocked for this book. Use Copy book as JSON instead.';
+  if(c === 'not_granted' || c === 'capability_disabled' || c === 'capability_removed') return 'This view cannot write to Dropbox. Use Copy book as JSON instead.';
+  if(c === 'user_changed') return 'Signed in as someone else now. Reload the book.';
+  if(c === 'server_unavailable' || c === 'upstream_error')
+    return 'Dropbox did not answer, and a write that does not answer may still have gone through. Nothing is sent again by itself \u2014 press Save book to Dropbox and check the folder.';
+  if(c === 'tool_error' && /already.?exists/i.test(String(e.message || '')))
+    return 'Dropbox already holds a file by that name, and it never overwrites one. Press Save book to Dropbox again.';
+  if(c === 'tool_error' && /parent.?path.?not.?found|not.?found/i.test(String(e.message || '')))
+    return 'The transfer folder \u2014 ' + XFER.path + ' \u2014 is not there. This page can list, read and write in it but cannot create it, so it has to be put back in Dropbox by hand.';
+  return 'Dropbox refused the write (' + (c || 'error') + '). The book was not sent.';
+}
+
+/* Keep the newest 20. The page's declared tools are list_folder, fetch and create_file, so
+   the delete is expected to be refused - it is tried once and then left alone, and the line
+   under the buttons says the folder is not pruned rather than pretending it was. */
+function xferPrune(names){
+  if(XFER.noDelete || names.length <= XFER.keep) return Promise.resolve(0);
+  var old = names.slice(0, names.length - XFER.keep);
+  return DBX.mcp.callTool(DBX.server, 'delete',
+      { entries: old.map(function(n){ return { source_path: XFER.path + '/' + n }; }) }, { cache:false })
+    .then(function(){ return old.length; }, function(e){
+      if(XFER_NOTOOL.indexOf(e && e.code) > -1) XFER.noDelete = true;
+      return 0;
+    });
+}
+
+function xferList(){
+  var all = [], pages = 0;
+  var step = function(input){
+    return DBX.mcp.callTool(DBX.server, 'list_folder', input, {cache:false}).then(function(r){
+      var p = r && r.payload;
+      if(p && Array.isArray(p.entries)) all = all.concat(p.entries);
+      pages++;
+      if(p && p.has_more && p.cursor && pages < 10) return step({cursor: p.cursor});
+      return all;
+    });
+  };
+  return step({path: XFER.path, recursive:false, object_types:['file'], max_results:600})
+    .then(function(entries){
+      return entries.map(function(e){ return String((e && e.name) || ''); })
+                    .filter(function(n){ return /^book_.+\.json$/.test(n); })
+                    .sort();
+    });
+}
+
+/* On open and on the button: read the newest file in the folder and decide what, if
+   anything, to put in front of him. */
+function xferCheck(byHand){
+  if(XFER.busy) return Promise.resolve();
+  if(byHand && !xferReady()) return Promise.resolve();
+  if(!DBX.mcp) return Promise.resolve();
+  XFER.busy = true;
+  var x = xLoad();
+  return xferList().then(function(names){
+    if(!names.length){
+      if(byHand) xferSay('No book in the transfer folder yet. Press Save book to Dropbox to put this one there.', false);
+      XFER.offer = null; renderXfer(); return;
+    }
+    var newest = names[names.length-1];
+    if(xferDeviceOf(newest) === x.deviceId){
+      if(byHand) xferSay('The newest book in Dropbox is this PC\u2019s own \u2014 ' + newest + '. Nothing to load.', false);
+      XFER.offer = null; renderXfer(); return;
+    }
+    return DBX.mcp.callTool(DBX.server, 'fetch', {id: XFER.path + '/' + newest}, {cache:false})
+      .then(function(fr){
+        var fp = fr && fr.payload;
+        var txt = (fp && typeof fp.text === 'string') ? fp.text : (typeof fp === 'string' ? fp : '');
+        var data = null;
+        try{ data = JSON.parse(txt); }catch(err){ data = null; }
+        if(!data || !data.book || data.book.v !== 1){
+          xferSay('The newest file in the transfer folder is not a book this page can read \u2014 ' + newest + '. Skipped.', true);
+          XFER.offer = null; renderXfer(); return;
+        }
+        var mineAt = x.lastSavedAt || '';
+        if(mineAt && data.savedAt <= mineAt){
+          if(byHand) xferSay('The other PC\u2019s book is older than the copy this one last sent. Nothing to load.', false);
+          XFER.offer = null; renderXfer(); return;
+        }
+        /* Two books apart: this one has changed since it last sent, and the other PC has
+           sent something newer. Both times go on the page and he picks. Never merged. */
+        var dirty = !!(x.changedAt && (!mineAt || x.changedAt > mineAt));
+        XFER.offer = { name:newest, savedAt:data.savedAt, deviceId:data.deviceId || xferDeviceOf(newest),
+                       book:data.book, conflict:dirty, mineAt:mineAt, changedAt:x.changedAt || '' };
+        renderXfer();
+      });
+  })
+  .catch(function(e){
+    if(e && e.code === 'tool_error' && /not.?found/i.test(String(e.message || ''))){
+      if(byHand) xferSay('The transfer folder is not there yet. It is created with the first book this PC sends.', false);
+      return;
+    }
+    xferSay(xferErrText(e), true);
+  })
+  .then(function(){ XFER.busy = false; });
+}
+
+/* The button, and the save that follows every signature. */
+function xferSaveNow(why){
+  if(!xferReady()) return Promise.resolve(null);
+  xferSay('Sending the book to Dropbox\u2026', false);
+  return xferWrite(S, why)
+    .then(function(res){
+      return xferList().then(function(names){
+        return xferPrune(names).then(function(n){
+          xferSay('Book sent \u2014 ' + res.name + '. ' +
+            (XFER.noDelete
+              ? names.length + ' in the folder; it is not pruned, because this page is allowed to list, read and write there but not to delete.'
+              : (n ? n + ' older cop' + (n===1?'y':'ies') + ' removed, ' + XFER.keep + ' kept.' : names.length + ' in the folder.')), false);
+          return res;
+        });
+      }, function(){ return res; });
+    }, function(e){ xferSay(xferErrText(e), true); return null; });
+}
+/* After a signature. Fire and forget: the signature is his, and it is not made to wait on
+   a network call. A failure shows on the Housekeeping line and the button is the retry. */
+function xferAutoSave(){
+  if(!DBX.mcp) return;
+  xferWrite(S, 'after the signature').then(function(res){
+    return xferList().then(function(names){ return xferPrune(names); });
+  }, function(e){ xferSay(xferErrText(e), true); });
+}
+
+/* Load the other PC's book. A copy of THIS one goes to Dropbox first, by the same route,
+   so nothing is lost by pressing the button. */
+function xferLoadOffer(){
+  var o = XFER.offer; if(!o) return;
+  xferSay('Sending this PC\u2019s book to Dropbox before loading the other one\u2026', false);
+  var done = function(){
+    clearEntry();
+    S = o.book; saveBook();
+    var y = xLoad(); y.lastSavedAt = o.savedAt; y.changedAt = o.savedAt; xSave(y);
+    XFER.offer = null; renderXfer(); render(); renderLastPosting();
+    xferSay('Loaded the other PC\u2019s book, saved ' + xferWhen(o.savedAt) + ' \u2014 ' + o.name + '. This PC\u2019s own copy was sent to Dropbox first.', false);
+    toast('The other PC\u2019s book is loaded.');
+  };
+  xferWrite(S, 'backup before loading the other PC\u2019s book').then(done, function(e){
+    xferSay('This PC\u2019s book could not be sent to Dropbox first (' + ((e && e.code) || 'error') +
+      '), so nothing was replaced. Copy book as JSON, then press Load newest book again.', true);
+  });
+}
+
+function renderXfer(){
+  var el = $('xferBar'); if(!el) return;
+  var o = XFER.offer;
+  if(!o){ el.hidden = true; el.innerHTML = ''; return; }
+  if(o.conflict){
+    el.className = 'xfer warn';
+    el.innerHTML =
+      '<p><strong>Two books have moved apart.</strong> This PC has changed its book since it last sent one ('+
+        (o.mineAt ? 'sent ' + esc(xferWhen(o.mineAt)) + ', changed ' + esc(xferWhen(o.changedAt)) : 'never sent one, changed ' + esc(xferWhen(o.changedAt))) +
+      '). The other PC sent one at ' + esc(xferWhen(o.savedAt)) + '. Nothing is merged \u2014 pick one.</p>'+
+      '<div class="btnrow"><button class="btn small" id="btn-xfer-keep">Keep this PC\u2019s book</button>'+
+      '<button class="btn ghost small" id="btn-xfer-take">Load the other PC\u2019s book</button></div>';
+  } else {
+    el.className = 'xfer';
+    el.innerHTML =
+      '<p>A newer book from your other PC (saved ' + esc(xferWhen(o.savedAt)) + ') '+
+      '<button class="btn small" id="btn-xfer-take" style="margin-left:6px">Load it</button></p>';
+  }
+  el.hidden = false;
+  var take = $('btn-xfer-take'); if(take) take.addEventListener('click', xferLoadOffer);
+  var keep = $('btn-xfer-keep');
+  if(keep) keep.addEventListener('click', function(){
+    XFER.offer = null; renderXfer();
+    xferSaveNow('keeping this PC\u2019s book').then(function(){
+      toast('This PC\u2019s book sent. It is now the newest in Dropbox.');
+    });
+  });
 }
 
 function renderHealth(){
@@ -2876,6 +3172,14 @@ function boot(){
     copy(head+body, rows.length+' rows copied as CSV.');
   });
   $('btn-bat').addEventListener('click', function(){ copy($('batOut').textContent, 'Batch script copied.'); });
+  $('btn-xfer-save').addEventListener('click', function(){ xferSaveNow('by hand'); });
+  $('btn-xfer-load').addEventListener('click', function(){
+    if(!xferReady()) return;
+    xferSay('Looking for the newest book in Dropbox…', false);
+    xferCheck(true).then(function(){
+      if(XFER.offer){ switchPane('ramp'); var b = $('xferBar'); if(b && b.scrollIntoView) b.scrollIntoView(); }
+    });
+  });
   $('btn-export').addEventListener('click', function(){
     var io = $('io'); io.hidden=false; io.value = JSON.stringify(S); io.select(); copy(io.value, 'Book copied. Paste it somewhere safe.');
   });
@@ -2885,7 +3189,7 @@ function boot(){
     try{
       var o = JSON.parse(io.value);
       if(!o || o.v!==1) throw new Error('bad');
-      clearEntry(); S = o; save(); render(); io.hidden=true; toast('Book loaded.');
+      clearEntry(); XFER.offer = null; renderXfer(); S = o; save(); render(); io.hidden=true; toast('Book loaded.');
     }catch(err){ toast('That is not a F-BVNK book.'); }
   });
   $('btn-seed').addEventListener('click', function(){

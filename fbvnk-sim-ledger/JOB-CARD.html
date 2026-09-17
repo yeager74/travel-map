@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>16 Sep 2026 &middot; rev 19</dd>
+      <dt>Card</dt><dd>17 Sep 2026 &middot; rev 20</dd>
     </dl>
   </div>
 </header>
@@ -498,6 +498,44 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <section>
+  <h2>The book travels between the two PCs <span class="hint">Claus 17 Sep &middot; Sim Ledger v23 &middot; Dropbox[list_folder, fetch, create_file]</span></h2>
+  <div class="note">
+    <p><strong>Built on Version 22 &mdash; the v21 port you asked for first was already done, so there was nothing to port.</strong> After every signature and on a <em>Save book to Dropbox</em> button the page writes the whole book as a NEW dated file, <span class="mono tiny">book_&lt;UTC stamp&gt;_&lt;deviceId&gt;.json</span>, carrying <span class="mono tiny">{savedAt, deviceId, book}</span>. On open and on a <em>Load newest book</em> button it reads the newest file in that folder. Nothing is ever merged.</p>
+    <p class="small">The device id lives in its own localStorage key, <strong>not inside the book</strong>. Load the other PC&rsquo;s book and you must not inherit its identity with it, or the two would answer to the same name and neither would ever see the other&rsquo;s saves. Verified in the harness: the id is unchanged after a load.</p>
+  </div>
+  <div class="note warn">
+    <p><strong>Two findings off the real connector, both of which changed the build.</strong></p>
+    <p class="small"><strong>1. <span class="mono tiny">create_file</span> does not create missing parents</strong> &mdash; it answered <span class="mono tiny">[NOT_FOUND] Parent path not found (reason: PARENT_NOT_FOUND)</span>. The page&rsquo;s declared tools are the three you named, so <strong>it cannot create its own folder</strong>. I created <span class="mono tiny">/MSFS 2024 Screenshots/FBVNK_TRANSFER</span> and <span class="mono tiny">/&hellip;/SimLedger</span> once from this session, so both PCs find it already there. If that folder is ever deleted the page cannot put it back: it says so in plain words on the Housekeeping line, and it then needs recreating by hand or <span class="mono tiny">create_folder</span> adding to the manifest. Your call, not mine to change.</p>
+    <p class="small"><strong>2. <span class="mono tiny">create_file</span> refuses a path that exists</strong> &mdash; <span class="mono tiny">[ALREADY_EXISTS]</span>. So &ldquo;never overwrite&rdquo; is enforced by Dropbox itself, not merely by the naming. That exposed a real case the naming does not cover: two windows of the same book saving in the <em>same second</em> each compute the same name and the second is refused. Handled with one bump-and-retry, which is safe here precisely because <span class="mono tiny">ALREADY_EXISTS</span> is definitive &mdash; the write did not happen. A write that <em>times out</em> is the opposite case and is never retried by itself: contract 0.2.52 says <span class="mono tiny">server_unavailable</span> and <span class="mono tiny">upstream_error</span> are ambiguous for writes, so the button is the retry.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Checked in a browser, fake connector</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>a signature writes a new file</td><td>path and <span class="mono tiny">{savedAt, deviceId, book}</span> as specified, write uncached</td></tr>
+        <tr><td>two signatures</td><td>two files, distinct names, neither overwritten</td></tr>
+        <tr><td>the name is already taken</td><td>bumped to <span class="mono tiny">-2</span> and written; <strong>the existing file untouched</strong></td></tr>
+        <tr><td>a newer book from the other PC</td><td>one line: &ldquo;A newer book from your other PC (saved 17.09 06:12)&rdquo; + Load it</td></tr>
+        <tr><td>Load it</td><td>this PC&rsquo;s book sent to Dropbox first, then replaced; device id kept</td></tr>
+        <tr><td>changed here AND newer there</td><td>both times shown, two buttons, nothing merged</td></tr>
+        <tr><td>Keep this PC&rsquo;s book</td><td>this book sent, becomes the newest; book on screen unchanged</td></tr>
+        <tr><td>the newest file is this PC&rsquo;s own</td><td>no offer</td></tr>
+        <tr><td>newest by name, older by <span class="mono tiny">savedAt</span></td><td>no offer &mdash; the clock decides, not the filename</td></tr>
+        <tr><td>the newest file is not a book</td><td>skipped, said out loud, no offer</td></tr>
+        <tr><td>delete refused, more files than the limit</td><td>tried <strong>once</strong>, latched off, never tried again</td></tr>
+        <tr><td>delete allowed</td><td>prunes correctly to the limit</td></tr>
+        <tr><td>no Dropbox at all</td><td>signing still works; money identical</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <p><strong>The folder is not pruned, and you should know why.</strong> You set the declared tools to <span class="mono tiny">list_folder, fetch, create_file</span>, so the page has no delete. &ldquo;Keep the newest 20&rdquo; therefore cannot run. It is built, it attempts the delete once, it latches off on refusal, and the line under the buttons reads: <em>&ldquo;it is not pruned, because this page is allowed to list, read and write there but not to delete&rdquo;</em>. Flagged rather than quietly dropped &mdash; adding <span class="mono tiny">delete</span> to the manifest turns it on with no code change.</p>
+    <p class="small"><strong>All three declared tools observed for real in this session, as point 4 requires.</strong> <span class="mono tiny">create_file</span> returned the created file&rsquo;s metadata (the page reads none of it); <span class="mono tiny">fetch</span> returned the content under <span class="mono tiny">text</span>, which is what the page reads; <span class="mono tiny">list_folder</span> returned <span class="mono tiny">entries[]</span> with <span class="mono tiny">has_more false</span>. One probe file sits in the folder, <span class="mono tiny">_probe_2026-09-17.json</span> &mdash; deliberately not named <span class="mono tiny">book_&hellip;</span>, so the page ignores it. Delete it whenever.</p>
+  </div>
+  <p class="tiny muted">Book 196,679&nbsp;B, md5 <span class="mono tiny">c0237cce</span>. Sim Ledger <strong>version 23</strong>. Money unmoved: season gross <span class="mono tiny">15,376.38</span>, hours <span class="mono tiny">22.6</span>, meter <span class="mono tiny">22.48</span>, reserves <span class="mono tiny">467.36</span> / <span class="mono tiny">30.57</span>, all identical to v22. Retires when the book moves into the aeroplane &mdash; planned, not accepted. <strong>NOT INSTALLED.</strong></p>
+</section>
+
+<section>
   <h2>Dropbox pickup checked against the real connector <span class="hint">two read-only calls &middot; no code change &middot; one fact for the PM</span></h2>
   <div class="note">
     <p><strong>The publish flagged the page as declaring Dropbox without a call having been made in this session, so a call was made.</strong> Two, both read-only. Every field name the pickup depends on is now checked against a real payload rather than against the page&rsquo;s own assumptions.</p>
@@ -517,7 +555,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
   </div>
   <div class="note warn">
     <p><strong>The folder is not there yet.</strong> <span class="mono tiny">/MSFS 2024 Screenshots/FBVNK_LEGS</span> returns <span class="mono tiny">[NOT_FOUND] File not found (reason: FILE_NOT_FOUND)</span>. That is the case the page already handles &mdash; it prints &ldquo;the folder is not there yet. It appears with the first leg the laptop files&rdquo; &mdash; and its <span class="mono tiny">/not.?found/i</span> test matches that message. So nothing is broken and nothing needs building; the pickup starts answering when <span class="mono tiny">nk_autofile</span> writes the first leg.</p>
-    <p class="small"><strong>assumption:</strong> that the artifact runtime hands that error to the page as <span class="mono tiny">code: 'tool_error'</span>, which is the branch the message sits behind. That is the runtime&rsquo;s error shape, not Dropbox&rsquo;s, and it cannot be checked from a cloud session &mdash; only by opening the book with the folder still absent.</p>
+    <p class="small"><strong>Settled since rev 19, and no longer an assumption.</strong> Runtime contract 0.2.52 states it outright: a tool-level failure REJECTS with <span class="mono tiny">code: 'tool_error'</span>, with the whole envelope on the rejection&rsquo;s <span class="mono tiny">result</span>. That is the branch the message sits behind, so the branch is right.</p>
   </div>
   <p class="tiny muted">No code changed and the Sim Ledger is not republished; it stands at <strong>version 22</strong>. <strong>NOT INSTALLED.</strong></p>
 </section>
