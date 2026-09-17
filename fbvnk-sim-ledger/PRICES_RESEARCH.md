@@ -64,11 +64,46 @@ Neither is part of the nine. Both are raised because they concern real money.
    different jobs — but after F1 found no invoice behind the € 1,340 at all, a € 3,000 brake line
    in his own records deserves a second look rather than being passed over.
 
-## Still to do
+## Closed, 17 Sep 2026 — the invoices themselves
 
-- Decide, with the PM or Claus, what to do about the six items no document of his covers, given
-  that catalogue pages cannot be read from here.
-- Derive a per-quart oil figure from the $ 630 / 50 h oil-change line, splitting parts from labour
-  at € 48.00/h where the split can be justified.
-- Price the lamps: parts USD 600.99 needs a EUR rate, which is itself a figure that must be sourced
-  rather than recalled; his own sheet says € 750 for the job, which may already be the whole thing.
+The PM widened the acceptable basis to include **invoice analogy**, and that unblocked it. Rather
+than analogise, I went to his actual IAC invoices in Dropbox and read them. Four were fetched in
+full: **FAC 26/6** (50 h, 2026-01-23), **FAC 25/100** (annual, 2025-07-11), **FAC 24/122**
+(annual, 2024-07-26), **FAC 25/64** (25 h, 2025-05-14).
+
+WebFetch is still blocked — re-tested 17 Sep, `aircraftspruce.com` returns 403 at the CONNECT
+tunnel — so no catalogue price is quoted anywhere. None is needed for six of the nine.
+
+### What the invoices gave, quoted exactly
+
+| Line | Figure | Bears on |
+|---|---|---|
+| `01010301 MAO-DE-OBRA - TECNICO 1ª CAT. - MANUTENCAO` | **52,00 EUR/h** (FAC 25/100, FAC 26/6) | every labour half below |
+| same, earlier | 48,00 EUR/h (FAC 24/122, FAC 25/64) | the rate rose between May and July 2025 |
+| `01010302 MAO-DE-OBRA - TECNICO AUXILIAR - MANUTENCAO` | 32,00 EUR/h (FAC 24/122) | — |
+| `06030005 OLEO DE MOTOR - AERO DM 15W50` | **14,63 EUR**, 8,00 UNI a change (both) | **oil per quart — invoiced, not assumed** |
+| `03320013 FILTRO DE OLEO - AA48110` | 56,50 EUR (both) | — |
+| `09999998 MATERIAL DE SOLDADURA` | 15,00 EUR (FAC 24/122) | COM/NAV wiring parts |
+| `05220054 TERMINAL FICHA FEMEA 2,5MM^2X6.3MM` | 0,85 EUR (FAC 24/122) | COM/NAV wiring parts |
+| `01010301 ... SUBST. LAMPADAS NAV, FAROIS ATERRAGEM E TAXI` | `3,00 H 48,00 EUR 144,00 EUR` | the lamps job's labour |
+
+The $ 630 / 50 h PLAN line is **not** used. It would have needed an FX rate, an assumed labour
+time and an assumed filter price stacked to produce one number; the real 14,63 EUR line makes all
+three unnecessary.
+
+### Where the nine landed
+
+Two invoiced outright (oil per unit, lamps). Two with real labour *and* real parts (COM, NAV
+wiring). Two labour-only at his real rate (static port, pitot). **Three** — carburettor, starter,
+oil pump/lines — still carry an unsourced figure, and only in the parts half.
+
+Full table with every derivation: `KIT1_R10/PROPOSED_PRICES.json`, every row `approved: false`.
+
+### Raised in passing
+
+- **`insp25` is correct.** Its 168.00 cites FAC 25/64 whose filename reads `206,64`; the invoice
+  is `3,50 H × 48,00 = 168,00` net, IVA 38,64, TOTAL 206,64. The filename is the gross. `insp50`
+  786.88 and `insp100` 2 434,99 also reconcile to their invoices to the cent.
+- **The oil quantity disagrees with the model.** `STRIP_SPEC` §2.2–2.4 has 7 qt; his oil change
+  buys 8,00 UNI. `assumption:` that one UNI is one US quart — the invoice does not say so.
+- The battery and brake points below still stand and are still not part of the nine.
