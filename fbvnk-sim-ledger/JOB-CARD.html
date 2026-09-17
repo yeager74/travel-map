@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>17 Sep 2026 &middot; rev 20</dd>
+      <dt>Card</dt><dd>17 Sep 2026 &middot; rev 21</dd>
     </dl>
   </div>
 </header>
@@ -495,6 +495,34 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <p class="small"><strong>The EASA side is now in, as R18.</strong> It moved one row, added two and left <em>Nature du Vol</em> alone &mdash; the section below has it.</p>
   </div>
   <p class="small"><strong>The P1 figure is closed, and not by me.</strong> Claus, 18:04:32: &ldquo;good bloody question&hellip; ha ha, I should know, but I just carried it over from the previous owners. Keep it the same&rdquo;. The Logbook tab no longer calls it an assumption of this session&rsquo;s &mdash; it quotes him, and the figure stays exactly as his pages carry it.</p>
+</section>
+
+<section>
+  <h2>Grid thumbnails &mdash; the reported cause is not these two boards <span class="hint">checked before building &middot; Sim Ledger v24</span></h2>
+  <div class="note">
+    <p><strong>The request came with a root cause read off the Annunciator: no <span class="mono tiny">db</span> capability in the grid preview, so <span class="mono tiny">boot()</span> bails and the static &ldquo;&ndash;&rdquo; placeholders are all that shows. That does not hold for either of my boards, and it was checked rather than assumed.</strong></p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Checked</th><th>Ledger Job Card</th><th>Sim Ledger</th></tr></thead>
+      <tbody>
+        <tr><td>carries the quoted string &ldquo;The live board is not available in this view&rdquo;</td><td>no</td><td>no</td></tr>
+        <tr><td><span class="mono tiny">&lt;script&gt;</span> tags</td><td><strong>none at all</strong> &mdash; the page is static markup</td><td>one, and <span class="mono tiny">boot()</span> gates on nothing</td></tr>
+        <tr><td>reads <span class="mono tiny">window.claude</span> / any capability at boot</td><td>never</td><td>only <span class="mono tiny">dbxStart()</span>, after render, and it degrades</td></tr>
+        <tr><td>rendered with no <span class="mono tiny">window.claude</span>, empty storage</td><td>full page, 0 dashes</td><td>all six meters filled, 0 dashes</td></tr>
+        <tr><td>rendered with <span class="mono tiny">localStorage</span> throwing outright</td><td>full page, 0 dashes</td><td>identical, 0 dashes, no page errors</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note warn">
+    <p><strong>There IS a defect in the Sim Ledger tile, and it is a different one.</strong> The tile fills, but with the <strong>seeded example book</strong> &mdash; 8 legs, 18.4 h, <span class="mono tiny">&euro;5,471.62</span>. A thumbnail renders with none of Claus&rsquo;s browser storage, so <span class="mono tiny">load()</span> falls through to <span class="mono tiny">seedExamples</span> every time. Nothing on the page said so. Numbers that look like his and are not are worse than a blank tile.</p>
+    <p class="small"><strong>Fixed in v24, small and where the tile crops:</strong> the seeded book now carries a first pill, <em>&ldquo;Example book &mdash; not your season&rdquo;</em>, which reads before anything else in the grid. It clears the moment he presses <em>Clear examples, start my season</em>, which is exactly when it stops being true. Verified both ways; no other figure moved.</p>
+  </div>
+  <div class="note">
+    <p><strong>A snapshot.json would work here, and only since yesterday.</strong> His real book lives in his browser, so nothing published can reach it &mdash; except that the transfer job now writes the whole book to <span class="mono tiny">FBVNK_TRANSFER/SimLedger</span> on every signature. A session can read the newest one from there and publish it as a snapshot file for the static markup to render.</p>
+    <p class="small"><strong>Not built, and deliberately so.</strong> The folder holds no book of his yet, only the probe &mdash; so there is nothing to snapshot today, and building the plumbing first would be a mechanism with no data in it. It also cannot self-refresh: a published file only changes when a session republishes, so the tile would read &ldquo;his book as of the last publish&rdquo;, never live. Worth doing once a real book lands; the PM owns the sequencing. <strong>The Job Card needs none of it</strong> &mdash; it is static and its tile already shows the real thing.</p>
+  </div>
+  <p class="tiny muted">Nothing was touched on the Annunciator: it is not this session&rsquo;s board, and its own root cause stands as the PM read it. <strong>NOT INSTALLED.</strong></p>
 </section>
 
 <section>

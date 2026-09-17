@@ -1711,6 +1711,12 @@ function renderStatus(){
   var t = totals();
   var open = S.squawks.length;
   var html = '';
+  /* The grid thumbnail in the Artifacts tab renders this page with no browser storage of
+     his, so load() seeds the example book and the tile shows 8 legs and EUR 5,471.62 - real
+     figures, and not his. Numbers that look like yours and are not are worse than a blank
+     tile, so the seeded book says so, here, where the tile crops. It goes as soon as he
+     presses "Clear examples, start my season", which is exactly when it stops being true. */
+  if(S.seeded) html += '<span class="pill due"><span class="dot"></span>Example book \u2014 not your season</span>';
   html += '<span class="pill '+(g?'bad':'ok')+'"><span class="dot"></span>'+(g?'Grounded — broken item open':'Serviceable')+'</span>';
   html += '<span class="pill neutral">'+band.n+' — paint '+Math.round(S.health.paint)+'</span>';
   html += '<span class="pill '+(open?'due':'ok')+'">'+open+' open squawk'+(open===1?'':'s')+'</span>';
