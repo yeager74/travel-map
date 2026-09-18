@@ -582,12 +582,23 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
       <h3>Save, move, reset</h3>
       <p class="small muted">The book lives in your browser's storage for this file. Copy it out before you move machines, reinstall the sim, or clear browsing data.</p>
       <div class="btnrow">
+        <button class="btn ghost small" id="btn-realpage">A new carnet page</button>
         <button class="btn ghost small" id="btn-xfer-save">Save book to Dropbox</button>
         <button class="btn ghost small" id="btn-xfer-load">Load newest book</button>
         <button class="btn ghost small" id="btn-export">Copy book as JSON</button>
         <button class="btn ghost small" id="btn-import">Load book from JSON</button>
         <button class="btn ghost small" id="btn-seed">Clear examples, start my season</button>
         <button class="btn danger small" id="btn-reset">Wipe everything</button>
+      </div>
+      <div id="realForm" hidden style="margin-top:12px">
+        <p class="small muted" style="margin-top:0">When Claus scans the next page of the carnet, put its last row in here. The book adds the <strong>difference</strong> between it and the reading it already holds &mdash; it never replaces one, so the sim&rsquo;s own flying stays and the real flying is caught up. Real hours move the airframe, the engine and propeller counters and the check schedule; they do not touch this season&rsquo;s flown hours and they do not accrue the sinking funds, which real flying has already been paid for out of his own accounts.</p>
+        <div class="grid-form">
+          <div class="field"><label for="r-date">Date of that row</label><input type="date" id="r-date"></div>
+          <div class="field"><label for="r-airframe">Airframe running total</label><input type="text" id="r-airframe" inputmode="decimal" placeholder="1279:25 or 1279.42"></div>
+          <div class="field"><label for="r-tacho">Tacho</label><input type="number" id="r-tacho" min="0" step="0.01" placeholder="1238.60"></div>
+        </div>
+        <div class="btnrow"><button class="btn small" id="btn-realpage-add">Add the difference</button>
+          <span class="small muted" id="r-hint"></span></div>
       </div>
       <p class="tiny muted" id="xferHint" style="margin-top:10px">The book travels between the laptop and the CT desktop through Dropbox.</p>
       <textarea id="io" rows="6" hidden style="margin-top:12px" spellcheck="false"></textarea>
@@ -825,6 +836,41 @@ function invNo(state, sup, iso){
   return 'REC '+y+'/'+bump('misc',1);
 }
 
+/* ---------------- the opening balance ----------------
+   The simulated F-BVNK went live on the real aeroplane's hours at 21:56 on 17 Sep 2026, on
+   Claus's instruction of the same day: "take airframe hours from the crs arc in july 2026 and
+   add/subtract flight time and keep the airframe hours alive as well, like real world". The PM
+   read the two documents off the scans and wrote them into the aircraft's state file; these are
+   his figures, and every one of them names where it came from.
+
+   It is an OPENING BALANCE, not a current reading, and the difference matters. Page 86 is not the
+   latest page: Claus flew in early September and that page is not scanned yet. So this line is
+   known to be behind, and when the next page lands the book takes the DIFFERENCE between the two
+   pages and adds it. It never overwrites - that is how the sim's own flying survives a real-world
+   catch-up, and how the real flying is caught up without wiping it.
+
+   Which clock runs the checks: AIRFRAME. Claus, 16 Sep 21:57:47 - "the inspection times, sorry if
+   I said otherwise, are based on the journey log book airborne hours, NOT tacho." So the 25/50/100
+   open off 1277:15, and the tacho goes to the meter cursor, which is what the reserves and the TBO
+   counters run on (his other pick, 21:05:42, "Tacho time (the hour meter)"). */
+var OPENING = {
+  asAt:      '2026-07-20',
+  airframe:  1277 + 15/60,      /* 1277:15 - carnet page 86, last row, running total */
+  tacho:     1236.24,           /* 1236,24 - carnet page 86, last row, his own TACHO column */
+  engSMOH:   327 + 45/60,       /* 327:45 - CRS 17 JUL 2026 TSO 326:35, plus the 1:10 flown since */
+  propSMOH:  539 + 40/60,       /* 539:40 - same CRS, same addition */
+  lastCheckAirframe: 1276 + 5/60, /* 1276:05 - airframe at the 25+50+100+annual CRS of 17 JUL 2026 */
+  crs:  'IAC Coimbra, IAC-CAO.IA-280126, WOP 26/045, WO IAC.WO26077, 17 JUL 2026',
+  page: 'Carnet de route page 86, last row 20.07.2026, LPCS\u2013LPCO 1205\u20131315, 01+10',
+  /* Both of these are read off the FILENAME of IAC's notice, not from inside the document.
+     They are shown for information and nothing in the book is driven by them. */
+  nextScheduled: '16 JAN 2027, 50 h + 6 months',
+  arcValidTo:    'July 2027'
+};
+/* Hours flown since the last 25+50+100+annual, which all fell together on 17 JUL 2026. The next
+   check of each kind therefore opens that much earlier than a full interval. */
+var OPEN_SINCE_CHECK = OPENING.airframe - OPENING.lastCheckAirframe;   /* 1:10 */
+
 /* ---------------- state ---------------- */
 var KEY = 'fbvnk.ledger.v1';
 var S = null;
@@ -834,12 +880,22 @@ function blankState(seeded){
     v:1, seeded: !!seeded, seq:{},
     seasonStart:'2026-01-01',
     lastDate:'2026-01-01',
-    counters:{ ttaf:1265.0, engSMOH:317.0, propSMOH:528.0, hrs:0, meter:0 },
+    /* ttaf, engSMOH and propSMOH are the real aeroplane's totals off the opening line. hrs and
+       meter are this season's own counters and start at zero: they are what the SIM has flown. */
+    counters:{ ttaf:OPENING.airframe, engSMOH:OPENING.engSMOH, propSMOH:OPENING.propSMOH, hrs:0, meter:0 },
     /* The hour meter's own place in the book. cursor is the last real NK_ST_TACH reading
        the book has seen; carried is what has already been accrued since that reading from
-       records that had no tacho, so the meter's progression is never counted twice. */
-    tach:{ cursor:null, carried:0, lastKey:'' },
-    due:{ next25:25, next50:50, next100:100, caoYear:null, insYear:null },
+       records that had no tacho, so the meter's progression is never counted twice.
+       It opens at the real tacho, because the aeroplane's own meter was set to it. */
+    tach:{ cursor:OPENING.tacho, carried:0, lastKey:'' },
+    /* The checks run on season hours, so an interval already part-flown opens short by exactly
+       what has been flown since the checks last fell due. 1:10, here. */
+    due:{ next25:25-OPEN_SINCE_CHECK, next50:50-OPEN_SINCE_CHECK, next100:100-OPEN_SINCE_CHECK,
+          caoYear:null, insYear:null },
+    /* The last REAL reading the book has taken in. A later carnet page is measured against this,
+       and this moves to the new page. Never the other way round. */
+    real:{ airframe:OPENING.airframe, tacho:OPENING.tacho, asAt:OPENING.asAt },
+    realLog:[],
     billedMonths:[],
     reserves:{ engine:0, prop:0 },
     health:{ engine:88, prop:92, brakes:74, tyres:80, gear:86, airframe:84, avionics:79, interior:82, paint:91 },
@@ -851,7 +907,10 @@ function load(){
   try{
     var raw = localStorage.getItem(KEY);
     if(raw){ var o = JSON.parse(raw);
-      if(o && o.v===1){ o.ingested = o.ingested || []; o.timeBase = o.timeBase || 'utc'; return o; } }
+      if(o && o.v===1){ o.ingested = o.ingested || []; o.timeBase = o.timeBase || 'utc';
+        o.real = o.real || {airframe:OPENING.airframe, tacho:OPENING.tacho, asAt:OPENING.asAt};
+        o.realLog = o.realLog || [];
+        return o; } }
   }catch(e){}
   return seedExamples(blankState(true));
 }
@@ -2551,6 +2610,43 @@ function renderXfer(){
   });
 }
 
+/* ---------------- a later carnet page ----------------
+   The PM's rule, and it is the right one: a new page moves the aeroplane on by the DIFFERENCE
+   between it and the last real reading the book took in. It never replaces a figure, so the
+   sim's own flying is never wiped and the real flying is caught up.
+
+   What a real delta does and does not touch:
+     ttaf, engSMOH, propSMOH   move - they are the real aeroplane's totals
+     the 25/50/100 thresholds  come down by the airframe delta - real flying counts towards a check
+     the tacho cursor          moves to the new reading
+     hrs and meter             do NOT move - they count what the SIM flew, and this was not the sim
+     the reserves              do NOT move - real flying was paid for out of his real accounts, and
+                               accruing the sim's sinking fund for it would bill the same hours twice
+   The counters and the fund therefore come apart across a catch-up. That is deliberate, and it is
+   the honest way round: the engine's life is a fact about the engine, the pot is the game's. */
+function applyRealPage(airframe, tacho, asAt){
+  var R = S.real || (S.real = {airframe:OPENING.airframe, tacho:OPENING.tacho, asAt:OPENING.asAt});
+  var dAir = Math.round((airframe - R.airframe)*1000)/1000;
+  var dTach = Math.round((tacho - R.tacho)*1000)/1000;
+  if(!(dAir >= 0) || !(dTach >= 0))
+    return {ok:false, why:'That page reads BELOW the last one the book took in \u2014 airframe '+
+      hhmm(R.airframe)+' and tacho '+tachoTxt(R.tacho)+'. A carnet page never goes backwards, so nothing is applied.'};
+  if(dAir === 0 && dTach === 0)
+    return {ok:false, why:'That is the same reading the book already holds. Nothing to add.'};
+
+  S.counters.ttaf     += dAir;
+  S.counters.engSMOH  += dTach;
+  S.counters.propSMOH += dTach;
+  S.due.next25  -= dAir;
+  S.due.next50  -= dAir;
+  S.due.next100 -= dAir;
+  S.tach.cursor = tacho; S.tach.carried = 0;
+  S.real = {airframe:airframe, tacho:tacho, asAt:asAt};
+  S.realLog.push({asAt:asAt, airframe:airframe, tacho:tacho, dAir:dAir, dTach:dTach,
+                  appliedAt:new Date().toISOString()});
+  return {ok:true, dAir:dAir, dTach:dTach};
+}
+
 function renderHealth(){
   $('healthList').innerHTML = COMPONENTS.map(function(c){
     var v = S.health[c.k];
@@ -2571,7 +2667,16 @@ function renderCounters(){
     '<tr><td>Flown this season <span class="tiny muted">airborne</span></td><td class="num">'+num(c.hrs,1)+'</td><td class="num">—</td><td class="num">—</td></tr>'+
     '<tr><td>Hour meter this season <span class="tiny muted">tacho</span></td><td class="num">'+num(c.meter||0,1)+'</td><td class="num">—</td><td class="num">—</td></tr>'+
     '</tbody>'+
-    '<tfoot><tr><td colspan="4" class="tiny muted" style="text-align:left"><strong>Two clocks, both Claus&rsquo;s.</strong> The <strong>25 / 50 / 100 h inspections</strong> and the airframe total count <strong>airborne</strong> hours off the journey log &mdash; <em>&ldquo;the inspection times &hellip; are based on the journey log book airborne hours, NOT tacho&rdquo;</em>, 16 Sep 21:57. The <strong>reserves</strong> and the <strong>2000 h TBO counters</strong> run on the <strong>hour meter</strong> &mdash; <em>&ldquo;Tacho time (the hour meter)&rdquo;</em>, 21:05 &mdash; so the fund and the overhaul it pays for count the same hours. The meter also counts ground running, so it runs ahead'+
+    '<tfoot><tr><td colspan="4" class="tiny muted" style="text-align:left">'+
+      '<strong>Opening balance, as at '+esc(OPENING.asAt)+'.</strong> She started on the real aeroplane&rsquo;s hours at 21:56 on 17 Sep 2026. '+
+      'Airframe <strong>'+hhmm(OPENING.airframe)+'</strong> and tacho <strong>'+tachoTxt(OPENING.tacho)+'</strong> are the last row of '+esc(OPENING.page)+'. '+
+      'Engine <strong>'+hhmm(OPENING.engSMOH)+'</strong> and propeller <strong>'+hhmm(OPENING.propSMOH)+'</strong> are the CRS of '+esc(OPENING.crs)+' \u2014 TSO 326:35 and 538:30 at the check, plus the '+hhmm(OPEN_SINCE_CHECK)+' flown since. '+
+      'The 25, 50 and 100 h all fell together at that CRS, at airframe '+hhmm(OPENING.lastCheckAirframe)+', so each one opens '+hhmm(OPEN_SINCE_CHECK)+' short of a full interval. '+
+      '<strong>Page 86 is not the latest page</strong> \u2014 Claus flew in early September and it is not scanned yet. When it lands, Year Book &rsaquo; Housekeeping adds the <em>difference</em>; nothing here is ever overwritten.'+
+      (S.realLog && S.realLog.length ? ' <strong>'+S.realLog.length+' real page'+(S.realLog.length===1?'':'s')+' added since</strong>, the last on '+esc(S.realLog[S.realLog.length-1].asAt)+'.' : '')+
+      ' Next scheduled '+esc(OPENING.nextScheduled)+' and ARC valid to '+esc(OPENING.arcValidTo)+', both read off IAC&rsquo;s filename only, not from inside the document, and neither drives anything here.'+
+    '</td></tr>'+
+    '<tr><td colspan="4" class="tiny muted" style="text-align:left"><strong>Two clocks, both Claus&rsquo;s.</strong> The <strong>25 / 50 / 100 h inspections</strong> and the airframe total count <strong>airborne</strong> hours off the journey log &mdash; <em>&ldquo;the inspection times &hellip; are based on the journey log book airborne hours, NOT tacho&rdquo;</em>, 16 Sep 21:57. The <strong>reserves</strong> and the <strong>2000 h TBO counters</strong> run on the <strong>hour meter</strong> &mdash; <em>&ldquo;Tacho time (the hour meter)&rdquo;</em>, 21:05 &mdash; so the fund and the overhaul it pays for count the same hours. The meter also counts ground running, so it runs ahead'+
       (S.tach && S.tach.cursor !== null ? ', and stands at '+tachoTxt(S.tach.cursor) : '')+'.</td></tr></tfoot>';
   $('reserveTbl').innerHTML =
     '<thead><tr><th>Fund</th><th class="num">Rate €/h</th><th class="num">Held</th><th class="num">Target</th></tr></thead><tbody>'+
@@ -3178,6 +3283,25 @@ function boot(){
     copy(head+body, rows.length+' rows copied as CSV.');
   });
   $('btn-bat').addEventListener('click', function(){ copy($('batOut').textContent, 'Batch script copied.'); });
+  $('btn-realpage').addEventListener('click', function(){
+    var f = $('realForm'); f.hidden = !f.hidden;
+    if(!f.hidden){
+      $('r-hint').textContent = 'The book holds airframe '+hhmm(S.real.airframe)+', tacho '+tachoTxt(S.real.tacho)+', as at '+S.real.asAt+'.';
+      if(!$('r-date').value) $('r-date').value = today();
+    }
+  });
+  $('btn-realpage-add').addEventListener('click', function(){
+    var af = parseHours($('r-airframe').value), tc = +$('r-tacho').value;
+    if(!(af > 0) || !($('r-tacho').value !== '' && tc > 0)){
+      $('r-hint').textContent = 'Both the airframe total and the tacho, off that row.'; return;
+    }
+    var res = applyRealPage(af, tc, $('r-date').value || today());
+    if(!res.ok){ $('r-hint').textContent = res.why; toast(res.why); return; }
+    save(); render();
+    $('r-hint').textContent = 'Added '+hhmm(res.dAir)+' airframe and '+num(res.dTach,2)+' h on the meter. Nothing was overwritten.';
+    $('r-airframe').value=''; $('r-tacho').value='';
+    toast('Caught up: +'+hhmm(res.dAir)+' airframe, +'+num(res.dTach,2)+' tacho.');
+  });
   $('btn-xfer-save').addEventListener('click', function(){ xferSaveNow('by hand'); });
   $('btn-xfer-load').addEventListener('click', function(){
     if(!xferReady()) return;
