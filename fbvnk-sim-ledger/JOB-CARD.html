@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>18 Sep 2026 &middot; rev 24</dd>
+      <dt>Card</dt><dd>18 Sep 2026 &middot; rev 25</dd>
     </dl>
   </div>
 </header>
@@ -498,6 +498,38 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
 </section>
 
 <section>
+  <h2>Page 86 in full &mdash; and a figure of mine it corrects <span class="hint">PM read the scan &middot; all eight rows checked here &middot; Sim Ledger v26</span></h2>
+  <div class="note">
+    <p><strong>The ask is answered and then some.</strong> I asked for the two rows above the one I had; page 86 holds the whole season, <strong>eight rows</strong>, and the PM read every one off the scan on the laptop. All eight are now in <span class="mono tiny">CARRIED</span>, so the carnet opens on his real page and the sim continues underneath it.</p>
+    <p class="small"><strong>Checked before use, not taken on trust.</strong> In exact integer minutes: <strong>all eight rows reconcile to the page&rsquo;s own printed running-total column</strong>, 1269+35 carried in plus 7+40 flown gives 1277+15 to the minute, and <strong>row 7&rsquo;s total, 1276+05, is the airframe figure on the CRS of 17 JUL 2026</strong> &mdash; a different document entirely. Three independent agreements.</p>
+  </div>
+  <div class="note warn">
+    <p><strong>It corrects a figure of mine that was wrong, and it was load-bearing.</strong> This card and the book have said since R5 that page 86 shows <span class="mono tiny">6,6667</span> hours flown against 7,9200 on the tacho. The row-by-row read gives <strong>7,6667 h</strong> &mdash; <strong>short by exactly one hour</strong> &mdash; and every ratio drawn from it was wrong with it:</p>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Figure</th><th class="num">Said</th><th class="num">Correct</th></tr></thead>
+      <tbody>
+        <tr><td>Hours flown over page 86</td><td class="num">6,6667</td><td class="num"><strong>7,6667</strong> (7+40)</td></tr>
+        <tr><td>Meter ahead of flight time, per leg</td><td class="num">0,1567 h</td><td class="num"><strong>0,0317 h</strong></td></tr>
+        <tr><td>Meter against airborne</td><td class="num">18.80 % more</td><td class="num"><strong>3.30 % more</strong></td></tr>
+        <tr><td>Reserve difference per leg</td><td class="num">&euro;3.47</td><td class="num"><strong>&euro;0.70</strong></td></tr>
+        <tr><td>Reserve difference on his 73.00 h year</td><td class="num">&euro;303.98</td><td class="num"><strong>&euro;53.43</strong></td></tr>
+        <tr><td>A check keyed to the meter at 100 h</td><td class="num">15.82 h late</td><td class="num"><strong>falls at 96.80 airborne h</strong>, 3.20 h early</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <p><strong>What this does and does not change.</strong> <strong>Claus&rsquo;s decision is untouched</strong> &mdash; he picked the hour meter for the reserves on 16 Sep at 21:05:42 and airborne for the inspections at 21:57:47, and both stand. What changes is the <em>size</em> of the gap those two clocks open: it is a fifth of what R5 put to him. The book&rsquo;s code is unaffected &mdash; it has always measured the real gap leg by leg from the records themselves and never used 0,1567 for money. The one place the figure was live is the demo leg generator, which stepped its tacho by 0,1567 and now steps by 0,0317.</p>
+    <p class="small">The fuel note is corrected with it: the 92&rarr;220 uplift is the <strong>row 3 to row 4</strong> boundary, not row 7 to row 8. Seven of eight rows still open at the litres the row above closed on.</p>
+  </div>
+  <div class="note warn">
+    <p><strong>One thing on his paper that is left exactly as written.</strong> Row 6 to row 7 the TACHO moves <span class="mono tiny">1234,80</span> to <span class="mono tiny">1235,02</span> &mdash; 0,22 h against a logged <span class="mono tiny">01+00</span>. A meter cannot turn less than the engine ran. The PM re-read both figures at zoom and they are what is on the paper, so they stand; <strong>nothing is silently corrected</strong>. One observation to go with it: rows 6 and 7 <em>together</em> move 1,70 h against 1,75 h flown, so whatever happened sits at that single boundary rather than in either row&rsquo;s flight time. For Claus to look at, not for this session to decide.</p>
+  </div>
+  <p class="tiny muted">Carnet verified in a browser: 8 real rows and 8 sim rows, every carried row&rsquo;s running total self-consistent against the 1269+35 carried in, the Report line at <strong>1277+15</strong>, the first sim row at 1278+27, and the foot of the page equal to the airframe total on the Airframe tab. <strong>NOT INSTALLED.</strong></p>
+</section>
+
+<section>
   <h2>PM &mdash; two things needed off the laptop <span class="hint">Claus, 18 Sep: &ldquo;ask project manager to provide you what u need if u dont have the access&rdquo;</span></h2>
   <div class="note warn">
     <p><strong>1. Page 86, the two rows above the last one.</strong> Claus asked the carnet to open on his last three entries. You gave me the last row in full and it is in. The two above it I cannot read: <span class="mono tiny">BRIEFCASE/&hellip;/Carnet de Route/P 86.pdf</span> is a scan whose text layer holds nothing but the printed serial <span class="mono tiny">S711414</span>, and its Dropbox download host is refused by this environment&rsquo;s egress proxy (<span class="mono tiny">403</span> at the CONNECT tunnel). <strong>I have not guessed them and will not.</strong></p>
@@ -539,7 +571,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <p class="small"><strong>What a real delta moves, and what it deliberately does not.</strong> It moves the airframe total, the engine and propeller counters, the tacho cursor, and it brings the three check thresholds down &mdash; real flying counts towards a check. It does <strong>not</strong> touch this season&rsquo;s flown hours or hour meter, which count what the sim flew; and it does <strong>not</strong> accrue the sinking funds, because that flying was already paid for out of his real accounts and accruing for it would bill the same hours twice. So the counters and the fund come apart across a catch-up. That is deliberate and it is the honest way round: the engine&rsquo;s life is a fact about the engine, the pot is the game&rsquo;s.</p>
   </div>
   <div class="note warn">
-    <p><strong>One thing to put in front of Claus, because it is a real difference and not a rounding.</strong> Your 327:45 is 326:35 <em>plus the 1:10 airborne</em> &mdash; you advanced engine TSO on <strong>airframe</strong> hours. From the opening line forward this book advances it on the <strong>meter</strong>, because that is his 21:05 pick and it keeps the TBO counter and the fund that pays for the overhaul on one clock. Page 86 measures the meter running <strong>0,1567 h per leg</strong> ahead of the flight time, so the two readings of engine TSO will drift apart by about nine minutes a leg. The opening figure is taken exactly as you gave it. Whether engine TSO should follow airframe instead is his call, not mine, and it is not urgent &mdash; at 327 h against a 2000 h TBO it changes nothing this season.</p>
+    <p><strong>One thing to put in front of Claus, because it is a real difference and not a rounding.</strong> Your 327:45 is 326:35 <em>plus the 1:10 airborne</em> &mdash; you advanced engine TSO on <strong>airframe</strong> hours. From the opening line forward this book advances it on the <strong>meter</strong>, because that is his 21:05 pick and it keeps the TBO counter and the fund that pays for the overhaul on one clock. Page 86 measures the meter running <strong>0,0317 h per leg</strong> ahead of the flight time (corrected 18 Sep &mdash; see the correction above), so the two readings of engine TSO drift apart by about two minutes a leg, not nine. The opening figure is taken exactly as you gave it. Whether engine TSO should follow airframe instead is his call, not mine, and it is not urgent &mdash; at 327 h against a 2000 h TBO it changes nothing this season.</p>
   </div>
   <p class="tiny muted">Book 206,852&nbsp;B, md5 <span class="mono tiny">88258821</span>. Seeded book unmoved and checked: 8 legs, 16 invoices, 18.4 h, season gross <span class="mono tiny">&euro;5,471.62</span>, reserves <span class="mono tiny">382.54</span> / <span class="mono tiny">25.02</span> &mdash; identical to v24, so no money moved. Catch-up verified in a browser: +3:30 airframe and +3.86 on the meter moved the airframe, both TBO counters and all three thresholds, and moved season hours, the meter, the reserves and the ledger by <strong>nothing</strong>. Next scheduled 16 JAN 2027 and ARC to July 2027 are shown on the page and labelled <em>read off the filename only</em>; nothing is driven by them. <strong>NOT INSTALLED.</strong></p>
 </section>

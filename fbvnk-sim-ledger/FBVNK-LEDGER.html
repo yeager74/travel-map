@@ -529,7 +529,7 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
       <p class="small muted">The aeroplane files each leg on the Ramp tab and it writes its own row here &mdash; times, aerodromes, flight time, fuel and tacho, nothing typed. Columns, order, ruling and hand follow page 86 of NK&rsquo;s own book.</p>
       <div class="carnetphoto" id="carnetPhoto">
         <p style="margin:0"><strong>Built from page 86.</strong> Claus sent the scan on 16 Sep 2026 (<span class="mono tiny">P_86.pdf</span>) with: &ldquo;the logbook needs to be updated to reflect my NK bookkeeping &hellip; I have made my own line with tacho time etc, not a total oil but as said depart and arrive, also I am using airborne (flight time) and not block time.&rdquo; This page follows it: dates <span class="mono tiny">DD.MM</span> with the year once at the head, his name written out on the first row and ditto marks under it, <span class="mono tiny">PIC</span> in Fonctions, flight time <span class="mono tiny">HH+MM</span> and airborne not block, the tank total in litres in Carburant D&eacute;part and Arriv&eacute;e, the two Huile columns struck through, <span class="mono tiny">NIL</span> in Incidents, and TACHO &mdash; his own column, ruled in by hand &mdash; as <span class="mono tiny">1228,32</span>.</p>
-        <p style="margin:8px 0 0" class="tiny muted">The page is self-consistent on the two things this build leans on. Fuel: seven of its eight rows open at the litres the row above closed on, and the eighth steps 92 to 220, a 128 L uplift showing itself between two rows. Tacho: 1236,24 less 1228,32 is 7,9200 hours against 6,6667 hours flown, so the tacho runs 0,1567 h per leg more than the flight time &mdash; it turns on the ground, which is why nothing here derives one from the other.</p>
+        <p style="margin:8px 0 0" class="tiny muted">The page is self-consistent on the two things this build leans on, and both were re-checked row by row on 18 Sep against the PM&rsquo;s full read of the scan. Fuel: seven of its eight rows open at the litres the row above closed on, and <strong>row 4</strong> steps 92 to 220, a 128 L uplift showing itself between two rows. Tacho: 1236,24 less 1228,32 is 7,9200 hours against <strong>7,6667 hours flown</strong> (7+40, the eight flight times summed, which is also 1277+15 less the 1269+35 carried in), so the tacho runs <strong>0,0317 h per leg</strong> more than the flight time &mdash; it turns on the ground, which is why nothing here derives one from the other. <strong>Corrected 18 Sep:</strong> this page previously read 6,6667 hours flown and 0,1567 h per leg. The flown figure was short by exactly one hour and every ratio drawn from it was wrong with it.</p>
         <p style="margin:8px 0 0" class="tiny muted">The figure beside <span class="mono tiny">P1</span> in Nature du Vol is the running total of P1 time, kept exactly as the page carries it. Claus, 16 Sep 2026: &ldquo;good bloody question&hellip; ha ha, I should know, but I just carried it over from the previous owners. Keep it the same&rdquo;. So it is not this session&rsquo;s reading any more &mdash; it is his instruction, and it stays.</p>
       </div>
       <div class="btnrow" style="margin-top:10px">
@@ -886,18 +886,32 @@ var OPEN_SINCE_CHECK = OPENING.airframe - OPENING.lastCheckAirframe;   /* 1:10 *
    rows continue underneath them, and the running total carries straight through - which is what
    a real carnet does when a page fills and the next one opens on a Report.
 
-   ONE row is here, and it is the only one this session can source: the PM read page 86's last row
-   off the scan and gave it in full. The two above it are NOT here and are not invented. The scan
-   is at BRIEFCASE/.../Carnet de Route/P 86.pdf; its text layer holds nothing but the printed
-   serial, and the download host is refused by this environment's egress proxy, so the page cannot
-   be read from here. They are asked for on the Job Card. Adding them is data, not code: one more
-   object each, oldest first, and the page follows. */
+   ALL EIGHT rows of page 86 are here. This session cannot read the scan - its text layer holds
+   nothing but the printed serial S711414 and the download host is refused by the egress proxy -
+   so the PM read it off the laptop and sent the rows. Every one was checked here before use, in
+   exact integer minutes: all eight reconcile to the page's own printed running-total column, and
+   row 7's total is the airframe figure on the CRS of 17 JUL 2026, which is a different document.
+
+   AS WRITTEN, and not corrected: row 6 to row 7 the TACHO moves 1234,80 to 1235,02, which is
+   0,22 h against a logged 01+00. A meter cannot turn less than the engine ran. The PM re-read
+   both figures at zoom and they are what is on the paper, so they stand as he wrote them. Worth
+   knowing that the PAIR is nearly right - rows 6 and 7 together move 1,70 h against 1,75 h flown
+   - so whatever happened sits at that one boundary rather than in either row's flight time. */
 var CARRIED = [
-  { date:'2026-07-20', from:'LPCS', to:'LPCO', dep:'12:05', arr:'13:15',
-    hours:70/60, fuelDep:97, fuelArr:58, tacho:1236.24, note:'NIL',
-    run:1277 + 15/60,
-    src:'carnet page 86, last row, read off the scan by the PM' }
+  { date:'2026-05-01', from:'LPCS', to:'LPPM', dep:'08:45', arr:'10:05', hours: 80/60, fuelDep:220, fuelArr:168, tacho:1229.65, note:'NIL', run:1270 + 55/60 },
+  { date:'2026-05-02', from:'LPPM', to:'LPEV', dep:'11:20', arr:'12:25', hours: 65/60, fuelDep:168, fuelArr:127, tacho:1230.74, note:'NIL', run:1272 +  0/60 },
+  { date:'2026-05-02', from:'LPEV', to:'LPCS', dep:'13:10', arr:'14:00', hours: 50/60, fuelDep:127, fuelArr: 92, tacho:1231.63, note:'NIL', run:1272 + 50/60 },
+  { date:'2026-05-21', from:'LPCS', to:'LPCS', dep:'10:00', arr:'11:00', hours: 60/60, fuelDep:220, fuelArr:176, tacho:1232.82, note:'NIL', run:1273 + 50/60 },
+  { date:'2026-05-24', from:'LPCS', to:'LPCS', dep:'08:15', arr:'08:45', hours: 30/60, fuelDep:176, fuelArr:160, tacho:1233.32, note:'NIL', run:1274 + 20/60 },
+  { date:'2026-05-26', from:'LPCS', to:'LPCS', dep:'17:10', arr:'17:55', hours: 45/60, fuelDep:160, fuelArr:137, tacho:1234.80, note:'NIL', run:1275 +  5/60 },
+  { date:'2026-06-26', from:'LPCS', to:'LPCO', dep:'10:36', arr:'11:36', hours: 60/60, fuelDep:137, fuelArr: 97, tacho:1235.02, note:'NIL', run:1276 +  5/60 },
+  { date:'2026-07-20', from:'LPCO', to:'LPCS', dep:'12:05', arr:'13:15', hours: 70/60, fuelDep: 97, fuelArr: 58, tacho:1236.24, note:'NIL', run:1277 + 15/60 }
 ];
+/* Page 85 closes at Report 1269+35 with the TACHO carried in at 1228,32. That line is not a row
+   here - it is the check: 1269+35 plus the eight flights above is 1277+15 to the minute, and
+   row 7's own total, 1276+05, is the airframe figure on the CRS of 17 JUL 2026, off a different
+   document entirely. Both agree, so the page is read right. */
+var CARRIED_BF = 1269 + 35/60;
 
 /* ---------------- state ---------------- */
 var KEY = 'fbvnk.ledger.v1';
@@ -1552,8 +1566,8 @@ function normaliseLeg(rec){
   /* TACHO. His own column on page 86, ruled in by hand, and the one figure on the page
      that is neither a clock nor a gauge reading. The package already carries it: the PM
      verified NK_ST_TACH as LocalVar 11, so the aeroplane can send it without a new
-     variable. Measured off page 86, the tacho runs 0.1567 h per leg more than the flight
-     time (7.9200 tacho hours against 6.6667 flown, over eight legs) — it turns on the
+     variable. Measured off page 86, the tacho runs 0.0317 h per leg more than the flight
+     time (7.9200 tacho hours against 7.6667 flown, over eight legs) — it turns on the
      ground too, so it is never derived from the flight time here. Sent, or blank. */
   /* The converter's real-clock pair, optional under FBVNK_LEG/2. engineStart and shutdown
      are the SIM clock and stay the leg's times - the carnet is the aeroplane's book, and it
@@ -1707,13 +1721,14 @@ function demoRecord(){
   var startMin = 9*60 + 40 + (n % 5) * 25;
   var offMin = startMin + 11, onMin = offMin + 52 + (n % 4) * 9, stopMin = onMin + 7;
   /* Fuel carries: this leg starts on the litres the last one finished with, exactly as it
-     does on page 86, where seven of eight rows do that and the eighth steps 92 to 220.
+     does on page 86, where seven of eight rows do that and row 4 steps 92 to 220.
      220 is the figure that page fills to, so that is what a top-up goes to here. */
   var burn = 26 + (n % 4) * 5, prevArr = null;
   for(var j = S.legs.length - 1; j >= 0; j--){ if(S.legs[j].fp5lArr || S.legs[j].fp5lArr === 0){ prevArr = S.legs[j].fp5lArr; break; } }
   var start = (prevArr === null || prevArr < burn + 20) ? 220 : prevArr;
   var air = (onMin - offMin) / 60;
-  /* Tacho runs on past the flight: 0.1567 h per leg, the figure measured off page 86. */
+  /* Tacho runs on past the flight: 0.0317 h per leg, the figure measured off page 86's eight
+     rows. It was 0.1567 here until 18 Sep, off a flown total that was an hour short. */
   var prev = null;
   for(var k = S.legs.length - 1; k >= 0; k--){ if(S.legs[k].tachStop || S.legs[k].tachStop === 0){ prev = S.legs[k].tachStop; break; } }
   var tachStart = prev === null ? 1228.32 : prev;
@@ -1727,7 +1742,7 @@ function demoRecord(){
     fp5lStart: start, fp5lShutdown: Math.max(0, start - burn),
     uplift: 0, touchdownFpm: 140 + (n % 6) * 55,
     tachStart: Math.round(tachStart*100)/100,
-    tachStop: Math.round((tachStart + air + 0.1567)*100)/100,
+    tachStop: Math.round((tachStart + air + 0.0317)*100)/100,
     nights: 0, handling: false,
     surface: p[1]==='LPVL' ? 'grass' : 'asphalt',
     power: { maxRpm: 2450 + (n % 3) * 90, minutesAboveCruise: (n % 3) * 8, hardBraking: false },
@@ -2897,7 +2912,7 @@ function logRows(){
      - flight time HH+MM, and it is airborne time, not block
      - Carburant Depart/Arrivee carry the tank total in litres. They run on from row to
        row: on page 86 seven of eight rows start at the litres the row above finished on,
-       and the eighth steps 92 -> 220, which is a 128 L uplift showing itself.
+       and row 4 steps 92 -> 220, which is a 128 L uplift showing itself.
      - the two Huile columns are struck through with one pen stroke, unused
      - Incidents reads NIL when there was nothing
      - TACHO is his own column, ruled in by hand, engine tacho at shutdown, 1228,32 style
