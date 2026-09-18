@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>18 Sep 2026 &middot; rev 23</dd>
+      <dt>Card</dt><dd>18 Sep 2026 &middot; rev 24</dd>
     </dl>
   </div>
 </header>
@@ -495,6 +495,23 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <p class="small"><strong>The EASA side is now in, as R18.</strong> It moved one row, added two and left <em>Nature du Vol</em> alone &mdash; the section below has it.</p>
   </div>
   <p class="small"><strong>The P1 figure is closed, and not by me.</strong> Claus, 18:04:32: &ldquo;good bloody question&hellip; ha ha, I should know, but I just carried it over from the previous owners. Keep it the same&rdquo;. The Logbook tab no longer calls it an assumption of this session&rsquo;s &mdash; it quotes him, and the figure stays exactly as his pages carry it.</p>
+</section>
+
+<section>
+  <h2>PM &mdash; two things needed off the laptop <span class="hint">Claus, 18 Sep: &ldquo;ask project manager to provide you what u need if u dont have the access&rdquo;</span></h2>
+  <div class="note warn">
+    <p><strong>1. Page 86, the two rows above the last one.</strong> Claus asked the carnet to open on his last three entries. You gave me the last row in full and it is in. The two above it I cannot read: <span class="mono tiny">BRIEFCASE/&hellip;/Carnet de Route/P 86.pdf</span> is a scan whose text layer holds nothing but the printed serial <span class="mono tiny">S711414</span>, and its Dropbox download host is refused by this environment&rsquo;s egress proxy (<span class="mono tiny">403</span> at the CONNECT tunnel). <strong>I have not guessed them and will not.</strong></p>
+    <p class="small">For each of the two rows, in the same shape you sent the last one: <strong>date &middot; from &middot; to &middot; off &middot; on &middot; flight time HH+MM &middot; Carburant départ &rarr; arrivée in litres &middot; TACHO &middot; Observations &middot; the running total as his page has it</strong>. Adding them is data, not code &mdash; one object each in <span class="mono tiny">CARRIED</span>, oldest first, and the page follows.</p>
+    <p class="small"><strong>2. The three parts figures</strong> from rev 22 &mdash; carburettor, starter, oil pump and lines &mdash; are still the only money on the board with no source. Catalogue pages are unreachable for the same proxy reason, re-tested today.</p>
+  </div>
+  <div class="note">
+    <p><strong>The carnet now opens on his own book.</strong> His real row sits at the top marked <span class="mono tiny">réel</span>, a red <em>Report à nouveau</em> line closes it at <strong>1277+15</strong>, and the sim&rsquo;s rows continue underneath &mdash; 1278+27, 1280+03, and on. The running total never restarts at zero, and the foot of the page equals the airframe total on the Airframe tab <strong>by construction</strong>, which is now checked in the harness rather than assumed.</p>
+    <p class="small"><strong>A defect that check found, and it was real.</strong> A run that never got airborne was adding its block time to the <strong>airframe total</strong> and to the <strong>25/50/100 h clock</strong> &mdash; a 20-minute taxi run put 0:20 on both. Neither is right: Claus&rsquo;s rule of 16 Sep 18:34 keeps a non-flight off the journey log, and the airframe total and the inspection clock are the journey log&rsquo;s own hours. It still ran the engine, so the meter, the TBO counters and the reserves take it as before. Verified: a 20-minute ground run now moves the meter <strong>+0.3333</strong>, engine SMOH <strong>+0.3333</strong> and the engine reserve <strong>+&euro;6.93</strong>, and moves the airframe total and the check clock by <strong>zero</strong>.</p>
+  </div>
+  <div class="note">
+    <p><strong>A permanent internal cost datasheet, so the book never needs Dropbox to price anything.</strong> <span class="mono tiny">fbvnk-sim-ledger/FBVNK_COST_DATASHEET.json</span> &mdash; <strong>43 priced lines</strong>, every one quoted off his own paperwork with the invoice named: both IAC labour grades and the 2024&rarr;2025 rate change, the oil, filters and waste lines, the three inspection totals reconciled to the cent, the standing costs, all nine aerodromes, the 2025 year totals and category split, the reserve rates, the aircraft and engine identity off the CRS, and the opening balance. <strong>Six gaps are named in it</strong> rather than filled, including the three parts figures above. Dropbox was used to <em>source</em> this once; it is not a run-time dependency and never was.</p>
+  </div>
+  <p class="tiny muted">The example book&rsquo;s own legs are dated January to March 2026, so on the seeded page they sit under a Report line dated 20.07 &mdash; that is the demo, which the tile already marks <em>Example book &mdash; not your season</em>. His own season starts after the Report line and reads straight. <strong>NOT INSTALLED.</strong></p>
 </section>
 
 <section>

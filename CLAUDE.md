@@ -25,8 +25,15 @@ FBVNK PROJECT MANAGER session**. Act accordingly:
   branch plus checksums instead of retyping bytes.
 - **Decisions for Claus go on his F-BVNK Annunciator board, through the PM** — not
   as questions in chat.
+- **Ask the PM for what you cannot reach.** Claus, 18 Sep 2026: *"ask project manager to
+  provide you what u need if u dont have the access. I told you this before"*. A blocked
+  download, a scan with no text layer, a file outside this session's reach, a figure only the
+  laptop has — none of those is a dead end and none of them is a reason to guess, to narrow the
+  job silently, or to hand the problem back to Claus. Say exactly which item is missing and in
+  what form it is needed, and put the request to the PM. Build everything that does not depend
+  on it in the meantime, so the missing piece lands as data rather than as work.
 - Cloud sessions cannot message the PM back. Put results in the transcript; the
-  PM reads it.
+  PM reads it — and an ask for the PM goes on the Job Card, which is the channel he reads.
 
 ### Integration facts not to break
 

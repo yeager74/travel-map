@@ -234,6 +234,13 @@ pre{font-family:"IBM Plex Mono",monospace; font-size:12px; background:var(--shee
   text-transform:none; font-weight:700; color:var(--carnet-ink)}
 .carnet td.tach{font-variant-numeric:tabular-nums}
 .carnet td.ditto{text-align:center; letter-spacing:.14em}
+/* His own rows, carried out of the paper book, and the Report line that closes them. */
+.carnet tr.real td{background:rgba(168,48,42,.045)}
+.carnet td .reel{display:inline-block; font-size:8.5px; letter-spacing:.06em; text-transform:uppercase;
+  font-family:"IBM Plex Sans",sans-serif; color:var(--carnet-red); border:1px solid var(--carnet-red);
+  border-radius:2px; padding:0 3px; margin-left:5px; vertical-align:2px; opacity:.85}
+.carnet tr.bf td{background:transparent; border-top:1.5px solid var(--carnet-red);
+  border-bottom:1.5px solid var(--carnet-red); height:30px; font-size:16px}
 .carnet tbody tr:nth-child(even) td{background:transparent}
 .carnet th:last-child, .carnet td:last-child{border-right:0}
 .carnet tfoot td{
@@ -871,6 +878,27 @@ var OPENING = {
    check of each kind therefore opens that much earlier than a full interval. */
 var OPEN_SINCE_CHECK = OPENING.airframe - OPENING.lastCheckAirframe;   /* 1:10 */
 
+/* ---------------- his own last entries, carried into this book ----------------
+   Claus, 18 Sep: "lets just start the logbook from my last know entry ... so in the ledger use
+   maybe the last 3 entries".
+
+   So the carnet does not open on a blank page. His real rows are written at the top, the sim's
+   rows continue underneath them, and the running total carries straight through - which is what
+   a real carnet does when a page fills and the next one opens on a Report.
+
+   ONE row is here, and it is the only one this session can source: the PM read page 86's last row
+   off the scan and gave it in full. The two above it are NOT here and are not invented. The scan
+   is at BRIEFCASE/.../Carnet de Route/P 86.pdf; its text layer holds nothing but the printed
+   serial, and the download host is refused by this environment's egress proxy, so the page cannot
+   be read from here. They are asked for on the Job Card. Adding them is data, not code: one more
+   object each, oldest first, and the page follows. */
+var CARRIED = [
+  { date:'2026-07-20', from:'LPCS', to:'LPCO', dep:'12:05', arr:'13:15',
+    hours:70/60, fuelDep:97, fuelArr:58, tacho:1236.24, note:'NIL',
+    run:1277 + 15/60,
+    src:'carnet page 86, last row, read off the scan by the PM' }
+];
+
 /* ---------------- state ---------------- */
 var KEY = 'fbvnk.ledger.v1';
 var S = null;
@@ -1127,7 +1155,13 @@ function fileLeg(leg){
      that measures engine life. The 2000-hour TBO counters stay on the meter with the
      reserve that pays for the overhaul, so the fund and the thing it buys count the same
      hours. TTAF is airframe total and follows the journey log. */
-  var wh = leg.hours;                     /* airborne, off the journey log */
+  /* Airborne, off the journey log - and a run that never got airborne has none. Claus, 18:34:
+     "if no airborne (flight even) NO log book entry". It is not in the carnet, so it is not
+     airframe time and it is not on the inspection clock either; both of those are the journey
+     log's own hours. The engine still ran, so the meter, the TBO counters and the reserves below
+     take it as usual. Before this, a 20-minute taxi run put 0:20 on the airframe total and 0:20
+     on the next 25 h check, and the carnet's foot total and TTAF drifted apart by exactly that. */
+  var wh = leg.noFlight ? 0 : leg.hours;
   S.counters.hrs     += wh;               /* drives the 25 / 50 / 100 h inspections */
   S.counters.ttaf    += wh;
   S.counters.meter   += h;                /* the hour meter's own running total */
@@ -2803,14 +2837,34 @@ function engineTimeBetweenLegs(){
   });
   return Math.round(total*100)/100;
 }
+/* His real rows, in the same shape the carnet renders a sim row in, so the page draws one book
+   and not two. Each carries the running total exactly as HIS page has it - never recomputed. */
+function carriedRows(){
+  var run = 0;
+  return CARRIED.map(function(c){
+    var prev = run; run = c.run;
+    return { real:true, date:c.date, prev:prev, run:c.run, dur:c.hours,
+             from:c.from, to:c.to, depT:hhmm4(c.dep), arrT:hhmm4(c.arr),
+             fuelDep:c.fuelDep, fuelArr:c.fuelArr, tach:c.tacho,
+             note:c.note, auto:[], nature:'P1', fonc:'PIC',
+             name:'CLAUS THANNER', signed:'Claus Thanner', signedAt:'' };
+  });
+}
+/* Where the sim's own flying starts counting from: the last REAL reading the book holds, which a
+   carnet catch-up moves. It is the airframe total, so the foot of this page and the Airframe tab's
+   TTAF are the same number by construction. */
+function broughtForward(){
+  return (S.real && typeof S.real.airframe === 'number') ? S.real.airframe
+       : (CARRIED.length ? CARRIED[CARRIED.length-1].run : 0);
+}
 function logRows(){
   /* Runs that never got airborne stay out, per Claus's rule of 16 Sep 18:34. They are
      filed, they post, and the count is shown under the page. An air start is not one of
      them - it has airborne time and belongs here. */
   var legs = S.legs.filter(function(l){ return !l.noFlight; })
                    .sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
-  var run = 0;
-  return legs.map(function(l){
+  var run = broughtForward();
+  return carriedRows().concat(legs.map(function(l){
     var prev = run; run += l.hours;
     return {
       date: l.date, prev: prev, run: run, dur: l.hours,
@@ -2828,7 +2882,7 @@ function logRows(){
       name: l.crew || l.signedBy || 'CLAUS THANNER',
       signed: l.signedBy || '', signedAt: l.signedAt || ''
     };
-  });
+  }));
 }
 
 /* ---------------- the carnet page ----------------
@@ -2880,11 +2934,25 @@ function renderLogbook(){
       '</tr>'+
     '</thead>';
 
+  /* The Report line: where his paper book stops and the sim's flying starts counting. A real
+     carnet opens a new page on exactly this, so the running total never restarts at zero. */
+  var bfAt = broughtForward();
+  var lastReal = rows.filter(function(r){ return r.real; }).slice(-1)[0];
+  var bfRow = CARRIED.length
+    ? '<tr class="bf"><td>'+dayMonth((S.real && S.real.asAt) || CARRIED[CARRIED.length-1].date)+'</td>'+
+      '<td colspan="6">Report \u00e0 nouveau \u2014 report\u00e9 du carnet papier'+
+        (lastReal && Math.abs(bfAt - lastReal.run) > 0.005
+          ? ', plus le vol r\u00e9el jusqu\u2019au '+dayMonth(S.real.asAt) : '')+'</td>'+
+      '<td><strong>'+hplus(bfAt)+'</strong></td><td colspan="5"></td>'+
+      '<td class="obs"><span class="clip">d\u00e9but du simulateur</span></td>'+
+      '<td class="tach fill">'+tachoTxt((S.real && S.real.tacho) || null)+'</td><td colspan="2"></td></tr>'
+    : '';
   var body = rows.length ? rows.map(function(r, i){
     var autoTxt = r.auto.join('; ');
     var obs = (r.note || r.auto.length)
       ? '<span class="clip">'+esc(r.note)+(r.auto.length ? '<span class="auto">'+esc(autoTxt)+'</span>' : '')+'</span>'
       : 'NIL';
+    if(r.real) obs += '<span class="reel" title="flown for real \u2014 carried out of the paper carnet">r\u00e9el</span>';
     var full = [r.note].concat(r.auto).filter(Boolean).join(' · ');
     /* His name written out once at the top of the page, ditto marks under it. */
     var nom = i===0
@@ -2894,7 +2962,8 @@ function renderLogbook(){
       ? '<span title="'+esc(r.signed)+'">'+esc(initials(r.signed))+'</span>'+
         (r.signedAt?' <span class="tiny muted">'+localHM(r.signedAt)+'</span>':'')
       : '';
-    return '<tr>'+
+    var isLastReal = r.real && !(rows[i+1] && rows[i+1].real);
+    return (r.real ? '<tr class="real">' : '<tr>')+
       '<td>'+dayMonth(r.date)+'</td>'+
       nom+'<td>'+esc(r.fonc)+'</td>'+
       '<td>'+esc(r.from)+'</td><td>'+esc(r.to)+'</td>'+
@@ -2908,8 +2977,8 @@ function renderLogbook(){
       '<td class="tach fill">'+tachoTxt(r.tach)+'</td>'+
       '<td>'+sig+'</td>'+
       '<td class="fill"></td>'+
-    '</tr>';
-  }).join('') : '<tr><td colspan="17" class="muted">No legs filed yet.</td></tr>';
+    '</tr>' + (isLastReal ? bfRow : '');
+  }).join('') : (bfRow || '<tr><td colspan="17" class="muted">No legs filed yet.</td></tr>');
 
   var foot = rows.length
     ? '<tfoot><tr><td colspan="7">Total &mdash; report &agrave; nouveau</td><td>'+hplus(total)+'</td><td colspan="9"></td></tr></tfoot>'
@@ -2926,6 +2995,9 @@ function renderLogbook(){
      is a reason to show the figure, and no reason at all to call it wrong. */
   var between = engineTimeBetweenLegs();
   if(n) n.innerHTML = '<span class="tiny muted">'+
+    (CARRIED.length
+      ? 'The page opens on '+CARRIED.length+' row'+(CARRIED.length===1?'':'s')+' out of his own paper carnet, marked <em>r\u00e9el</em>, and the running total carries straight through the Report line at <strong>'+hplus(bfAt)+'</strong> \u2014 the sim never restarts the count at zero. The foot of this page and the airframe total on the Airframe tab are the same figure. '
+      : '')+
     (gr ? gr+' run'+(gr===1?'':'s')+' with no airborne time '+(gr===1?'is':'are')+
       ' not on this page \u2014 only airborne events go in the logbook. '+(gr===1?'It is':'They are')+' in the Ledger, and '+
       (gr===1?'its':'their')+' fuel and fees posted as usual. ' : '')+
