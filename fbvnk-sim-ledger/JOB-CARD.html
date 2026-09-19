@@ -160,7 +160,7 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <dl>
       <dt>Lane</dt><dd>design &amp; stage</dd>
       <dt>Leader</dt><dd>FBVNK PM</dd>
-      <dt>Card</dt><dd>18 Sep 2026 &middot; rev 25</dd>
+      <dt>Card</dt><dd>19 Sep 2026 &middot; rev 26</dd>
     </dl>
   </div>
 </header>
@@ -203,12 +203,20 @@ footer{border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:va
     <p><strong>Nothing is decided on this page.</strong> This card is a mirror. Every question below is tapped on the
     <a href="https://claude.ai/artifact/1aDxiL7JRjFx9igTtC6PvF">F-BVNK Annunciator</a> &mdash; that is the only record, and a tap
     there wakes the project manager and reaches this chat. Red rows are waiting on you. Green rows show the answer that came back.</p>
-  </div>
+    <p class="small"><strong>This card keeps itself current.</strong> Your standing rule of 19 Sep: every ledger decision taken on the Annunciator or in chat reaches this session from the PM in the same pass, and the card is updated at once &mdash; the row added or re-stated, the revision and date bumped &mdash; with no reminder needed. The revision number in the header is the PM&rsquo;s receipt.</p>
 
   <div class="ticks">
-    <div class="tick done"><span class="box">&#10003;</span><span class="q">Should the engine and propeller reserves and the 25 / 50 / 100 h inspection counters run on tacho time or on airborne (flight) time?</span><time>16 Sep 21:05:42 local</time>
-      <span class="a">You picked <b>&ldquo;Tacho time (the hour meter)&rdquo;</b>. Built in R6. The cockpit strip was already on the meter and does not change; the laptop book moved to it, so there is one clock. It accrues the meter&rsquo;s progression <em>between</em> records, which is what counts the ground running between legs. Airborne keeps your carnet&rsquo;s Heures de Vol and the airborne totals. The wear coefficients stay on airborne &mdash; that is this session&rsquo;s own call, flagged, because your answer named the reserves and the counters.</span>
+    <div class="tick done"><span class="box">&#10003;</span><span class="q">Should the engine and propeller reserves and the 25 / 50 / 100 h inspection counters run on tacho time or on airborne (flight) time?</span><time>16 Sep 21:05:42 &middot; corrected 16 Sep 21:57:47 &middot; re-confirmed 19 Sep ~11:30</time>
+      <span class="a"><b>Two clocks, and both are yours.</b><br>
+      <b>The hour meter</b> carries the engine and propeller <b>reserves</b> (&euro;20.79/h and &euro;1.36/h) and the <b>TBO counters</b>, <span class="mono tiny">engSMOH</span> and <span class="mono tiny">propSMOH</span> &mdash; your pick of 16 Sep 21:05:42, <em>&ldquo;Tacho time (the hour meter)&rdquo;</em>. It accrues the meter&rsquo;s progression <em>between</em> records, which is what counts the ground running between legs, so the fund and the overhaul it pays for count the same hours.<br>
+      <b>Flight time (airborne)</b> carries the <b>25 / 50 / 100 h inspections</b>, the airframe total and the <b>wear</b> &mdash; your correction of 16 Sep 21:57:47, <em>&ldquo;NO, the inspection times, sorry if I said otherwise, are based on the journey log book airborne hours, NOT tacho&rdquo;</em>, with <em>&ldquo;Keep on airborne time (as rated)&rdquo;</em> for the wear in the same message.<br>
+      Re-confirmed in chat on <b>19 Sep ~11:30</b>: <em>&ldquo;I earlier wrongly answers a Q regarding using flight time (airborne) vs tacho time for the 25/50/100 and all maintenance check and I replied tacho, this is wrong, it is the flight time (airborne) time to be used.&rdquo;</em><br>
+      <b>The book already does exactly this</b> and needs no change &mdash; checked in the source, not assumed: <span class="mono tiny">S.counters.hrs</span> and <span class="mono tiny">ttaf</span> and every wear coefficient take the airborne figure, while <span class="mono tiny">meter</span>, <span class="mono tiny">engSMOH</span>, <span class="mono tiny">propSMOH</span> and both reserves take the meter hours.</span>
       <span class="stat"><span class="answered">&#10003; Answered on the Annunciator</span></span></div>
+
+    <div class="tick"><span class="box">&nbsp;</span><span class="q">Move the TBO counters (engSMOH / propSMOH) onto airborne time as well, leaving only the reserves on the meter?</span><time>offered by the PM, 19 Sep &mdash; not decided</time>
+      <span class="a">Open, and nothing is built for it. As it stands the TBO counters sit with the fund that pays for the overhaul, both on the meter. Saying yes would put the engine and propeller life on the same clock as the inspections and leave the money alone. It reaches this card as a board decision if you take it.</span>
+      <span class="stat"><span class="waiting">Waiting on you</span></span></div>
 
     <div class="tick done"><span class="box">&#10003;</span><span class="q">Wire the ledger to the iPad wear model, or keep it standalone?</span><time>15 Sep 14:18:07Z</time>
       <span class="a">You picked <b>&ldquo;Wire it to the iPad wear model (NK_*)&rdquo;</b>. Nothing has been wired &mdash; the design below is the answer to it, and the PM reviews before any build.</span>
