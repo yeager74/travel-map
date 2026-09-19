@@ -1,0 +1,496 @@
+{
+  "what": "F-BVNK permanent internal cost datasheet. Every figure here was read off Claus's own documents and is quoted as it appears. The Sim Ledger and the future HANGAR strip run from this and from the PRICES block in the page; NEITHER needs Dropbox at run time. Dropbox was used to SOURCE these figures once; it is not a dependency.",
+  "asOf": "2026-09-18",
+  "needsDropboxAtRunTime": false,
+  "aircraft": {
+    "registration": "F-BVNK",
+    "type": "SOCATA MS.893E",
+    "serial": "12 495",
+    "yom": "06/1974",
+    "engine": {
+      "type": "Lycoming O-360-A3A",
+      "serial": "L-18456-36A"
+    },
+    "propeller": {
+      "type": "Sensenich 76EM8-0-60",
+      "serial": "8380-K"
+    },
+    "amp": "IAC-AMP-RALLYE-F-BVNK ED.2, 24 JUN 2026",
+    "source": "CRS 17 JUL 2026, IAC-CAO.IA-280126, WOP 26/045, WO IAC.WO26077, read off the scan by the PM"
+  },
+  "openingBalance": {
+    "asAt": "2026-07-20",
+    "airframeHHMM": "1277:15",
+    "airframeH": 1277.25,
+    "tacho": 1236.24,
+    "engineTSO_HHMM": "327:45",
+    "engineTSO_H": 327.75,
+    "propTSO_HHMM": "539:40",
+    "propTSO_H": 539.6666666666666,
+    "lastCheckAirframeHHMM": "1276:05",
+    "checksAtLastCRS": [
+      "25 h",
+      "50 h",
+      "100 h",
+      "annual"
+    ],
+    "source": "carnet page 86 last row for airframe and tacho; CRS 17 JUL 2026 TSO 326:35 / 538:30 plus the 1:10 flown since"
+  },
+  "labourRates": [
+    {
+      "code": "01010301",
+      "description": "MAO-DE-OBRA - TECNICO 1a CAT. - MANUTENCAO",
+      "eurPerHour": 52.0,
+      "vatPct": 23,
+      "effectiveFrom": "2025-07-11",
+      "source": "FAC 25/100 2025-07-11; confirmed FAC 26/6 2026-01-23"
+    },
+    {
+      "code": "01010301",
+      "description": "MAO-DE-OBRA - TECNICO 1a CAT. - MANUTENCAO",
+      "eurPerHour": 48.0,
+      "vatPct": 23,
+      "effectiveFrom": "2024-07-26",
+      "supersededOn": "2025-07-11",
+      "source": "FAC 24/122 2024-07-26; still 48,00 on FAC 25/64 2025-05-14"
+    },
+    {
+      "code": "01010302",
+      "description": "MAO-DE-OBRA - TECNICO AUXILIAR - MANUTENCAO",
+      "eurPerHour": 32.0,
+      "vatPct": 23,
+      "source": "FAC 24/122 2024-07-26"
+    },
+    {
+      "code": "01010305",
+      "description": "MAO-DE-OBRA - TECNICO 1a CAT. - AERONAVEGABILIDADE",
+      "eurPerUnit": 320.0,
+      "discountPct": 25,
+      "netCharged": 480.0,
+      "quantity": 2,
+      "vatPct": 23,
+      "source": "FAC 24/122 2024-07-26"
+    }
+  ],
+  "partsAndConsumables": [
+    {
+      "code": "06030005",
+      "description": "OLEO DE MOTOR - AERO DM 15W50",
+      "unit": "UNI",
+      "eur": 14.63,
+      "perOilChange": 8.0,
+      "vatPct": 23,
+      "source": "FAC 25/100 and FAC 26/6, identical"
+    },
+    {
+      "code": "03320013",
+      "description": "FILTRO DE OLEO - AA48110",
+      "unit": "UNI",
+      "eur": 56.5,
+      "vatPct": 23,
+      "source": "FAC 25/100 and FAC 26/6"
+    },
+    {
+      "code": "99990001",
+      "description": "GESTAO DE RESIDUOS FILTRO OLEO",
+      "unit": "UNI",
+      "eur": 0.5,
+      "vatPct": 23,
+      "source": "FAC 25/100 and FAC 26/6"
+    },
+    {
+      "code": "03300002",
+      "description": "FILTRO AR - BA7112",
+      "unit": "UNI",
+      "eur": 20.53,
+      "vatPct": 23,
+      "source": "FAC 25/100"
+    },
+    {
+      "code": "99990002",
+      "description": "GESTAO DE RESIDUOS FILTRO AR",
+      "unit": "UNI",
+      "eur": 0.45,
+      "vatPct": 23,
+      "source": "FAC 25/100"
+    },
+    {
+      "code": "03100134",
+      "description": "ANILHAS METALOPLASTICA - 0462-26-32",
+      "unit": "UNI",
+      "eur": 4.84,
+      "vatPct": 23,
+      "source": "FAC 25/100 and FAC 26/6"
+    },
+    {
+      "code": "09990002",
+      "description": "TAMPA RESERVATORIO TRAVOES",
+      "unit": "UNI",
+      "eur": 48.0,
+      "vatPct": 23,
+      "source": "FAC 25/100"
+    },
+    {
+      "code": "10050005",
+      "description": "ANALISE VIBRACOES MOTOR",
+      "unit": "UNI",
+      "eur": 80.0,
+      "vatPct": 23,
+      "source": "FAC 25/100"
+    },
+    {
+      "code": "03220004",
+      "description": "CONDUTA DE AR - CAT 12",
+      "unit": "UNI",
+      "eur": 74.52,
+      "vatPct": 23,
+      "source": "FAC 25/100"
+    },
+    {
+      "code": "03180008",
+      "description": "CALCO DE TRAVAO - APS066-10500",
+      "unit": "UNI",
+      "eur": 27.39,
+      "vatPct": 23,
+      "source": "FAC 24/122"
+    },
+    {
+      "code": "02170211",
+      "description": "REBITES CALCOS TRAVAO - RA105-002",
+      "unit": "UNI",
+      "eur": 0.43,
+      "vatPct": 23,
+      "source": "FAC 24/122"
+    },
+    {
+      "code": "99990003",
+      "description": "GESTAO DE RESIDUOS TRAVOES",
+      "unit": "UNI",
+      "eur": 0.45,
+      "vatPct": 23,
+      "source": "FAC 24/122"
+    },
+    {
+      "code": "04130013",
+      "description": "TRATAMENTO ACF-50 (MONOMOTOR)",
+      "unit": "UNI",
+      "eur": 375.0,
+      "vatPct": 23,
+      "source": "FAC 24/122"
+    },
+    {
+      "code": "06010001",
+      "description": "LAVAG/LUBRIF. AERONAVE 4 LUGARES",
+      "unit": "UNI",
+      "eur": 95.0,
+      "vatPct": 23,
+      "source": "FAC 24/122"
+    },
+    {
+      "code": "06060001",
+      "description": "LIMPEZA INTERIOR AERONAVE 4 LUGARES",
+      "unit": "UNI",
+      "eur": 80.0,
+      "vatPct": 23,
+      "source": "FAC 24/122 and FAC 25/100"
+    },
+    {
+      "code": "08050110",
+      "description": "CARGA BATERIA",
+      "unit": "UNI",
+      "eur": 20.0,
+      "vatPct": 23,
+      "source": "FAC 24/122"
+    },
+    {
+      "code": "06040002",
+      "description": "OLEO HIDRAULICO - 520 TOTAL",
+      "unit": "LT",
+      "eur": 15.5,
+      "vatPct": 23,
+      "source": "FAC 24/122"
+    },
+    {
+      "code": "09999998",
+      "description": "MATERIAL DE SOLDADURA",
+      "unit": "UNI",
+      "eur": 15.0,
+      "vatPct": 23,
+      "source": "FAC 24/122"
+    },
+    {
+      "code": "05220054",
+      "description": "TERMINAL FICHA FEMEA 2,5MM^2X6.3MM",
+      "unit": "UNI",
+      "eur": 0.85,
+      "vatPct": 23,
+      "source": "FAC 24/122"
+    },
+    {
+      "code": "10070032",
+      "description": "TUBO FLEXIVEL - MIL-H-8794-6",
+      "unit": "M",
+      "eur": 108.64,
+      "vatPct": 23,
+      "source": "FAC 24/122"
+    },
+    {
+      "code": "10070021",
+      "description": "TUBO FLEXIVEL - MIL-H-6000-1/4",
+      "unit": "UNI",
+      "eur": 43.59,
+      "vatPct": 23,
+      "source": "FAC 24/122"
+    },
+    {
+      "code": "10070012",
+      "description": "TERMINAIS PARA TUBOS - 491-6D",
+      "unit": "UNI",
+      "eur": 34.35,
+      "vatPct": 23,
+      "source": "FAC 24/122"
+    },
+    {
+      "code": "03360086",
+      "description": "JUNTAS DE ADMISSAO SL71973",
+      "unit": "UNI",
+      "eur": 2.75,
+      "vatPct": 23,
+      "source": "FAC 24/122"
+    },
+    {
+      "code": "09999991",
+      "description": "CONSUMIVEIS",
+      "unit": "UNI",
+      "eurSeen": [
+        10.0,
+        32.0
+      ],
+      "vatPct": 23,
+      "source": "FAC 26/6 (10,00) and FAC 24/122 (32,00)"
+    }
+  ],
+  "scheduledInspections": [
+    {
+      "key": "insp25",
+      "description": "Manutencao - 25 h check",
+      "netEur": 168.0,
+      "vatPct": 23,
+      "grossEur": 206.64,
+      "composition": "3,50 H x 48,00 EUR, labour only",
+      "source": "FAC 25/64, 2025-05-14"
+    },
+    {
+      "key": "insp50",
+      "description": "Manutencao - 50 h check",
+      "netEur": 786.88,
+      "vatPct": 23,
+      "grossEur": 967.86,
+      "composition": "10,00 H x 52,00 + oil 8x14,63 + filter 56,50 + sundries",
+      "source": "FAC 26/6, 2026-01-23"
+    },
+    {
+      "key": "insp100",
+      "description": "Manutencao - 100 h / annual",
+      "netEur": 2434.99,
+      "vatPct": 23,
+      "grossEur": 2995.04,
+      "composition": "36,00 H x 52,00 + oil, filters, parts + vibration analysis 80,00",
+      "source": "FAC 25/100, 2025-07-11"
+    }
+  ],
+  "standingCosts": [
+    {
+      "key": "hangar",
+      "supplier": "Sevenair Group, SA",
+      "description": "Apoio de manutencao",
+      "netEur": 1000.0,
+      "vatPct": 23,
+      "frequency": "monthly",
+      "invoices2025": 13,
+      "source": "2025 accounts"
+    },
+    {
+      "key": "cao",
+      "supplier": "IAC - Ind. Aeronauticas Coimbra, Lda.",
+      "description": "GESTAO AERONAVEGABILIDADE",
+      "netEur": 720.0,
+      "vatPct": 23,
+      "frequency": "annual, August",
+      "source": "FAC 25/135"
+    },
+    {
+      "key": "insurance",
+      "supplier": "Hull & liability underwriter",
+      "netEur": 883.0,
+      "vatPct": 0,
+      "frequency": "annual, April",
+      "source": "2025 cost calculator"
+    }
+  ],
+  "overhaulAndReserves": {
+    "engineOverhaulEur": 35000.0,
+    "propellerOverhaulEur": 2000.0,
+    "tboHours": 2000,
+    "engineReserveEurPerHour": 20.79,
+    "propellerReserveEurPerHour": 1.36,
+    "reserveClock": "hour meter (tacho) - Claus, 16 Sep 2026 21:05:42, \"Tacho time (the hour meter)\"",
+    "source": "2025 Aircraft Hourly Operating Cost Calculator"
+  },
+  "inspectionClock": "airframe / journey-log airborne hours - Claus, 16 Sep 2026 21:57:47, \"the inspection times ... are based on the journey log book airborne hours, NOT tacho\"",
+  "aerodromes": {
+    "LPCS": {
+      "name": "Cascais",
+      "landEur": 22.24,
+      "parkEur": 16.68,
+      "fuelEurPerL": 2.3,
+      "vatPct": 23,
+      "src": "invoiced; fuel is the current PT reference given by Claus 15 Sep 2026"
+    },
+    "LPCO": {
+      "name": "Coimbra",
+      "landEur": 20.0,
+      "parkEur": 12.0,
+      "fuelEurPerL": 2.35,
+      "vatPct": 23,
+      "src": "assumption"
+    },
+    "LPVL": {
+      "name": "Vilar da Luz",
+      "landEur": 23.0,
+      "parkEur": 0.0,
+      "fuelEurPerL": 0,
+      "vatPct": 23,
+      "src": "invoiced"
+    },
+    "LEVD": {
+      "name": "Valladolid",
+      "landEur": 122.0,
+      "parkEur": 0.0,
+      "fuelEurPerL": 3.42,
+      "vatPct": 21,
+      "src": "invoiced"
+    },
+    "LETL": {
+      "name": "Teruel",
+      "landEur": 12.0,
+      "parkEur": 0.0,
+      "fuelEurPerL": 2.36,
+      "vatPct": 21,
+      "src": "invoiced - BP Energia Espana 2002864264, 155,000 L on 24 OCT 25, 366,14/155 = 2,3622"
+    },
+    "LEAP": {
+      "name": "Empuriabrava",
+      "landEur": 108.0,
+      "parkEur": 0.0,
+      "fuelEurPerL": 3.52,
+      "vatPct": 21,
+      "src": "invoiced"
+    },
+    "LEST": {
+      "name": "Santiago",
+      "landEur": 32.0,
+      "parkEur": 0.0,
+      "fuelEurPerL": 0,
+      "vatPct": 21,
+      "src": "invoiced"
+    },
+    "LEBG": {
+      "name": "Burgos",
+      "landEur": 45.0,
+      "parkEur": 0.0,
+      "fuelEurPerL": 3.19,
+      "vatPct": 21,
+      "src": "assumption"
+    },
+    "LFBT": {
+      "name": "Tarbes",
+      "landEur": 25.0,
+      "parkEur": 12.0,
+      "fuelEurPerL": 2.6,
+      "vatPct": 23,
+      "src": "DEFAULT FIELD - no figure on file, labelled on the page"
+    }
+  },
+  "year2025": {
+    "invoicesInFile": 42,
+    "grossInFileEur": 25716.3,
+    "invoicesInCalendarYear": 39,
+    "grossCalendarYearEur": 23473.96,
+    "hoursFlown": 73.0,
+    "grossPerHourEur": 321.56,
+    "wetPerHourEur": 378.48,
+    "byCategory": [
+      {
+        "category": "Fuel (AVGAS)",
+        "grossEur": 3816.12,
+        "invoices": 11
+      },
+      {
+        "category": "Hangar & maintenance support (Sevenair)",
+        "grossEur": 15990.0,
+        "invoices": 13
+      },
+      {
+        "category": "Maintenance, parts & airworthiness (IAC)",
+        "grossEur": 5055.14,
+        "invoices": 4
+      },
+      {
+        "category": "Aerodrome landing/parking (Cascais)",
+        "grossEur": 855.04,
+        "invoices": 14
+      }
+    ],
+    "source": "F-BVNK_2025_Accounts_1.xlsx and 2025-JAN-DEC-2025-Aircraft-Hourly-Operating-Cost-Calculator-F-BVNK.xlsx"
+  },
+  "year2024Actuals": [
+    {
+      "line": "LED LIGHTS AERO-LITES",
+      "eur": 750,
+      "vatFlag": "Y"
+    },
+    {
+      "line": "BATTERY GILL G35",
+      "eur": 416,
+      "vatFlag": "y"
+    },
+    {
+      "line": "RH TOE BRAKE PARTS",
+      "eur": 3000,
+      "vatFlag": "n"
+    }
+  ],
+  "gapsStillNeedingAPerson": [
+    {
+      "item": "carburettor parts",
+      "why": "no invoice of his covers it; catalogue pages unreachable from a cloud session (egress proxy 403 at CONNECT)",
+      "proposedEur": 1150.0,
+      "approved": false
+    },
+    {
+      "item": "starter parts",
+      "why": "as above",
+      "proposedEur": 620.0,
+      "approved": false
+    },
+    {
+      "item": "oil pump and lines parts",
+      "why": "as above",
+      "proposedEur": 780.0,
+      "approved": false
+    },
+    {
+      "item": "LFBT Tarbes landing, parking and fuel",
+      "why": "no figure on file; the default field's fees are used and labelled"
+    },
+    {
+      "item": "oil unit",
+      "why": "assumption: that one UNI of OLEO DE MOTOR is one US quart. The invoice unit is UNI, not QT. STRIP_SPEC 2.2-2.4 models 7 qt; his oil change buys 8,00 UNI."
+    },
+    {
+      "item": "carnet page 86 rows 1-7",
+      "why": "only the last row is sourced. The scan's text layer holds nothing but the printed serial and its download host is refused by the egress proxy. Asked of the PM on the Job Card."
+    }
+  ]
+}

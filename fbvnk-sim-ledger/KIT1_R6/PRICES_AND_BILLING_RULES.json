@@ -1,0 +1,994 @@
+{
+  "schema": "fbvnk-kit1-prices-and-billing-rules",
+  "version": "revision 4 — K7c closed: net-first pro rata, the aircraft refuel guard, the clamp wording",
+  "job": "FBVNK_SIM_LEDGER_KIT1",
+  "generated_by": "travel-map-da cloud session (subagent to FBVNK PROJECT MANAGER)",
+  "generated_at": "2026-09-15",
+  "purpose": "Single source for every euro figure and posting rule the laptop ledger and the HANGAR strip both read. Prices are transcribed verbatim from the PRICES/FIELDS blocks in the ledger source named below, not re-derived. Billing rules are transcribed from the reviewed Job Card (rounds 2-3, PM-checked against SPEC.md md5 c06f7305) plus the PM's KIT1 review message, both cited inline.",
+  "source": {
+    "repo": "yeager74/travel-map",
+    "path": "fbvnk-sim-ledger/FBVNK-LEDGER.html",
+    "commit": "5e72853",
+    "spec_md5_laptop_verified": "c06f7305"
+  },
+  "vat_rates_pct": {
+    "PT": 23,
+    "ES": 21
+  },
+  "prices": {
+    "hangar": {
+      "net": 1000.0,
+      "vat_pct": 23,
+      "supplier": "Sevenair Group, SA",
+      "description": "Apoio de manutenção",
+      "category": "Hangar & maintenance support",
+      "src": "invoiced",
+      "invoice_ref": "Sevenair, 13 monthly invoices across 2025; no single id cited",
+      "invoice_id_cited": false
+    },
+    "cao": {
+      "net": 720.0,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "GESTAO AERONAVEGABILIDADE",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "invoiced",
+      "invoice_ref": "FAC 25/135",
+      "invoice_id_cited": true
+    },
+    "insurance": {
+      "net": 883.0,
+      "vat_pct": 0,
+      "supplier": "Hull & liability underwriter",
+      "description": "Annual premium",
+      "category": "Insurance",
+      "src": "calculator",
+      "invoice_ref": "Claus's 2025 cost calculator - annual premium line",
+      "invoice_id_cited": false
+    },
+    "insp25": {
+      "net": 168.0,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "Manutenção — 25 h check",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "invoiced",
+      "invoice_ref": "FAC 25/64",
+      "invoice_id_cited": true
+    },
+    "insp50": {
+      "net": 786.88,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "Manutenção — 50 h check",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "invoiced",
+      "invoice_ref": "FAC 26/6 (2026 series, not a 2025 invoice)",
+      "invoice_id_cited": true
+    },
+    "insp100": {
+      "net": 2434.99,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "Manutenção — 100 h / annual",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "invoiced",
+      "invoice_ref": "FAC 25/100",
+      "invoice_id_cited": true
+    },
+    "brakes": {
+      "net": 1089.43,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "Brake overhaul — pads, calipers, bleed",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false,
+      "F1_what_changed": "K7b F1 was right that the entry was inconsistent - the net 1,089.43 is 1,340.00 / 1.23 while the entry stored vat_pct 21 - but neither of the two fixes it offered is the right one. This session read Claus's own 2025 accounts (BRIEFCASE/Aviation/RALLYES/F-BVNK - MS 893 E/AIRWORTHINESS - DOCS/EXPENSES 2025 COMBINED/F-BVNK_2025_Accounts_1.xlsx, 42 invoices de-duplicated from a 106-page PDF) and there is no Nicolau invoice in them, and no brake overhaul at all. The four suppliers are BP Portugal Combustiveis, BP Energia Espana, Sevenair Group and IAC Coimbra, plus Cascais Dinamica for aerodrome fees. No Spanish maintenance shop. So the entry could not be labelled 'invoiced' at all, whatever its VAT rate. It is now an assumption at the shop that does every other assumed job in this table, IAC Coimbra, Portuguese VAT 23, which makes the stored net and the 1,340.00 figure internally consistent for the first time. V16 posts 4.02, the same figure K7b predicted for its 23 % branch.",
+      "where_1340_came_from": "An earlier round of this project, not a source document. Kept as the sim price because it is the figure the book has always used, and relabelled rather than deleted so nobody reads a silent change as a new fact."
+    },
+    "engoh": {
+      "net": 35000.0,
+      "vat_pct": 0,
+      "supplier": "Overhaul shop",
+      "description": "Engine overhaul at TBO",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "calculator",
+      "invoice_ref": "Claus's 2025 cost calculator - engine overhaul at TBO; the work has not happened, so no invoice exists",
+      "invoice_id_cited": false
+    },
+    "propoh": {
+      "net": 2000.0,
+      "vat_pct": 0,
+      "supplier": "Propeller shop",
+      "description": "Propeller overhaul at TBO",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "calculator",
+      "invoice_ref": "Claus's 2025 cost calculator - propeller overhaul at TBO; the work has not happened, so no invoice exists",
+      "invoice_id_cited": false
+    },
+    "tyres": {
+      "net": 310.0,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "Main tyres and tubes, fitted",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false
+    },
+    "oleo": {
+      "net": 980.0,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "Shock strut — seals, service, recharge",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false
+    },
+    "hardland": {
+      "net": 640.0,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "Hard landing inspection",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false
+    },
+    "mag": {
+      "net": 720.0,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "Magneto overhaul and timing",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false
+    },
+    "plugs": {
+      "net": 265.0,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "Spark plug set, clean and gap",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false
+    },
+    "alt": {
+      "net": 890.0,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "Alternator replacement",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false
+    },
+    "batt": {
+      "net": 310.0,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "Battery replacement",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false
+    },
+    "vac": {
+      "net": 560.0,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "Vacuum pump replacement",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false
+    },
+    "propdress": {
+      "net": 420.0,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "Propeller dressing and balance",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false
+    },
+    "exh": {
+      "net": 380.0,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "Exhaust stack repair",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false
+    },
+    "cyl": {
+      "net": 2250.0,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "Cylinder top overhaul",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false
+    },
+    "radio": {
+      "net": 540.0,
+      "vat_pct": 23,
+      "supplier": "Avionics shop, Cascais",
+      "description": "Avionics bench repair",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false
+    },
+    "trim": {
+      "net": 290.0,
+      "vat_pct": 23,
+      "supplier": "Trim shop",
+      "description": "Interior trim repair",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false
+    },
+    "screen": {
+      "net": 210.0,
+      "vat_pct": 23,
+      "supplier": "IAC - Ind. Aeronáuticas Coimbra, Lda.",
+      "description": "Windscreen polish",
+      "category": "Maintenance, parts & airworthiness",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false
+    },
+    "wash": {
+      "net": 180.0,
+      "vat_pct": 23,
+      "supplier": "Hangar 7 Air, Cascais",
+      "description": "Wash, degrease and polish",
+      "category": "Paint & valet",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false
+    },
+    "repaint": {
+      "net": 9800.0,
+      "vat_pct": 23,
+      "supplier": "Paint shop",
+      "description": "Strip and full repaint",
+      "category": "Paint & valet",
+      "src": "assumption",
+      "invoice_ref": "assumption",
+      "invoice_id_cited": false
+    }
+  },
+  "prices_not_yet_defined": {
+    "note": "Job Card, 'Every ledger figure, mapped': five NK_ parts have no PRICES entry yet. Do not invent one here — needs a decision, then a new price key added to this file (new md5).",
+    "parts_without_a_price": [
+      "carburettor (NK_ST_C_CARB)",
+      "starter (NK_ST_C_STR)",
+      "oil pump/lines (NK_ST_C_OIL)",
+      "exterior lamps (NK_ST_C_LTS)",
+      "oil top-up per quart (NK_ST_OIL_QT)"
+    ]
+  },
+  "fields": {
+    "LPCS": {
+      "name": "Cascais",
+      "landing": 22.24,
+      "parking_per_night": 16.68,
+      "fuel_per_litre": 2.3,
+      "vat_pct": 23,
+      "coastal": true,
+      "aerodrome_supplier": "Cascais Dinâmica E.M., S.A.",
+      "fuel_supplier": "BP Portugal Combustíveis, S.A.",
+      "src": "real",
+      "lat": 38.725556,
+      "lon": -9.355278,
+      "arp_aip": "384332N 0092119W",
+      "arp_source": "NAV Portugal eAIP AD 2.LPCS",
+      "arp_read": "AIP, confirmed"
+    },
+    "LPCO": {
+      "name": "Coimbra",
+      "landing": 20.0,
+      "parking_per_night": 12.0,
+      "fuel_per_litre": 2.35,
+      "vat_pct": 23,
+      "coastal": false,
+      "aerodrome_supplier": "Aeródromo de Coimbra",
+      "fuel_supplier": "BP Portugal Combustíveis, S.A.",
+      "src": "assume",
+      "lat": 40.156111,
+      "lon": -8.469167,
+      "arp_aip": "400922N 0082809W",
+      "arp_source": "NAV Portugal eVFR AD 2.LPCO",
+      "arp_read": "AIP, single read"
+    },
+    "LPVL": {
+      "name": "Vilar da Luz",
+      "landing": 23.0,
+      "parking_per_night": 0.0,
+      "fuel_per_litre": 0,
+      "vat_pct": 23,
+      "coastal": false,
+      "aerodrome_supplier": "Vilar da Luz",
+      "fuel_supplier": "",
+      "src": "real",
+      "lat": 41.279167,
+      "lon": -8.517222,
+      "arp_aip": "411645N 0083102W",
+      "arp_source": "NAV Portugal eVFR AD 2.LPVL",
+      "arp_read": "AIP, single read"
+    },
+    "LEVD": {
+      "name": "Valladolid",
+      "landing": 122.0,
+      "parking_per_night": 0.0,
+      "fuel_per_litre": 3.42,
+      "vat_pct": 21,
+      "coastal": false,
+      "aerodrome_supplier": "Aeropuerto de Valladolid",
+      "fuel_supplier": "BP Energía España, S.A.U.",
+      "src": "real",
+      "lat": 41.706111,
+      "lon": -4.851944,
+      "arp_aip": "414222N 0045107W",
+      "arp_source": "ENAIRE AIP AD 2-LEVD",
+      "arp_read": "AIP, confirmed"
+    },
+    "LETL": {
+      "name": "Teruel",
+      "landing": 12.0,
+      "parking_per_night": 0.0,
+      "fuel_per_litre": 2.36,
+      "vat_pct": 21,
+      "coastal": false,
+      "aerodrome_supplier": "Aeropuerto de Teruel",
+      "fuel_supplier": "BP Energía España, S.A.U.",
+      "src": "real",
+      "R4_code_corrected": "Was under LEAP in R1-R3. LEAP is Ampuriabrava; Teruel is LETL. Confirmed not by the AIP alone but by an invoice of Claus's: BP Energia Espana 2002864264, 20 Nov 2025, which prints \"Location of Delivery: TEV - LETL - TERUEL\" and bills F-BVNK for 155.000 L uplifted on 24 OCT 25.",
+      "fuel_per_litre_check": "366.14 EUR / 155.000 L = 2.3622 EUR/L on that invoice, against the 2.36 this row has carried since the first build. So the figures under this row really are Teruel's, which is what Records asked be checked before the codes were moved.",
+      "vat_note": "That invoice is VAT-exempt - \"Transaction exempt from VAT and is treated as an export. Law 37/1992 Art 22\" - while the two Spanish BP invoices inside the 2025 accounts (2002747740 and 2002852770) carry 21 %. This row keeps 21 because that is the general Spanish rate and one exempt invoice does not establish a rule. Flagged, not changed.",
+      "lat": 40.411944,
+      "lon": -1.2175,
+      "arp_aip": "402443N 0011303W",
+      "arp_source": "ENAIRE AIP AD 2-LETL",
+      "arp_read": "AIP, confirmed"
+    },
+    "LEAP": {
+      "name": "Empuriabrava",
+      "landing": 108.0,
+      "parking_per_night": 0.0,
+      "fuel_per_litre": 3.52,
+      "vat_pct": 21,
+      "coastal": true,
+      "aerodrome_supplier": "Aeroclub Empuriabrava",
+      "fuel_supplier": "BP Energía España, S.A.U.",
+      "src": "real",
+      "R4_code_corrected": "Was under LEMP in R1-R3. LEMP is Los Martinez del Puerto, Murcia; Empuriabrava is LEAP (AIP name AMPURIABRAVA). No invoice of Claus's was found for this aerodrome, so unlike Teruel the figures here are moved on the strength of the name alone - Records' assumption, and this session could not better it. The src \"real\" on this row remains uncited, as fields_provenance already says.",
+      "lat": 42.26,
+      "lon": 3.109722,
+      "arp_aip": "421536N 0030635E",
+      "arp_source": "ENAIRE AIP AD 1.3 index (restricted, no AD 2)",
+      "arp_read": "AIP, single read"
+    },
+    "LEST": {
+      "name": "Santiago",
+      "landing": 32.0,
+      "parking_per_night": 0.0,
+      "fuel_per_litre": 0,
+      "vat_pct": 21,
+      "coastal": true,
+      "aerodrome_supplier": "Aeropuerto de Santiago",
+      "fuel_supplier": "",
+      "src": "real",
+      "lat": 42.896389,
+      "lon": -8.415278,
+      "arp_aip": "425347N 0082455W",
+      "arp_source": "ENAIRE AIP AD 2-LEST",
+      "arp_read": "AIP, single read"
+    },
+    "LEBG": {
+      "name": "Burgos",
+      "landing": 45.0,
+      "parking_per_night": 0.0,
+      "fuel_per_litre": 3.19,
+      "vat_pct": 21,
+      "coastal": false,
+      "aerodrome_supplier": "Aeropuerto de Burgos",
+      "fuel_supplier": "BP Energía España, S.A.U.",
+      "src": "assume",
+      "lat": 42.3575,
+      "lon": -3.613611,
+      "arp_aip": "422127N 0033649W",
+      "arp_source": "ENAIRE AIP AD 2-LEBG",
+      "arp_read": "AIP, single read"
+    },
+    "ZZZZ": {
+      "name": "Other field",
+      "landing": 25.0,
+      "parking_per_night": 12.0,
+      "fuel_per_litre": 2.6,
+      "vat_pct": 23,
+      "coastal": false,
+      "aerodrome_supplier": "Aerodrome operator",
+      "fuel_supplier": "Fuel supplier",
+      "src": "assume"
+    }
+  },
+  "reserves_per_flown_hour": {
+    "engine_eur": 20.79,
+    "propeller_eur": 1.36,
+    "note": "Real 2025 reserve rates. Never scaled by Wear rate. Accrue on hours actually flown (TACH/ENG_HRS delta), draw down only on an actual Overhaul action, never on Reset to delivery (Job Card round-2 fix 6).",
+    "source": "Claus's 2025 cost calculator - engine and propeller reserve lines. Planning rates, same standing as the 'calculator' bucket in provenance_scale; no invoice exists for a reserve accrual."
+  },
+  "cockpit_strip_scope": {
+    "status": "DECIDED",
+    "decision": "Board item ledger_fixed_costs_book, Claus, 15 Sep 22:32:22, relayed word for word by the PM: 'Keep them in the laptop book, out of the cockpit figure (as designed)'. The split below is confirmed, not a default.",
+    "in_strip": [
+      "fuel (AVGAS)",
+      "aerodrome landing/parking",
+      "scheduled 25/50/100 h checks",
+      "unscheduled repairs from squawks and wear",
+      "engine reserve €20.79/h",
+      "propeller reserve €1.36/h"
+    ],
+    "excluded_from_strip_only": {
+      "items": [
+        "hangar (hangar)",
+        "insurance (insurance)",
+        "airworthiness management (cao)"
+      ],
+      "still_posted_in_full": "to the full book, invoices list and Year Book on the laptop — excluded only from the compact cockpit figure",
+      "strip_footnote": "excl. hangar, insurance, CAO"
+    }
+  },
+  "fuel_source": {
+    "status": "DECIDED — fuel IS in the cockpit strip",
+    "decision": "Board item ledger_fuel_in_strip, Claus, 15 Sep 22:34:50, relayed word for word by the PM: 'Yes: include fuel from the FP-5L USED reading (recommended)'.",
+    "identified_instrument": "Electronics International FP-5L fuel flow/pressure instrument, F-BVNK liter configuration — html_ui/Pages/VCockpit/Instruments/AH/FP5L/FP5L.js, md5 ed8f5deb, line 1 (PM, KIT1 review message)",
+    "variable": "L:NK_ST_FP5L_USED",
+    "unit": "litres",
+    "behaviour": [
+      "Written on every update (FP5L.js line 118); persists across flights.",
+      "Adds each per-update drop in the sim's total fuel of more than 0 and less than 2 L (line 107).",
+      "Resets to 0 when the total rises by more than 0.5 L in one update, i.e. at the refuel (line 108)."
+    ],
+    "read_rule": "Read L:NK_ST_FP5L_USED BEFORE the uplift is applied — the refuel resets it. Billed litres = that value.",
+    "fallback": "The typed Ramp \"Uplift (L)\" field is the last fallback for the laptop book, after the logger burn, the aircraft burn and the tank totals - see events.fuel and the burn_source chain. Revision 2 said nk_telemetry.py does not read FP5L_USED; the B26 logger kit adds an fp5l_used datum at V274, so that line is retired here.",
+    "related_variable_not_used": "L:NK_ST_FP5L_MODE (0 FLOW/HP, 1 REM, 2 USED, 3 T.to E./MPG, 4 PRESS) selects the gauge's display sub-mode, not a billing input.",
+    "fuel_flow_rate_reference_only": "A:ENG FUEL FLOW GPH:1 × 3.785 = L/h — the sim's own SimConnect value, never scaled by Wear rate. Reference only; USED is the billing variable, not flow rate.",
+    "strip_accumulation_rule": {
+      "cited_from": "PM KIT1 review message, second round (fuel-in-strip decision)",
+      "price": {
+        "eur_per_litre": 2.3,
+        "note": "The Ramp tab's live default (fields.LPCS.fuel_per_litre), fixed at build time — the strip has no per-field pricing because the wear model has no concept of which aerodrome you're at ('No NK_ variable exists: Aerodrome fees, landings by field'). A price change means a new build and a sim restart, same as every other strip price."
+      },
+      "accumulation": "On every CONFIRMED read (see reload_safety below), in this exact order: (1) compute delta = current L:NK_ST_FP5L_USED − L:NK_LG_FUEL_BASELINE_L; (2) if delta > 0, add delta to L:NK_LG_FUEL_L_TOTAL — if delta <= 0, add nothing (a drop means FP5L.js reset the counter at a refuel, and must never post a negative cost); (3) THEN, regardless of the sign of delta, set L:NK_LG_FUEL_BASELINE_L = current L:NK_ST_FP5L_USED. Step 3 is mandatory even when step 2 added nothing: if the baseline were left at its pre-refuel value, the next read's delta would be computed against a stale, too-high baseline and would go negative too, silently swallowing every litre burned after the refuel. Baseline tracks 'last confirmed reading', full stop — it is not conditioned on whether that reading contributed litres.",
+      "persisted_state": {
+        "L:NK_LG_FUEL_L_TOTAL": "Running total litres accumulated this way. Persisted. Multiplied by strip_accumulation_rule.price.eur_per_litre at display time to fold into the strip's running euro total — litres are stored, not euros, so a future price rebuild does not require re-deriving historical litres from an old blended euro figure.",
+        "L:NK_LG_FUEL_BASELINE_L": "The L:NK_ST_FP5L_USED value as of the last CONFIRMED read, updated every confirmed read per step 3 above regardless of delta sign. Advances in lockstep with L:NK_LG_BASELINE_MXLOG / L:NK_LG_BASELINE_TACH in STRIP_SPEC.md — never updated independently of the main cursor, and never skipped just because a given read didn't add litres."
+      },
+      "reload_safety": "Gated by the same (NK_ST_MX_LOG, NK_ST_TACH) cursor as every other posting. On a reload/crash read (posting_cursor.rule_reload_or_crash), do not update L:NK_LG_FUEL_BASELINE_L and do not touch L:NK_LG_FUEL_L_TOTAL — exactly as no other posting happens on a reload. This is why the baseline is a separate persisted variable rather than re-reading FP5L_USED cold each time: it lets a reload leave the fuel accumulator exactly where it was, the same guarantee the maintenance/hours cursor already gives.",
+      "laptop_book_unaffected": "The laptop ledger keeps billing fuel exactly as in read_rule/fallback above — per-field priced, from the same FP5L_USED-before-uplift reading where available. This rule only concerns the strip's own separate running total."
+    },
+    "fp5l_edge_cases": {
+      "status": "K7b section 5. Verified by Records line by line against FP5L.js (live ed8f5deb).",
+      "unpowered": "FP5L.js returns early while isElectricityAvailable() is false, and does not advance lastFuel. When power returns the whole unpowered burn arrives as one step, and counts only if it is under 2 L. Anything bigger is dropped.",
+      "large_single_drops": "Any single-update drop of 2 L or more is ignored outright (line 107 tests 0 < dF < 2). assumption, from the V261 recorder finding: an html gauge paused off screen produces exactly such jumps.",
+      "burn_lost_at_a_refuel": "The strip reads USED only at confirmed cursor reads, so litres burnt between the last confirmed read and a refuel are lost when the refuel resets USED. Accepted for now. The strip kit may read every update instead.",
+      "consequence_for_the_contract": "burnL inherits all three gaps whatever its burn_source. The record says which source it used and the book labels anything but the logger, so a figure that went through these gaps is never presented as exact."
+    },
+    "burn_source_chain": {
+      "status": "K7c C2. Written out here because revision 3 carried it only in LEG_CONTRACT.md and the vectors.",
+      "order": [
+        "logger",
+        "aircraft",
+        "rem",
+        "uplift"
+      ],
+      "logger": "burnL summed from the laptop logger rows: the sum of the fp5l_used increases between the lb_open 0 -> 1 transition and the lb_n increment. The only rung that survives a refuel inside the leg, because it adds increases instead of subtracting endpoints.",
+      "aircraft": "V274 saves L_FUEL_DEP and L_FUEL_ARR as FP-5L USED readings, so the leg burn is L_FUEL_ARR - L_FUEL_DEP. THERE IS NO STORED burnL VARIABLE. **Allowed only when refuelInLeg is false** - a refuel resets USED, so the subtraction comes out negative or tiny and V274 itself reports \"no leg burn\". Same guard as rem. This is C2: revision 3 let this rung fire across a refuel.",
+      "rem": "fp5lStart - fp5lShutdown, the REM tank totals. Allowed only when refuelInLeg is false, for the same reason in reverse: a refuel raises the tank mid-leg and the subtraction loses everything burnt before it.",
+      "uplift": "The typed uplift. Last resort, always labelled.",
+      "none": "A refuel with no logger, no usable aircraft figure and no uplift: nothing is billed and the review page says exactly that. Guessing from the endpoints would be worse than billing nothing.",
+      "inherited_gaps": "Every rung that reads USED inherits the FP-5L gaps in fp5l_edge_cases: a single-update drop of 2 L or more is never counted, and nothing counts while the instrument is unpowered."
+    }
+  },
+  "wear_rate_normalisation": {
+    "factor_name": "R",
+    "settings": {
+      "OFF": 0,
+      "REAL": 1,
+      "x100": 100,
+      "x1000": 1000
+    },
+    "rule_scaled_continuous": {
+      "applies_to": [
+        "NK_ST_C_CYL",
+        "NK_ST_C_MAG",
+        "NK_ST_C_CARB",
+        "NK_ST_C_ALT",
+        "NK_ST_C_VAC",
+        "NK_ST_C_OIL",
+        "NK_ST_C_LTS"
+      ],
+      "formula": "loss_per_update = (dt_seconds / 3600) × R × 0.05",
+      "spec_ref": "SPEC §2.2-2.3",
+      "billing_normalisation": "To price a service/repair, divide the OBSERVED condition loss by the R that was in force when it happened, so a part serviced after 6 minutes of sim time at x1000 is billed as 6 minutes' worth of REAL wear, not 6 minutes × 1000."
+    },
+    "rule_scaled_by_r_only": {
+      "applies_to": [
+        "NK_ST_C_TYR",
+        "NK_ST_C_BRK",
+        "NK_ST_OIL_QT"
+      ],
+      "formula": "loss_per_update = base_loss × R",
+      "spec_ref": "SPEC §2.2-2.3",
+      "billing_normalisation": "Same principle: divide observed loss by R before pricing."
+    },
+    "rule_starter_capped": {
+      "applies_to": [
+        "NK_ST_C_STR"
+      ],
+      "formula": "loss_per_update = base_loss × min(R, 100)",
+      "spec_ref": "SPEC §2.2 ('the rate factor is capped at 100')",
+      "billing_normalisation": "Divide by min(R, 100), not R — the wear model treats x100 and x1000 identically for the starter, so the same starter cost applies at either setting."
+    },
+    "rule_never_scaled": {
+      "applies_to": [
+        "NK_ST_ENG_HRS",
+        "NK_ST_TACH",
+        "airframe hours",
+        "NK_ST_BAT_HEALTH (ageing/starts/hours/crank-seconds)"
+      ],
+      "spec_ref": "SPEC §2.1, §2.5",
+      "note": "No adjustment needed at any Wear rate setting; scheduled checks and hourly reserves already price off real elapsed hours."
+    },
+    "rule_r_zero": {
+      "R": 0,
+      "meaning": "Wear rate OFF",
+      "rule": "No loss accrues at all. Bill nothing for wear at this setting. Never divide by 0 — R=0 short-circuits before any normalisation formula runs.",
+      "cited_from": "PM KIT1 review message"
+    },
+    "rule_r_changes_mid_leg": {
+      "cited_from": "PM KIT1 review message; SPEC §2.4",
+      "fact": "A Wear/Failure rate change works at any time and bumps NK_ST_MX_LOG.",
+      "rule": "Normalise each loss with the R that was in force when it happened. With end-of-leg reads only (the ledger's current model), a leg whose MX_LOG step contains a rate-change action cannot be attributed with confidence — flag it 'rate changed mid-leg' for a manual check. No silent guess.",
+      "cold_start_cylinder_hit": "The one-time cold-start cylinder hit (minus 0.05 × R once, SPEC §2.2) is subject to the same normalise-by-R treatment as the continuous losses, not exempt from it.",
+      "widened_by_the_pro_rata_decision": "Under pro rata the flag has to cover more than one posting step. With design 1 (accumulator) it stays as written, because each read is normalised as it happens. With design 2 (snapshot) it must fire whenever R changed at any point since the part was last serviced, not just inside the step that posted."
+    },
+    "DECIDED_how_a_normalised_loss_becomes_euro": {
+      "status": "DECIDED — pro rata. Claus, F-BVNK Annunciator board item, 16 Sep 2026 14:47:46 local, relayed word for word by the PM: \"Pro rata - bill only the wear that would have happened at REAL\". Revision 2 of this kit is collapsed to that single reading; the full-catalogue-price reading is gone.",
+      "rule": "net_line = half-up(price_net × normalised_points / 100); vat = half-up(net_line × vat_pct / 100); gross = net_line + vat.",
+      "normalised_points": "The points of the part's life the service restores, expressed in REAL-equivalent condition points. Condition runs 0-100, so normalised_points / 100 is the fraction of the part's life actually consumed at REAL rate.",
+      "divisor": "R for rule_scaled_continuous and rule_scaled_by_r_only, min(R,100) for rule_starter_capped, 1 for rule_never_scaled. R = 0 posts nothing at all (rule_r_zero) and never reaches a divide.",
+      "worked_examples": [
+        "V1 magneto, R=1, from condition 42: 58 points. net half-up(720.00 × 58/100) = 417.60; VAT half-up(417.60 × 23/100) = 96.05; gross 513.65.",
+        "V15 cylinder, R=1000, from condition 35: 0.065 points. net half-up(2250.00 × 0.065/100) = 1.46; VAT 0.34; gross 1.80.",
+        "V16 brakes, R=100, from condition 70: 0.3 points. net half-up(1089.43 × 0.3/100) = 3.27; VAT 0.75; gross 4.02.",
+        "V25 brakes, 1 point: net 10.89; VAT 2.50; gross 13.39. Gross-first would give 13.40.",
+        "V26 brakes, 15 points: net 163.41; VAT 37.58; gross 200.99. Gross-first would give 201.00."
+      ],
+      "what_this_does_not_touch": "Hourly reserves, scheduled 25/50/100 h checks, fuel, aerodrome fees, hangar, insurance and CAO. Every one of those prices off real elapsed hours, litres or the calendar, never off a condition loss, so no divisor reaches them. Also untouched: the laptop ledger FBVNK-LEDGER.html, whose own health model runs on real flown hours with no R in it at all. If that book is ever fed the sim's NK_ST_C_* values, this rule starts applying to it too.",
+      "overhaul_is_not_pro_rata": "An overhaul (V14) is a whole-unit replacement at its catalogue figure, not a fraction of remaining life. 35,000.00 posts in full whatever the condition was. Same for a battery replacement and a propeller overhaul.",
+      "C3_order": "K7c C3, the leader's decision. Net first, which is the order every other invoice line in this file already uses (see rounding.order_within_a_posting) - so a pro-rata service is not a special case any more. Revision 3 said price_gross × fraction, which rounds the VAT inside the gross before the fraction is applied and can land a cent high: brakes at 1 point is 13.39 net-first and 13.40 gross-first. None of the three existing vectors moves - V1 513.65, V15 1.80, V16 4.02 are the same under both orders - which is exactly why it went unnoticed until Records priced a 1-point and a 15-point service."
+    },
+    "capture_requirement": {
+      "why": "A pro-rata posting needs to know how much life the service restored. A service is detected by the condition reading 100, which is after the fact — by then the pre-service value is gone. Nothing in revision 1 captured it, so pro rata was not computable from what the kit recorded. Named here, per the PM's request, so design note B25 (automatic leg capture) can carry it.",
+      "reads_needed_either_way": {
+        "condition_variables": [
+          "NK_ST_C_ALT",
+          "NK_ST_C_BRK",
+          "NK_ST_C_CARB",
+          "NK_ST_C_CYL",
+          "NK_ST_C_LTS",
+          "NK_ST_C_MAG",
+          "NK_ST_C_OIL",
+          "NK_ST_C_STR",
+          "NK_ST_C_TYR",
+          "NK_ST_C_VAC"
+        ],
+        "plus": "NK_ST_OIL_QT (quarts, rule_scaled_by_r_only) — same treatment as the ten above.",
+        "plus_R": "NK_ST_WEAR, LocalVar 58, already read. The divisor comes from it.",
+        "note": "All eleven are existing package variables. No new SimVar, no new reader. What is new is persisting them between reads."
+      },
+      "design_1_accumulator_RECOMMENDED": {
+        "how": "On every confirmed (non-reload) read, for each part: drop = previous_condition − current_condition. If drop > 0, add drop / divisor_in_force_now to that part's accumulator. On a service (condition reads 100), bill price_gross × accumulator / 100 and zero the accumulator.",
+        "why_this_one": "It is exact when R changed during the part's life, because each read is normalised by the R that was actually in force for that read. The snapshot design below is only exact if R never moved since the last service — and a rate change between services is the normal case, not an edge one: R is a slider Claus moves.",
+        "new_persisted_variables": [
+          "L:NK_LG_WPTS_ALT",
+          "L:NK_LG_WPTS_BRK",
+          "L:NK_LG_WPTS_CARB",
+          "L:NK_LG_WPTS_CYL",
+          "L:NK_LG_WPTS_LTS",
+          "L:NK_LG_WPTS_MAG",
+          "L:NK_LG_WPTS_OIL",
+          "L:NK_LG_WPTS_STR",
+          "L:NK_LG_WPTS_TYR",
+          "L:NK_LG_WPTS_VAC",
+          "L:NK_LG_WPTS_OILQT"
+        ],
+        "plus_previous_read_snapshot": [
+          "L:NK_LG_PREV_C_ALT",
+          "L:NK_LG_PREV_C_BRK",
+          "L:NK_LG_PREV_C_CARB",
+          "L:NK_LG_PREV_C_CYL",
+          "L:NK_LG_PREV_C_LTS",
+          "L:NK_LG_PREV_C_MAG",
+          "L:NK_LG_PREV_C_OIL",
+          "L:NK_LG_PREV_C_STR",
+          "L:NK_LG_PREV_C_TYR",
+          "L:NK_LG_PREV_C_VAC",
+          "L:NK_LG_PREV_OIL_QT"
+        ],
+        "count": "22 new persisted LocalVars. Each needs a systems.cfg [LocalVars] entry — package bytes, so a Builder kit and the PM's install, not this session's work.",
+        "units": "Accumulators hold REAL-equivalent condition points, floating point. Store × 1000 as integers if float drift is a concern; that is a Builder call, the arithmetic is the same."
+      },
+      "design_2_snapshot_CHEAPER": {
+        "how": "Persist only the previous read's condition values. On a service, bill price_gross × ((100 − previous_condition) / divisor) / 100.",
+        "new_persisted_variables": "The eleven L:NK_LG_PREV_* above, and nothing else. 11 instead of 22.",
+        "the_cost": "Exact only when R was constant from the part's last service to this one. If R moved, the whole depletion is divided by whichever R happens to be in force at the moment of service, which is wrong in both directions: service at x1 after wearing the part at x1000 and the posting is 1000× too high. rule_r_changes_mid_leg must then widen from \"R changed inside this posting step\" to \"R changed at any point since this part was last serviced\", and flag rather than price."
+      },
+      "for_the_laptop_book": "FBVNK-LEDGER.html takes its legs from the aeroplane as records (contract FBVNK_LEG/2, written out in LEG_CONTRACT.md in this folder). If a record is to carry a service, it carries conditionBefore and conditionAfter as maps keyed by the eleven variable names above, plus the R in force. No persistence problem on that side: the aeroplane holds the snapshot and sends it.",
+      "design_3_at_the_action": {
+        "source": "K7b section 4, verified against HANGAR.js act() line 189 (live 29919c4a).",
+        "how": "The SERVICE action already calls this.L() in the same function. Immediately before this.set(item.key, 100), this.L(item.key) holds the exact pre-service condition and this.L(\"NK_ST_WEAR\") holds the R at that instant. Write both to new L:NK_LG_* vars there. The same holds for the oil action (line 190) and for the seven parts in the overhaul action (line 191).",
+        "what_it_buys": "The value AT the service, not at the last confirmed read. Both polling designs miss whatever wore between that read and the service.",
+        "what_it_does_not_buy": "A part whose life spanned more than one R still needs per-read accumulation to divide correctly. This route replaces the snapshot, not the accumulator.",
+        "boundary_holds": "It writes L:NK_LG_* only and no NK_ST_*, so the \"reads the wear model, never writes it\" rule is intact.",
+        "gate": "canService() at line 188: on the ground, engine off, master on. It runs once per accepted action, and MX_LOG is bumped at line 199 immediately after."
+      }
+    },
+    "oil_is_quarts_not_points": {
+      "status": "K7b also-fix, and the SPEC section 2.3 units.",
+      "fact": "NK_ST_OIL_QT is US quarts, 0 to 8, in an 8 qt sump. It is not a 0-100 condition value, so normalised_points / 100 does not apply to it as the service rule is written.",
+      "consumption": "Engine running: minus (0.05 + max(0, 75 - C_CYL)/50 x 0.9) qt/h x R. So 0.05 qt/h at C_CYL >= 75 and up to 1.4 qt/h at C_CYL 0. Scaled by R like the other by-R group.",
+      "rule_when_a_price_exists": "quarts_restored = 8 - OIL_QT_before. normalised_quarts = quarts_restored / R. posting = price_per_quart x normalised_quarts. Divide by quarts, never by 100 - the sump is 8 qt, not 100 points, and dividing a quart figure by 100 would under-bill by 8 to 1 on a full top-up.",
+      "today": "DORMANT. There is no oil price on file (prices_not_yet_defined), so a top-up posts nothing and raises the flag, per the PM. The rule is written now so that adding a price is a one-line change and not a fresh derivation."
+    }
+  },
+  "posting_cursor": {
+    "keys": [
+      "NK_ST_MX_LOG",
+      "NK_ST_TACH"
+    ],
+    "why_these_two": "NK_ST_ENG_HRS is not safe alone — Overhaul sets it to 0 and Reset to delivery sets it to 300 (SPEC §2.1), so it goes backward on purpose. NK_ST_MX_LOG only increments, on every accepted page action, and Reset to delivery does not reset it (SPEC §2.4: '+1 (not reset)'). NK_ST_TACH is never touched by Reset to delivery.",
+    "state": "Store the last-seen pair (MX_LOG, TACH).",
+    "rule_reload_or_crash": "Either number lower than the stored pair (not only TACH with MX_LOG unchanged — a crash can drop both at once) means the sim reloaded a save from before a crash or killed process (assumption, SPEC §1's own hedge: LocalVars save only on a normal exit). Post nothing. Never reverse an invoice already posted. The book stops advancing until BOTH numbers pass the last confirmed point again — no double billing, no silent refund.",
+    "rule_mx_log_higher": "MX_LOG higher than stored, on its own, posts the maintenance action(s) it represents.",
+    "rule_tach_higher": "TACH higher than stored, on its own, accrues the hourly items (engine/propeller reserves; scheduled-check hour counting).",
+    "rule_independent": "Either or both of the above can be true on a given read — this is not an AND condition.",
+    "rule_multi_step_jump": {
+      "fact": "A jump of more than 1 in MX_LOG between two reads means more than one action happened at once.",
+      "disambiguation_spec_ref": "SPEC §4",
+      "table": [
+        {
+          "signal": "a part's condition value at 100",
+          "means": "service"
+        },
+        {
+          "signal": "NK_ST_OIL_QT at 8 qt",
+          "means": "top-up"
+        },
+        {
+          "signal": "NK_ST_ENG_HRS at 0",
+          "means": "overhaul"
+        },
+        {
+          "signal": "a cleared NK_ST_FAULTS bit",
+          "means": "repair"
+        },
+        {
+          "signal": "a changed Wear/Failure rate setting",
+          "means": "rate change"
+        },
+        {
+          "signal": "the full SPEC §2.2-2.4 seed set together, MX_LOG = stored + 1",
+          "means": "Reset to delivery"
+        },
+        {
+          "signal": "the full SPEC §2.2-2.4 seed set together, MX_LOG = 0",
+          "means": "new install or new machine (PM, this message — see reset_to_delivery.new_install_case below)"
+        }
+      ]
+    },
+    "fault_bit_to_component_map": {
+      "status": "CLOSED. SPEC.md (R5, FBVNK_STAGING/R5_nk_wear_spec/SPEC.md), read by this session 16 Sep 2026, section 2.4.",
+      "bits": {
+        "0": "static port",
+        "1": "pitot",
+        "2": "COM wiring (VHF1 breaker)",
+        "3": "NAV wiring (NAV breaker)",
+        "4": "landing light",
+        "5": "taxi light",
+        "6": "left magneto",
+        "7": "right magneto"
+      },
+      "how_they_arise": "Rolled once per session (interior XML line 1300, tick > 10). Each clear bit is set with probability 0.01 / 0.1 / 1 by the Failure rate NK_ST_FAILR. Faults are NOT scaled by the Wear rate and do not accrue with hours, so no normalisation divisor touches a repair.",
+      "repair": "A bit clears on the FAULTS tab Repair action, which bumps MX_LOG.",
+      "pricing": "Still no posting by design, per the PM: raise the flag, do not bill. Four of the eight bits have a plausible price key in this table (plugs/mag for bits 6-7, exterior lamps for 4-5 which has no price) and four have none at all (static port, pitot, COM wiring, NAV wiring). Prices for those are a Claus decision, not a guess here.",
+      "both_magnetos": "Bits 6 and 7 set together are an engine failure in the wear model (XML 1373), not just two faults. Worth a flag of its own on the tech log."
+    },
+    "rule_overhaul_consumes_the_step": {
+      "status": "K7b F3. Verified by Records against HANGAR.js line 191, the ovh action.",
+      "fact": "One Overhaul action, and so one MX_LOG step, sets NK_ST_C_CYL, MAG, CARB, OIL, ALT, STR and VAC to 100, ENG_HRS to 0 and OIL_QT to 8, all together.",
+      "the_bug_it_prevents": "Read through the plain detection table, that one action matches seven services, a top-up and the overhaul. At R=1 from Reset-to-delivery levels (85) the four priced parts alone would add 815.50 on top of the 35,000.00 engoh: cyl 2,767.50 + mag 885.60 + alt 1,094.70 + vac 688.80, each x 0.15. K7b quotes 815.49, which is the same money summed first and rounded once at the end; the rounding rule decided in F2 rounds once per posting line, and each of the four is its own line, so the book would have shown 815.50. Two of the four are .xx5 cases in their own right, 415.125 and 164.205.",
+      "rule": "An MX_LOG step whose read shows NK_ST_ENG_HRS at 0 posts engoh and nothing else. The seven engine parts reading 100 in that same step post nothing, and OIL_QT reading 8 in that same step posts nothing. The overhaul consumes them: they are what an overhaul IS, not nine separate jobs.",
+      "discriminator_unchanged": "Reset to delivery also seeds those parts, but to 85 and not 100, and sets ENG_HRS to 300. ENG_HRS 0 means overhaul; ENG_HRS 300 with the full seed set means Reset. See V3 and V14.",
+      "vector": "V14, extended in this revision with the seven conditions before and after."
+    }
+  },
+  "reset_to_delivery": {
+    "spec_ref": "SPEC §2.2-2.5",
+    "values": {
+      "cylinders_magnetos_carburettor_alternator_starter_vacuum_oil_pump_lines": 85,
+      "tyres": 60,
+      "brakes": 70,
+      "exterior_lamps": 80,
+      "oil_quantity_qt": 7,
+      "engine_hours_NK_ST_ENG_HRS": 300,
+      "wear_rate": "1 (REAL)",
+      "failure_rate": "1 (REAL)",
+      "faults_bitmask": 0,
+      "maintenance_counter_NK_ST_MX_LOG": "+1 (not reset)"
+    },
+    "not_touched": [
+      "battery health (NK_ST_BAT_HEALTH)",
+      "GENE breaker bit (NK_ST_CB bit 14)",
+      "airframe hours",
+      "NK_ST_TACH"
+    ],
+    "billing_impact": "None. Logged as one tech-log entry (timestamp, MX_LOG value, 'Reset to delivery — test action, not billed'). Never an invoice line, never touches the euro total, cost per hour, or the engine/propeller reserve funds — Reset to delivery is a wear-model convenience, not a real overhaul.",
+    "new_battery_action": "A new battery is the separate 3-click ammeter-pad action (SPEC §2.5) and is not part of Reset to delivery.",
+    "new_install_case": {
+      "cited_from": "PM KIT1 review message",
+      "correction_to_first_load_defaults": "First-load defaults are the SAME seed values as Reset to delivery, but with MX_LOG 0 (not '+1'). NK_ST_TACH starts at 0 and is then seeded to 1246.58.",
+      "detection": "A fresh install or a different PC shows the delivery pattern with MX_LOG 0 and TACH below the stored (MX_LOG, TACH) pair — because saved LocalVars do not travel with the package folders.",
+      "why_it_matters": "Under the posting-cursor rule above, MX_LOG 0 / TACH-below-stored reads as a reload — the book would freeze until both numbers pass the old point, which is wrong for a genuine new install or new machine (Claus plans a move to his CT desktop).",
+      "rule": "MX_LOG 0 together with the full seed set means 'new install or new machine' — logged, not billed, distinct from an in-sim Reset to delivery action (which advances MX_LOG by 1 instead of showing 0). The cursor is re-baselined only after the pilot confirms it in the ledger. Never automatic."
+    }
+  },
+  "events": [
+    {
+      "event": "service",
+      "detection": "a part's NK_ST_C_* condition value reads 100",
+      "posting": "net_line = half-up(price_net × normalised_points / 100), then VAT off that rounded net, then gross as the sum - the same order as every other posting in this file. See rounding and wear_rate_normalisation.DECIDED_how_a_normalised_loss_becomes_euro. Pro rata, per Claus, 16 Sep 2026. Parts with no price on file still post nothing; see prices_not_yet_defined.",
+      "confidence": "confirmed (SPEC §4 disambiguation); pricing basis decided by Claus, 16 Sep 2026 14:47:46"
+    },
+    {
+      "event": "top_up",
+      "detection": "NK_ST_OIL_QT reads 8 qt",
+      "posting": "no PRICES key yet — see prices_not_yet_defined",
+      "confidence": "confirmed detection, price missing"
+    },
+    {
+      "event": "overhaul",
+      "detection": "NK_ST_ENG_HRS reads 0",
+      "posting": "prices.engoh; draws down the engine reserve fund (this is the only action that does)",
+      "confidence": "confirmed"
+    },
+    {
+      "event": "repair",
+      "detection": "a NK_ST_FAULTS bit clears",
+      "posting": "No posting by design - raise the flag, per the PM. The bit-to-component map is CLOSED in R3, off SPEC section 2.4: see posting_cursor.fault_bit_to_component_map. Four of the eight components have no price key, which is the part still open.",
+      "confidence": "detection and mapping both confirmed; pricing for four of the eight components is a Claus decision"
+    },
+    {
+      "event": "rate_change",
+      "detection": "Wear rate or Failure rate setting changes (SPEC §2.4)",
+      "posting": "no direct invoice; triggers wear_rate_normalisation.rule_r_changes_mid_leg for every other event around it",
+      "confidence": "confirmed"
+    },
+    {
+      "event": "reset_to_delivery",
+      "detection": "full SPEC §2.2-2.4 seed set, MX_LOG = stored + 1",
+      "posting": "log only, see reset_to_delivery.billing_impact",
+      "confidence": "confirmed"
+    },
+    {
+      "event": "new_install_or_new_machine",
+      "detection": "full SPEC §2.2-2.4 seed set, MX_LOG = 0",
+      "posting": "log only, see reset_to_delivery.new_install_case",
+      "confidence": "confirmed (PM, this message)"
+    },
+    {
+      "event": "hourly_reserves",
+      "detection": "NK_ST_TACH higher than stored. CLOSED in R3: the reserves accrue on TACH deltas, never on ENG_HRS, because an overhaul sets ENG_HRS to 0 and a Reset sets it to 300 - see hours_sources.",
+      "posting": "reserves_per_flown_hour, both engine and propeller, on the elapsed hours",
+      "confidence": "confirmed, rate and source variable both"
+    },
+    {
+      "event": "fuel",
+      "detection": "laptop book: L:NK_ST_FP5L_USED read before uplift. Strip: same variable, positive-delta-only accumulation against L:NK_LG_FUEL_BASELINE_L",
+      "posting": "fuel_source above, including strip_accumulation_rule — both laptop book AND strip now bill fuel (board item ledger_fuel_in_strip: YES, 15 Sep 22:34:50)",
+      "confidence": "confirmed"
+    },
+    {
+      "event": "scheduled_check_25_50_100h",
+      "detection": "hours crossing 25/50/100 h thresholds since last check",
+      "posting": "prices.insp25 / insp50 / insp100",
+      "confidence": "billing confirmed. R3, off SPEC section 2.1: there is NO hours-since-last-check variable in the package - the three hours variables are TACH, ENG_HRS and AF_HRS and none of them tracks inspection intervals. The reader must keep its own counter from TACH deltas, which is what the laptop book already does. Closed as 'no such variable exists', not as 'not yet found'."
+    },
+    {
+      "event": "propeller_overhaul",
+      "detection": "none — 'Every ledger figure, mapped': the wear model has no propeller-condition variable",
+      "posting": "prices.propoh, laptop/manual entry only, cannot be triggered from telemetry",
+      "confidence": "confirmed absence"
+    },
+    {
+      "event": "battery_replacement",
+      "detection": "NK_ST_BAT_HEALTH (LocalVar 37) jumps to 100, with NK_ST_BAT_STARTS, BAT_HOURS, BAT_CRANK and BAT_DEEP all going to 0 in the same read. SPEC.md (R5, FBVNK_STAGING/R5_nk_wear_spec/SPEC.md), read by this session 16 Sep 2026 section 2.5.",
+      "action": "Three clicks on the ammeter pad, master OFF and engine stopped. It is NOT part of Reset to delivery, which does not touch the battery at all.",
+      "THE_CATCH": "The ammeter pad is not an iPad page action, and MX_LOG is bumped only by page actions (SPEC section 2.4: SERVICE, top-up, overhaul, fault repair, rate change, Reset). So a battery replacement does NOT move the posting cursor. A reader gated on MX_LOG alone will never see it. This is new in revision 3 and it is the reason the item was worth closing rather than guessing.",
+      "rule": "Watch NK_ST_BAT_HEALTH on every confirmed read, independently of the MX_LOG half of the cursor: a rise to 100 from below is a new battery. A fall is ageing and posts nothing.",
+      "posting": "prices.batt, at its full figure. A battery is a whole-unit replacement like an overhaul, so no pro-rata divisor reaches it.",
+      "confidence": "confirmed against SPEC section 2.5; the MX_LOG consequence is this session's reading of section 2.4 and is stated as such.",
+      "still_no_posting_by_design": "The PM's standing instruction is flag, do not bill, for this event. The rule above says how to detect it when that changes."
+    }
+  ],
+  "open_items": [
+    "Nine prices with no figure: the five PRICES keys (carburettor, starter, oil pump/lines, exterior lamps, oil top-up per quart) and four of the eight fault components (static port, pitot, COM wiring, NAV wiring). On the Annunciator as ledger_missing_prices, with three options for Claus: this session proposes labelled assumed prices for him to check, he gives them, or they stay unpriced and flagged. Nothing is filled until he taps.",
+    "Which capture design the Builder takes for pro-rata pricing: the accumulator (22 new LocalVars, exact under a rate change) or the snapshot (11 new LocalVars, exact only while R holds). K7b adds a third route - capture at the SERVICE action itself in HANGAR.js act(), which sees the exact pre-service value and the R at that instant, and may make polling persistence unnecessary. A mixed-R life still needs accumulation. Both specified under wear_rate_normalisation.capture_requirement; the action route is Records' finding, recorded in capture_requirement.design_3_at_the_action. This session recommends the action route combined with accumulation, and has not chosen.",
+    "TARBES LFBT: its ARP from the French AIP, and its landing, parking and fuel figures. The first real record off the aeroplane departs and arrives there and the book has never heard of it. It files as ???? and prices at the default field until both are supplied. The ARP is Records' work (R19 if the PM wants it); the fees are Claus's or the PM's. Nothing is invented here."
+  ],
+  "provenance_scale": {
+    "why": "K7 note: the old two-way real/assumption split put a paid invoice and a planning figure in the same bucket. Claus's standing rule is that unverified figures are labelled assumption, so the honest fix is three buckets rather than moving five real-but-uninvoiced figures into 'assumption' - which would wrongly imply this session invented numbers that are his own.",
+    "invoiced": "Money changed hands at this figure in the real 2025 accounts. invoice_id_cited says whether a single invoice number is quoted (4 entries) or the figure comes from several invoices (1 entry, hangar, which is 13 monthly Sevenair invoices at the same figure).",
+    "calculator": "Claus's own 2025 cost calculator. A real document of his, but a planning figure: the work has not been done, so no invoice exists. Not an assumption by this session, and not a paid amount either.",
+    "assumption": "No source. Set for the sim by this session. 17 entries - brakes joined them in revision 3 (F1).",
+    "counts": {
+      "invoiced_with_id": 4,
+      "invoiced_without_id": 1,
+      "calculator": 3,
+      "assumption": 17
+    },
+    "scope": "The three buckets cover the prices table only. The fields table (aerodromes) keeps its own two-value src, \"real\" and \"assume\", which is an earlier vocabulary meaning the figure came from Claus rather than from this session. See fields_provenance.",
+    "counts_corrected_in_r4": "K7c also-fix. Revision 3 still said 2 invoiced-without-id and 16 assumption, which was the count before F1 moved brakes out of invoiced. 4 + 1 + 3 + 17 = 25 priced entries."
+  },
+  "prices_verified_against_the_2025_accounts": {
+    "source": "F-BVNK_2025_Accounts_1.xlsx, Claus's own 2025 operating cost ledger, figures transcribed verbatim from the supplier invoices in 1_2.pdf. Read by this session 16 Sep 2026.",
+    "method": "net x (1 + vat/100), rounded half-up to the cent, against the gross printed on the invoice.",
+    "checked": [
+      "hangar 1,000.00 @ 23 % = 1,230.00 - matches all 13 Sevenair invoices",
+      "cao FAC 25/135 720.00 @ 23 % = 885.60 - matches",
+      "insp25 FAC 25/64 168.00 @ 23 % = 206.64 - matches",
+      "insp100 FAC 25/100 2,434.99 @ 23 % = 2,995.04 - matches",
+      "insp50 FAC 26/6 786.88 @ 23 % = 967.86 - matches, and it is a 2026 invoice as labelled",
+      "LPCS landing 22.24 - printed alone on three Cascais invoices (16 Oct, 21 Nov, 17 Dec 2025)",
+      "LPCS landing 22.24 + parking 16.68 = 38.92 - the printed total on the 28 Oct 2025 Cascais invoice"
+    ],
+    "not_found": "No brake invoice, and no Spanish maintenance invoice of any kind. See prices.brakes.F1_what_changed."
+  },
+  "rounding": {
+    "status": "DECIDED — the PM, 16 Sep 2026, on K7b F2.",
+    "rule": "Round half-up on the exact decimal value, to the cent, once per posting line.",
+    "never": "Never toFixed. Never Math.round on a float. Both read the binary double, not the decimal value, and 31.185 is stored just below .185: (31.185).toFixed(2) gives 31.18 where this rule gives 31.19.",
+    "how": "Integer cents where the inputs are already cents - net_cents x (100 + vat) / 100, half-up - or a decimal routine. A float is acceptable only if the rounding itself is done on decimal digits: snap the binary noise off with toPrecision(15), then read the third decimal and carry.",
+    "order_within_a_posting": "net to the cent first; VAT computed off the ROUNDED net and rounded; gross is the sum of the two. That way the invoice adds up to its own printed lines.",
+    "both_readers": "The laptop ledger and the future HANGAR strip must use the same routine. The laptop book FBVNK-LEDGER.html implements it as eur2(); 23 test cases pass, including the two .xx5 cases.",
+    "what_it_changes": "V6 becomes 31.19 (31.185 exact), and V6 stays the vector that pins a .xx5 case. V18 is added as a second one, on a real invoice.",
+    "pro_rata_order": "K7c C3. A pro-rata service rounds in the same order as everything else: the normalised fraction is applied to the NET, that net is rounded to the cent, VAT is computed off the rounded net and rounded, and gross is the sum. Never price_gross × fraction - that rounds VAT into the gross before the fraction and can land a cent high. The book and the strip must both do it this way."
+  },
+  "hours_sources": {
+    "status": "CLOSED. SPEC.md (R5, FBVNK_STAGING/R5_nk_wear_spec/SPEC.md), read by this session 16 Sep 2026, section 2.1.",
+    "NK_ST_TACH": {
+      "localvar": 11,
+      "counts": "positive changes of A:GENERAL ENG ELAPSED TIME:1, in hours",
+      "seeded": "0 on first load, then seeded to 1246.58",
+      "reset_to_delivery": "not touched",
+      "overhaul": "not touched",
+      "verdict": "THIS is the reserve accrual source, and it is the posting cursor. It is the only hours variable that never goes backwards on purpose."
+    },
+    "NK_ST_ENG_HRS": {
+      "localvar": 46,
+      "counts": "sim seconds / 3600 while A:GENERAL ENG COMBUSTION:1 is true",
+      "reset_to_delivery": "300",
+      "overhaul": "0",
+      "verdict": "NOT usable for accrual. It is set to 0 by an overhaul and to 300 by a Reset, both on purpose, so a delta on it is meaningless across either event. It is the overhaul discriminator and the engine-life figure, nothing else."
+    },
+    "NK_ST_AF_HRS": {
+      "localvar": 47,
+      "counts": "sim seconds / 3600 while A:SIM ON GROUND is false, i.e. airborne time",
+      "first_load": 0,
+      "reset_to_delivery": "not touched",
+      "verdict": "Airborne hours, and nothing in the package reads it - no page row. Claus keeps his carnet on airborne time, so this is the variable that matches his Heures de Vol. It starts at 0 rather than at the aeroplane's real total, so only deltas mean anything."
+    },
+    "reserves_accrue_on": "NK_ST_TACH - THE HOUR METER, IN BOTH HALVES. DECIDED by Claus on the Annunciator, 16 Sep 2026 at 21:05:42 local, word for word: \"Tacho time (the hour meter)\". The cockpit strip was already on it and is unchanged; the laptop book moved to it in R6, having been accruing on airborne time. Airborne time now keeps the carnet's Heures de Vol and the airborne totals, and nothing else. It is the meter's PROGRESSION between records that accrues, not a leg's own tachStop - tachStart: under V275 only airborne legs become records, so the taxi, run-up and ground running between them sits in the gap and a real hour meter counts it. See accrual_clock.",
+    "note_on_sim_rate": "CORRECTED in R4, K7c also-fix. Revision 3 said every hours variable undercounts at sim rates above 1x, and claimed the reserves under-bill because of it. That is wrong for TACH. TACH (interior XML line 215) adds unclamped A:GENERAL ENG ELAPSED TIME deltas; only ENG_HRS and AF_HRS (line 1365) add the tick that is clamped to 1 s. The reserves accrue on TACH, so they do NOT under-bill from the clamp. assumption, and labelled as one: that A:GENERAL ENG ELAPSED TIME itself follows the sim rate. ENG_HRS and AF_HRS do undercount at rate, which matters for the engine-life figure and for airborne time, not for money."
+  },
+  "fields_provenance": {
+    "why_not_remapped": "Moving a figure of Claus's into \"assumption\" because this session cannot find its invoice would be its own inaccuracy - the same reason the five calculator figures were not moved in revision 2. The fields vocabulary is documented instead of rewritten.",
+    "verified_against_the_2025_accounts": {
+      "LPCS.landing 22.24": "printed alone on three Cascais Dinamica invoices in 2025",
+      "LPCS.parking_per_night 16.68": "22.24 + 16.68 = 38.92, the printed total on the 28 Oct 2025 invoice"
+    },
+    "not_verifiable_here": "Every Spanish and Portuguese landing and parking figure other than LPCS. The 2025 accounts carry aerodrome fees from Cascais Dinamica only - the aeroplane flew to Spain, but the Spanish aerodrome invoices are not in that file.",
+    "coordinates": {
+      "status": "CLOSED in R4. R17, Records, 16 Sep 2026, NOTE.md md5 4dbd0a19.",
+      "source": "The national AIPs: NAV Portugal eAIP and eVFR, ENAIRE AIP. Each row carries its AIP string, the chapter it came from, and whether the read was confirmed by a second source.",
+      "confirmed_by_a_second_read": [
+        "LPCS",
+        "LEVD",
+        "LETL"
+      ],
+      "single_read": [
+        "LPCO",
+        "LPVL",
+        "LEAP",
+        "LEST",
+        "LEBG"
+      ],
+      "records_assumption": "That the WebFetch page summaries transcribed the coordinate strings exactly. The three confirmed rows lower that risk; they do not remove it for the other five.",
+      "restricted_aerodromes": "LEAP has no AD 2 chapter, so its position comes from the AD 1.3 index, where the index does not label the position \"ARP\". Records states that as an assumption.",
+      "resolve_radius_is_safe": "The closest pair among these is LPCO-LPVL at 67.5 nm, against the book's 8 nm resolve radius. No two can be confused.",
+      "LEMP_dropped": "Los Martinez del Puerto, Murcia. It was in the table only because the Empuriabrava figures had been filed under its code. Nothing of Claus's uses LEMP - searched, one hit, which is R17's own note - so the entry is gone rather than left as an aerodrome the book pretends to know."
+    },
+    "LEAP_name_query_CLOSED": "R3 flagged that LEAP was called \"Teruel\" while Claus's planning had LPCS-LETL and LETL-LEAP on one day, so at least one name was wrong. It was the book: LEAP is Ampuriabrava, LETL is Teruel, and the two codes were swapped in the table. The planning reads Cascais - Teruel - Ampuriabrava and is consistent. Claus never needed to be asked."
+  },
+  "carnet_p1_figure": {
+    "status": "CLOSED. Claus, Annunciator item ledger_p1_figure, 16 Sep 2026 18:04:32 local, relayed word for word.",
+    "his_words": "\"good bloody question... ha ha, I should know, but I just carried it over from the previous owners. Keep it the same\"",
+    "rule": "The figure beside P1 in Nature du Vol is the running total of P1 time and stays exactly as his pages carry it. R3 flagged this as this session's assumption; it is not an assumption any more, it is his instruction, and the Logbook tab says so in his words rather than mine.",
+    "provenance": "Carried over from the previous owners' pages. Not derived, not checked against anything, and not to be \"corrected\" by a later reader who thinks it should be something else."
+  },
+  "decided_this_revision": {
+    "carnet_time_base": "UTC. Claus tapped it on the Annunciator on 16 Sep 2026 at 18:00. The book is set to UTC and the UTC / local control stays, so local remains cheap if he changes his mind. Verified in Europe/Lisbon: 0800/0918 Z shows as 0900/1018 local and the hand-filed rows do not move. Was open_items entry 3 in revision 3.",
+    "leg_record_notes_array": "notes[] is an optional field of FBVNK_LEG/2 from revision 4: the converter's own notes, strings only, 12 at most, 160 characters each, shown on the pilot's review page under the heading Du convertisseur and never in the carnet. Anything dropped is counted out loud. Before revision 4 the book accepted the array and silently discarded it. PM's proposal of 16 Sep 18:2x; verified in the running book. Full rules in LEG_CONTRACT.md.",
+    "leg_record_burn_source_null": "burnSource may be JSON null, meaning the converter names no rung and the book walks the chain from the top. null and the field being absent give identical results on all three V23-family shapes, verified through JSON.parse in the running book. A burnL present with a null burnSource is labelled logger, because that is the only rung that can produce one without the aeroplane's own figures.",
+    "carnet_entry_is_the_airborne_event": "Claus, 16 Sep 18:34. See carnet_entry_rule. Built in the book in revision 5; V29 and V30 pin it.",
+    "accrual_clock": "Tacho time (the hour meter). Claus, 21:05:42 local, 16 Sep 2026. See accrual_clock. Closes the A4 open item that R5 raised.",
+    "logbook_layout_v275": "The review page shows the leg in the V275 iPad panel's order and formats, line for line, from the installed HANGAR.js lbLastText() strings (md5 91fa9dce). Claus, 21:0x: \"update the cost ledger with what the lates layout of the lookbook looks like\". Three deliberate differences, each stated on the page: always Zulu whatever the carnet's time control shows; the tacho with a dot as the iPad prints it, against the comma Claus writes on page 86; and the touchdown in the sim's own negative-down sign, while the record keeps touchdownFpm positive-down and the book bills and checks hard landings on that."
+  },
+  "raised_not_a_kit_item": [
+    "The Teruel fuel invoice BP Energia Espana 2002864264, 20 Nov 2025, 366.14 EUR for 155.000 L uplifted 24 Oct 2025, is NOT among the 42 invoices in F-BVNK_2025_Accounts_1.xlsx, and it is VAT-exempt where the two Spanish BP invoices that ARE in that file carry 21 %. Both facts are Claus's bookkeeping rather than this kit's, and neither changes a figure here - the kit's 2.36 EUR/L for Teruel is confirmed by it. Raised because a missing invoice in a year-end file is worth someone knowing about."
+  ],
+  "carnet_entry_rule": {
+    "claus_16_sep_1834": "I want to remark. If NO airborne event, no log entry at all. Eg, engine starts, taxi etc. if no airborne (flight even) NO log book entry. Only airborne (flight time) events goes into the logbook. So, from time to time there may be a tacho log entry \"discrepency\" between last leg and current (last) leg - just like real world, so just accept this.",
+    "rule": "The test is the AIRBORNE EVENT and it is not the noTakeOff flag. An air start is spawned airborne: noTakeOff true, airborne time real, and it IS a carnet entry. When the record carries an airborne figure that figure decides; when it carries none the book falls back to whether a take-off or landing time exists.",
+    "still_posts": "A run that is not a flight is still filed and still posts - it burnt fuel and it ran the engine. It is kept off the carnet page, the Logbook tab says how many, and the Ledger has them in full.",
+    "tacho_gap": "Not an error. No tacho continuity check exists in the book and none ever did. The Logbook page states the gap a left-out run leaves is expected.",
+    "fuel_between_legs": "Billed by nothing today. The gap is measurable off the FP-5L - previous leg's fp5lArr less this leg's fp5lStart - so it needs no assumed burn rate. PROPOSED, NOT BUILT: bill that difference when it is positive and no uplift is declared between the two, at the departure field's price, labelled on the review page. At Cascais's 2.30 EUR/L a 3 L gap is 6.90 EUR gross and a 10 L gap 23.00 EUR. This session has no measured ground burn rate for F-BVNK and assumes none: the one real ground run carries a refuel, fp5l 231 -> 234, so no burn is readable from it.",
+    "v275": "The aircraft side will stop closing a leg at all when the engine run never got airborne (PM, 18:36). Until it is installed the aeroplane can still produce such records, so the book keeps excluding them."
+  },
+  "accrual_clock": {
+    "decided_by": "Claus, on the F-BVNK Annunciator",
+    "decided_at": "16 Sep 2026, 21:05:42 local",
+    "his_words": "Tacho time (the hour meter)",
+    "question_he_answered": "should the engine and propeller reserves and the 25 / 50 / 100 h inspection counters run on tacho time or on airborne (flight) time?",
+    "what_it_cost_to_leave_it_open": "18.80 % - measured off page 86, 7.9200 tacho hours against 6.6667 flown over the same eight legs. At 20.79 + 1.36 = 22.15 EUR/h that was 3.47 EUR a leg and 303.98 EUR a year on his real 2025 flying of 73.00 hours.",
+    "runs_on_the_meter": [
+      "reserves.engine at 20.79 EUR/h",
+      "reserves.prop at 1.36 EUR/h",
+      "counters.hrs, which drives the 25 / 50 / 100 h inspections",
+      "counters.ttaf",
+      "counters.engSMOH and counters.propSMOH, which drive the 2000 h TBO postings"
+    ],
+    "stays_on_airborne": [
+      "the carnet's Heures de Vol",
+      "the airborne totals",
+      "the wear coefficients - THIS SESSION'S OWN CALL, not part of Claus's pick, flagged in NOTE.md and V32. They were rated against airborne hours and the real wear model is the iPad's, which is the PM's."
+    ],
+    "rule": {
+      "normal": "accrued hours = this record's tachStop less the previous record's tachStop, to 0.01 h",
+      "first_record": "its own tachStop - tachStart; the cursor is picked up there",
+      "meter_backwards": "a tachStart below the cursor is a reload or another machine. Flag it, post nothing negative, accrue this leg's own span, resume the cursor from the new reading. TACH never goes backwards in normal running: no reset touches it and it is seeded to 1246.58 only on a first install.",
+      "no_reading": "accrue the leg's airborne time rather than lose the hours, say so, and CARRY that figure: the next record with a real reading subtracts it from the measured gap so nothing is billed twice",
+      "strip": "reads NK_ST_TACH directly (LocalVar 11) under the (MX_LOG, TACH) cursor it already has. No change."
+    },
+    "vectors": [
+      "V33 progression across a ground run, and the no-reading fallback",
+      "V34 the meter going backwards",
+      "V32 the record of the disagreement and what closed it"
+    ],
+    "the_vectors_never_moved": "Every hourly_reserve figure in V1, V5, V6 and V15 was already computed from a TACH cursor delta and every one is arithmetically correct. The vectors were never on the wrong clock; the laptop book was."
+  }
+}
